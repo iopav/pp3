@@ -1,0 +1,98 @@
+[
+  {
+    "path": "data/new6classes/X_test_6cla_new.npy",
+    "shape": [
+      118,
+      3775,
+      9
+    ],
+    "dtype": "float64"
+  },
+  {
+    "path": "data/new6classes/X_train_6cla_new.npy",
+    "shape": [
+      482,
+      3775,
+      9
+    ],
+    "dtype": "float64"
+  },
+  {
+    "path": "data/new6classes/Y_test_6cla_new.npy",
+    "shape": [
+      118
+    ],
+    "dtype": "int64",
+    "labels": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "path": "data/new6classes/Y_train_6cla_new.npy",
+    "shape": [
+      482
+    ],
+    "dtype": "int64",
+    "labels": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ]
+  },
+  {
+    "path": "data/old6classes/X_test_6cla_old.npy",
+    "shape": [
+      122,
+      3775,
+      9
+    ],
+    "dtype": "float64"
+  },
+  {
+    "path": "data/old6classes/X_train_6cla_old.npy",
+    "shape": [
+      478,
+      3775,
+      9
+    ],
+    "dtype": "float64"
+  },
+  {
+    "path": "data/old6classes/Y_test_6cla_old.npy",
+    "shape": [
+      122
+    ],
+    "dtype": "int64",
+    "labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  {
+    "path": "data/old6classes/Y_train_6cla_old.npy",
+    "shape": [
+      478
+    ],
+    "dtype": "int64",
+    "labels": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  }
+]

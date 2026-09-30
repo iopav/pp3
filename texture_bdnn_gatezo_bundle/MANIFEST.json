@@ -1,0 +1,262 @@
+[
+  {
+    "path": "bdnn1.py",
+    "size_bytes": 21749,
+    "sha256": "3a6fc620e64948019b542d568bfaf5958d6844723c7eb4d3df514d9c48184004"
+  },
+  {
+    "path": "bdnn2.py",
+    "size_bytes": 18541,
+    "sha256": "e2b9106dad169ba7f9aa56dcb2c6f8ca09c844174be7e3d3a136f319866526bb"
+  },
+  {
+    "path": "config.py",
+    "size_bytes": 654,
+    "sha256": "42958922e9db661fafece737ec403243934db27ef1c13722847593a3f8b080c6"
+  },
+  {
+    "path": "data/new6classes/X_test_6cla_new.npy",
+    "size_bytes": 32072528,
+    "sha256": "3191b9219e5ba06bb647555c034ba1805e9a3c0bccfe5bf8e729e100feaa7af5"
+  },
+  {
+    "path": "data/new6classes/X_train_6cla_new.npy",
+    "size_bytes": 131007728,
+    "sha256": "b8294d3e40e56eb2c19db31bcce38badccb239a7bf375e7dbc6531e32b5658d4"
+  },
+  {
+    "path": "data/new6classes/Y_test_6cla_new.npy",
+    "size_bytes": 1072,
+    "sha256": "d2d2d5118fe52b2a14a63bd0283b0a65a73e054c89f82c8ceaeeac13ea85680f"
+  },
+  {
+    "path": "data/new6classes/Y_train_6cla_new.npy",
+    "size_bytes": 3984,
+    "sha256": "a13b6b9461514e100906dd12bb197291453aaf428cbfda28c11ccc8b278a7e64"
+  },
+  {
+    "path": "data/old6classes/X_test_6cla_old.npy",
+    "size_bytes": 33159728,
+    "sha256": "5d5801a93c30a1333a3a4f1eaa34f4988f20b91fa009f9f066a1dc52f30ef91a"
+  },
+  {
+    "path": "data/old6classes/X_train_6cla_old.npy",
+    "size_bytes": 129920528,
+    "sha256": "4c55896c746ec34b98fb91806becea2aa8333df3f6f30dd7da0f3b89bacfef5f"
+  },
+  {
+    "path": "data/old6classes/Y_test_6cla_old.npy",
+    "size_bytes": 1104,
+    "sha256": "5f96077aa71731fab88c944f55abffc406a5d0078c10817273aa3958f195176a"
+  },
+  {
+    "path": "data/old6classes/Y_train_6cla_old.npy",
+    "size_bytes": 3952,
+    "sha256": "1b0d38479782ca78a77802c0c47e28d9134dc57d9ede43efcb9eec532d33d979"
+  },
+  {
+    "path": "data_info.json",
+    "size_bytes": 1319,
+    "sha256": "2d32c115e73c255787db599f5d1e524ea6aa2292fe02be2057d93ace96526581"
+  },
+  {
+    "path": "environment-tested.json",
+    "size_bytes": 377,
+    "sha256": "4072ab0fcf18a43935711768cd12070015c40cb79e98e8e5a8e1fed25877b401"
+  },
+  {
+    "path": "gate_zo_bdnn/__init__.py",
+    "size_bytes": 520,
+    "sha256": "5fa5b5aa58bb8de5ab5cb04317e2bda8742691aa546ea3df3aa40d545048bd18"
+  },
+  {
+    "path": "gate_zo_bdnn/bdnn1_gatezo.py",
+    "size_bytes": 1967,
+    "sha256": "fc88823929f4a513ea4e19f7243536a404f6b645548f8009fbe5a3358bf9978c"
+  },
+  {
+    "path": "gate_zo_bdnn/bdnn2_gatezo.py",
+    "size_bytes": 2983,
+    "sha256": "25a207248bb4aedf9bbe8e490c2bc2d30f4cedf1cd636ea98b121cbb5413c918"
+  },
+  {
+    "path": "gate_zo_bdnn/compare_texture_methods_gpu.sbatch",
+    "size_bytes": 2146,
+    "sha256": "d6001e034c329070180839303651bc75b50a3c4e5a43a24aa402667c75714ed8"
+  },
+  {
+    "path": "gate_zo_bdnn/compare_texture_methods_legacy_gpu.sbatch",
+    "size_bytes": 490,
+    "sha256": "cd24673a12b70553d509136ea69bbe3819362f2a6fe64e46d20613e27b34c786"
+  },
+  {
+    "path": "gate_zo_bdnn/compare_texture_methods_validation_gpu.sbatch",
+    "size_bytes": 662,
+    "sha256": "ba0bf6836b503373dda8a55ad6ec8cd60c00bb8807b578d1e9bed2df6b894229"
+  },
+  {
+    "path": "gate_zo_bdnn/compare_texture_preselect5_keep2_l0003_validation_gpu.sbatch",
+    "size_bytes": 756,
+    "sha256": "fdb2377909592971930acb1b19a942ce5d1d054cf52548bd21d1088ed5959987"
+  },
+  {
+    "path": "gate_zo_bdnn/compare_texture_preselect5_validation_gpu.sbatch",
+    "size_bytes": 744,
+    "sha256": "459cf74558c2868d58156a25db9c17c6db2e4e45b46aa363f4ed828085213215"
+  },
+  {
+    "path": "gate_zo_bdnn/config_gatezo.py",
+    "size_bytes": 1062,
+    "sha256": "07b30ac8eb084e29b9effd6314c4e9a6d555da78c7e88b319a934c400a1a2c11"
+  },
+  {
+    "path": "gate_zo_bdnn/cuda_backend.py",
+    "size_bytes": 5765,
+    "sha256": "b141b79089d82bd7de3bc2a6a41ab2829bff571c800327e35b4b1fd0c91f3067"
+  },
+  {
+    "path": "gate_zo_bdnn/main_exp1_gatezo.py",
+    "size_bytes": 1689,
+    "sha256": "aff42bf0fc3f216b5e3633cf4602b30c4c30244a937953c4c283a3b3e9893ce1"
+  },
+  {
+    "path": "gate_zo_bdnn/main_exp2_gatezo.py",
+    "size_bytes": 1790,
+    "sha256": "0548c65052b077fd19f4545542ce87def9f4c87bdc135674153a5c2ae9f319d2"
+  },
+  {
+    "path": "gate_zo_bdnn/README.md",
+    "size_bytes": 5166,
+    "sha256": "d7c5dce982122036be17be1df54d5f0e7d921b6338523368ad319060fc547c35"
+  },
+  {
+    "path": "gate_zo_bdnn/run_seed_sweep_gatezo.py",
+    "size_bytes": 2638,
+    "sha256": "59965327f887ec61b23726dd1a5d15f749129c3e84dcd5685ef695419e6b7dc4"
+  },
+  {
+    "path": "gate_zo_bdnn/run_texture_comparison_task.py",
+    "size_bytes": 6982,
+    "sha256": "d3507bf409cb260f909197409fed3aa150e180a0327138b386c7e4b6e3dd885a"
+  },
+  {
+    "path": "gate_zo_bdnn/search_texture_gatezo_constrained_gpu.sbatch",
+    "size_bytes": 1806,
+    "sha256": "31ef1ec5b67b7c5a94537f4da4a29dc7c8a3ebc3eb5d9aa4857e7794766ab562"
+  },
+  {
+    "path": "gate_zo_bdnn/search_texture_gatezo_tradeoff_gpu.sbatch",
+    "size_bytes": 2139,
+    "sha256": "d05b6a5c51328eacb4fac44790c229b101c34c201feecff73b177c55072ded1e"
+  },
+  {
+    "path": "gate_zo_bdnn/structural_gate.py",
+    "size_bytes": 19477,
+    "sha256": "d87d6c22c15e8388cc29432a7a07f61f87f8134c99be6fc1f2d285d7a1b3367f"
+  },
+  {
+    "path": "gate_zo_bdnn/summarize_texture_comparison.py",
+    "size_bytes": 3193,
+    "sha256": "8fbf98b5facf4855651f74b6adc532a84aeed35640e4e7ce88ccdf62428fde13"
+  },
+  {
+    "path": "gate_zo_bdnn/summarize_texture_gatezo_constrained.py",
+    "size_bytes": 3980,
+    "sha256": "c1ca1e306b39dc95c293e028df1dd168cd94f600bb2621b692cbd9fd1971f62c"
+  },
+  {
+    "path": "gate_zo_bdnn/summarize_texture_gatezo_tradeoff.py",
+    "size_bytes": 4407,
+    "sha256": "c6215e2bc94a2466573c2ce5459162d69e7ff3972cc5016db1a4d8a3eb22cf11"
+  },
+  {
+    "path": "gate_zo_bdnn/tests/test_structural_gate.py",
+    "size_bytes": 5423,
+    "sha256": "7d8e54d2c7fe6abb2463754e3debf031af1028c729b931fe01f3f0ce91cfe1d6"
+  },
+  {
+    "path": "inputsdata.py",
+    "size_bytes": 833,
+    "sha256": "d35bad193a030a4b80fabb1511f76ce0818b6e63bff180530704d31151950fd9"
+  },
+  {
+    "path": "main_exp1.py",
+    "size_bytes": 2543,
+    "sha256": "393073ac424c852285f489be3b035de3ac7ae911dc995df2618fb2e8e291baeb"
+  },
+  {
+    "path": "main_exp2.py",
+    "size_bytes": 2371,
+    "sha256": "6488f4a39ed592c297e5557b7bb43c7feb9fd7b9e064463d819d40cec7577ca8"
+  },
+  {
+    "path": "readme.md",
+    "size_bytes": 2220,
+    "sha256": "f1904ff64e2c63329ca3256d46e105455bccacf4ec2f3319b0c945759c32f27a"
+  },
+  {
+    "path": "README_CN.md",
+    "size_bytes": 5748,
+    "sha256": "d4a53439a1cbcb6be3d064ccb68731e7f0bfeed485d5d53c0740b8dc89dc204e"
+  },
+  {
+    "path": "requirements-dev.txt",
+    "size_bytes": 27,
+    "sha256": "6603d61524204b7e415c2d1303e6ee817871ec912963584b6d11611039ca4b8c"
+  },
+  {
+    "path": "requirements-original.txt",
+    "size_bytes": 428,
+    "sha256": "994dc94208a301937f31085fa7a430ef85bc8d22d2eb4af3ad589d1eddd948e4"
+  },
+  {
+    "path": "requirements.txt",
+    "size_bytes": 42,
+    "sha256": "643861a831c4fd0a5978141b6dd36742ed88eb5128a80a1a9aff0a01bf7e1e2e"
+  },
+  {
+    "path": "run_seed_sweep.py",
+    "size_bytes": 5817,
+    "sha256": "d7b27a9fba547741b36e44794b402faf1f323f60ef1ae98ba4b26ddbf2a35693"
+  },
+  {
+    "path": "run_texture.py",
+    "size_bytes": 631,
+    "sha256": "1fc43a8577215160cf985a2af1592fe685c5b42e5ba75d6bd063358d552096e7"
+  },
+  {
+    "path": "seed_utils.py",
+    "size_bytes": 526,
+    "sha256": "8477b76cd93c31deb3a87f6c930479d39663dcbfa116be56ad435afe1be28a4b"
+  },
+  {
+    "path": "snnandfunction.py",
+    "size_bytes": 124,
+    "sha256": "cc44128e8cc8cc07e00cd1064472eb8009525dab91bb1e5398fac8d1f34900f1"
+  },
+  {
+    "path": "SOURCE_PROVENANCE.json",
+    "size_bytes": 10154,
+    "sha256": "a15802048f53ce0ecfed43b9f7825f18910b41057fbe222b67b24053213195db"
+  },
+  {
+    "path": "standardmatrxi.py",
+    "size_bytes": 571,
+    "sha256": "d3d4dac42b5b7c7e40ee3c245d5c0c5749c7e3ccee57ac1bb5aca2cf4f0d1e32"
+  },
+  {
+    "path": "updatelist.py",
+    "size_bytes": 365,
+    "sha256": "ed8212d1399ecfba9c470495e325a74f06e15d905bec051371816c48687bc22d"
+  },
+  {
+    "path": "VERIFY_REPORT.json",
+    "size_bytes": 1556,
+    "sha256": "597d9afda7a0700eab4368cd316b471e6d8ba493dff2195ef33d76d8c313a36b"
+  },
+  {
+    "path": "zo_refinement.py",
+    "size_bytes": 9186,
+    "sha256": "6b7c71058cacb99540dc135308c17fe71f0a87b63d469ef7ef72ab57b26bb9aa"
+  }
+]
