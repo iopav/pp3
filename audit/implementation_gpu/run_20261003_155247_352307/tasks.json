@@ -1,0 +1,34 @@
+[
+  {
+    "method": "spsn",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 0,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_gpu\\run_20261003_155247_352307\\spsn\\spike\\seed_57"
+  },
+  {
+    "method": "spsn",
+    "dataset": "texture",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 0,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_gpu\\run_20261003_155247_352307\\spsn\\texture\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 0,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_gpu\\run_20261003_155247_352307\\tp\\spike\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "texture",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 0,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_gpu\\run_20261003_155247_352307\\tp\\texture\\seed_57"
+  }
+]

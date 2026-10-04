@@ -1,0 +1,37 @@
+[
+  {
+    "method": "bdnn",
+    "identical": true,
+    "model_sha256": "a858730b6791e3709568fee679ce1592550d2c6d70b5148e42b24a4e749bec9b"
+  },
+  {
+    "method": "efficienttrain",
+    "identical": true,
+    "model_sha256": "bbde97e0559d6d872d13c720489b7fc7966d478ba6f3b990b1d882e4e12633db"
+  },
+  {
+    "method": "espp",
+    "identical": true,
+    "model_sha256": "b1c654cd07644f47a43563516b300e90e967e284862a8eaa72cfa548b449cd02"
+  },
+  {
+    "method": "ffsnn",
+    "identical": true,
+    "model_sha256": "35affc6cc357349cd7dec37561f7eba001cd4a37c67d1d1552ecf81e3ba52d17"
+  },
+  {
+    "method": "gatezo",
+    "identical": true,
+    "model_sha256": "30898d72815006ae60947e7c9c698d8f0784ed1bf46a9341a162164c27e6d6e5"
+  },
+  {
+    "method": "spsn",
+    "identical": true,
+    "model_sha256": "d831f3d66499df708d406b63c2beb6174c3463525d454245e142b7f9ea816055"
+  },
+  {
+    "method": "tp",
+    "identical": true,
+    "model_sha256": "60ea0f69488c66d73f67d762c2bec3642bf921c62ea569dcdf07a0d2b9d46b25"
+  }
+]

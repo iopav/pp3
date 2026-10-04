@@ -1,0 +1,598 @@
+{
+  "complete": true,
+  "flops": 23412,
+  "known_flops_by_stage": {
+    "prepare": 23412
+  },
+  "known_flops": 23412,
+  "fft_flops_estimated": 0,
+  "unknown": [],
+  "operations": [
+    {
+      "stage": "prepare",
+      "operator": "aten.zeros.default",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[3, 8]"
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 6,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.lift_fresh.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 2,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.empty.memory_format",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[8, 700]"
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 2,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.uniform_.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "uniform_affine_scale_and_shift_rng_engine_excluded",
+      "scalar_arguments": [
+        "-0.03779644730092272",
+        "0.03779644730092272"
+      ],
+      "keyword_arguments": {},
+      "calls": 2,
+      "flops_per_call": 11200,
+      "flops": 22400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.empty.memory_format",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[8, 20]"
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 2,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.uniform_.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "uniform_affine_scale_and_shift_rng_engine_excluded",
+      "scalar_arguments": [
+        "-0.22360679774997894",
+        "0.22360679774997894"
+      ],
+      "keyword_arguments": {},
+      "calls": 2,
+      "flops_per_call": 320,
+      "flops": 640,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.zeros.default",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            6,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[6, 20]"
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.empty.memory_format",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            20,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[20, 8]"
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.uniform_.default",
+      "inputs": [
+        {
+          "shape": [
+            20,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            20,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "uniform_affine_scale_and_shift_rng_engine_excluded",
+      "scalar_arguments": [
+        "-0.3535533905932737",
+        "0.3535533905932737"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 320,
+      "flops": 320,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.zeros.default",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[3, 700]"
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.zeros.default",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[3, 20]"
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten.empty.memory_format",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            0
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "[0]"
+      ],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cpu"
+      },
+      "calls": 3,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cuda:0"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cuda:0"
+      },
+      "calls": 6,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            20,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            20,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cuda:0"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            6,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            6,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cuda:0"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cuda:0"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cuda:0"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32",
+        "layout": "torch.strided",
+        "device": "cuda:0"
+      },
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "manual::Linear_initialization_scalars",
+      "inputs": [],
+      "outputs": [],
+      "rule": "host_scalar_arithmetic",
+      "calls": 5,
+      "flops_per_call": 10,
+      "flops": 50,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "prepare",
+      "operator": "manual::scheduler_eta_min",
+      "inputs": [],
+      "outputs": [],
+      "rule": "host_scalar_arithmetic",
+      "calls": 2,
+      "flops_per_call": 1,
+      "flops": 2,
+      "fft_flops_estimated": 0
+    }
+  ],
+  "convention": "Arithmetic equivalents; FFT formula estimates; special scalar functions=1; MAC=2",
+  "seconds": 0.8862653000105638,
+  "gpu_energy_j": 19.655,
+  "energy_method": "nvml_total",
+  "energy_reason": "",
+  "gpu_uuid": "GPU-cc4167ec-a7e9-9438-75dc-97c403060b65"
+}

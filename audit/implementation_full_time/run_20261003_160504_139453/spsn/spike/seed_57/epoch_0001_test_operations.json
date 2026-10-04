@@ -1,0 +1,1717 @@
+{
+  "complete": true,
+  "flops": 6939052,
+  "known_flops_by_stage": {
+    "forward_neuron": 6906724,
+    "loss": 32328
+  },
+  "known_flops": 6939052,
+  "fft_flops_estimated": 4410052,
+  "unknown": [],
+  "operations": [
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            64
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1200,
+            64
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1200",
+          "64"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.t.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            64
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            64,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 2,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.addmm.default",
+      "inputs": [
+        {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1200,
+            64
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            64,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1200,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "dense_matmul_mac_2",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 1238400,
+      "flops": 1238400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            1200,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "3",
+          "400",
+          "8"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.constant_pad_nd.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "0",
+          "0",
+          "400",
+          "0",
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_r2c.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "0",
+        "True"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 462906,
+      "flops": 462906,
+      "fft_flops_estimated": 462906
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        },
+        {
+          "shape": [
+            401,
+            1
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 57744,
+      "flops": 57744,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_c2r.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "2",
+        "800"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 482106,
+      "flops": 482106,
+      "fft_flops_estimated": 482106
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.slice.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "1",
+        "0",
+        "400"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.sigmoid.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "special_function_equivalent_1",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 9600,
+      "flops": 9600,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.bernoulli.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.mean.dim",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [
+        [
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 9600,
+      "flops": 9600,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.mean.dim",
+      "inputs": [
+        {
+          "shape": [
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [
+        [
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 2,
+      "flops_per_call": 3200,
+      "flops": 6400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1200,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1200",
+          "8"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.t.default",
+      "inputs": [
+        {
+          "shape": [
+            20,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 2,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.addmm.default",
+      "inputs": [
+        {
+          "shape": [
+            20
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1200,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1200,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "dense_matmul_mac_2",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 408000,
+      "flops": 408000,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            1200,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "3",
+          "400",
+          "20"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.constant_pad_nd.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "0",
+          "0",
+          "400",
+          "0",
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_r2c.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "0",
+        "True"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 1157263,
+      "flops": 1157263,
+      "fft_flops_estimated": 1157263
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        },
+        {
+          "shape": [
+            401,
+            1
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 144360,
+      "flops": 144360,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_c2r.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "2",
+        "800"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 1205263,
+      "flops": 1205263,
+      "fft_flops_estimated": 1205263
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.slice.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "1",
+        "0",
+        "400"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "loss",
+      "operator": "aten.mean.dim",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [
+        [
+          "1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 24000,
+      "flops": 24000,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "loss",
+      "operator": "aten._log_softmax.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "softmax_equivalent",
+      "scalar_arguments": [
+        "1",
+        "False"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 240,
+      "flops": 240,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "loss",
+      "operator": "aten.nll_loss_forward.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            20
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.int64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "nll_loss",
+      "scalar_arguments": [
+        "None",
+        "1",
+        "-100"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 6,
+      "flops": 6,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            64
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            400,
+            64
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "400",
+          "64"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.addmm.default",
+      "inputs": [
+        {
+          "shape": [
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            400,
+            64
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            64,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "dense_matmul_mac_2",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 412800,
+      "flops": 412800,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1",
+          "400",
+          "8"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.constant_pad_nd.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "0",
+          "0",
+          "400",
+          "0",
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_r2c.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "0",
+        "True"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 154302,
+      "flops": 154302,
+      "fft_flops_estimated": 154302
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        },
+        {
+          "shape": [
+            401,
+            1
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 19248,
+      "flops": 19248,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_c2r.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            401,
+            8
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "2",
+        "800"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 160702,
+      "flops": 160702,
+      "fft_flops_estimated": 160702
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.slice.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            800,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "1",
+        "0",
+        "400"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.sigmoid.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "special_function_equivalent_1",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 3200,
+      "flops": 3200,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.bernoulli.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.mean.dim",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [
+        [
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 3200,
+      "flops": 3200,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "400",
+          "8"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.addmm.default",
+      "inputs": [
+        {
+          "shape": [
+            20
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            400,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            8,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "dense_matmul_mac_2",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 136000,
+      "flops": 136000,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1",
+          "400",
+          "20"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.constant_pad_nd.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "0",
+          "0",
+          "400",
+          "0",
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_r2c.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "0",
+        "True"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 385755,
+      "flops": 385755,
+      "fft_flops_estimated": 385755
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        },
+        {
+          "shape": [
+            401,
+            1
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 48120,
+      "flops": 48120,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten._fft_c2r.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            401,
+            20
+          ],
+          "dtype": "torch.complex64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "fft_length_formula_estimate",
+      "scalar_arguments": [
+        [
+          "1"
+        ],
+        "2",
+        "800"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 401755,
+      "flops": 401755,
+      "fft_flops_estimated": 401755
+    },
+    {
+      "stage": "forward_neuron",
+      "operator": "aten.slice.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            800,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "1",
+        "0",
+        "400"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "loss",
+      "operator": "aten.mean.dim",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            400,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [
+        [
+          "1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 8000,
+      "flops": 8000,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "loss",
+      "operator": "aten._log_softmax.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            20
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "softmax_equivalent",
+      "scalar_arguments": [
+        "1",
+        "False"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 80,
+      "flops": 80,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "loss",
+      "operator": "aten.nll_loss_forward.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            20
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.int64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "nll_loss",
+      "scalar_arguments": [
+        "None",
+        "1",
+        "-100"
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 2,
+      "flops": 2,
+      "fft_flops_estimated": 0
+    }
+  ],
+  "convention": "Arithmetic equivalents; FFT formula estimates; special scalar functions=1; MAC=2",
+  "seconds": 0.008373199991183355,
+  "gpu_energy_j": null,
+  "energy_method": "unavailable",
+  "energy_reason": "CPU run: GPU energy unavailable",
+  "gpu_uuid": null,
+  "samples": 4,
+  "accuracy": 0.0,
+  "loss": 10.281957864761353,
+  "data_wait_seconds": 0.004009100055554882
+}

@@ -1,0 +1,217 @@
+{
+  "bdnn1.py": {
+    "source_relative_path": "bdnn1.py",
+    "source_sha256": "3a6fc620e64948019b542d568bfaf5958d6844723c7eb4d3df514d9c48184004",
+    "modified_for_portability": false
+  },
+  "bdnn2.py": {
+    "source_relative_path": "bdnn2.py",
+    "source_sha256": "e2b9106dad169ba7f9aa56dcb2c6f8ca09c844174be7e3d3a136f319866526bb",
+    "modified_for_portability": false
+  },
+  "config.py": {
+    "source_relative_path": "config.py",
+    "source_sha256": "42958922e9db661fafece737ec403243934db27ef1c13722847593a3f8b080c6",
+    "modified_for_portability": false
+  },
+  "data/new6classes/X_test_6cla_new.npy": {
+    "source_relative_path": "data/new6classes/X_test_6cla_new.npy",
+    "source_sha256": "3191b9219e5ba06bb647555c034ba1805e9a3c0bccfe5bf8e729e100feaa7af5",
+    "modified_for_portability": false
+  },
+  "data/new6classes/X_train_6cla_new.npy": {
+    "source_relative_path": "data/new6classes/X_train_6cla_new.npy",
+    "source_sha256": "b8294d3e40e56eb2c19db31bcce38badccb239a7bf375e7dbc6531e32b5658d4",
+    "modified_for_portability": false
+  },
+  "data/new6classes/Y_test_6cla_new.npy": {
+    "source_relative_path": "data/new6classes/Y_test_6cla_new.npy",
+    "source_sha256": "d2d2d5118fe52b2a14a63bd0283b0a65a73e054c89f82c8ceaeeac13ea85680f",
+    "modified_for_portability": false
+  },
+  "data/new6classes/Y_train_6cla_new.npy": {
+    "source_relative_path": "data/new6classes/Y_train_6cla_new.npy",
+    "source_sha256": "a13b6b9461514e100906dd12bb197291453aaf428cbfda28c11ccc8b278a7e64",
+    "modified_for_portability": false
+  },
+  "data/old6classes/X_test_6cla_old.npy": {
+    "source_relative_path": "data/old6classes/X_test_6cla_old.npy",
+    "source_sha256": "5d5801a93c30a1333a3a4f1eaa34f4988f20b91fa009f9f066a1dc52f30ef91a",
+    "modified_for_portability": false
+  },
+  "data/old6classes/X_train_6cla_old.npy": {
+    "source_relative_path": "data/old6classes/X_train_6cla_old.npy",
+    "source_sha256": "4c55896c746ec34b98fb91806becea2aa8333df3f6f30dd7da0f3b89bacfef5f",
+    "modified_for_portability": false
+  },
+  "data/old6classes/Y_test_6cla_old.npy": {
+    "source_relative_path": "data/old6classes/Y_test_6cla_old.npy",
+    "source_sha256": "5f96077aa71731fab88c944f55abffc406a5d0078c10817273aa3958f195176a",
+    "modified_for_portability": false
+  },
+  "data/old6classes/Y_train_6cla_old.npy": {
+    "source_relative_path": "data/old6classes/Y_train_6cla_old.npy",
+    "source_sha256": "1b0d38479782ca78a77802c0c47e28d9134dc57d9ede43efcb9eec532d33d979",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/README.md": {
+    "source_relative_path": "gate_zo_bdnn/README.md",
+    "source_sha256": "d7c5dce982122036be17be1df54d5f0e7d921b6338523368ad319060fc547c35",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/__init__.py": {
+    "source_relative_path": "gate_zo_bdnn/__init__.py",
+    "source_sha256": "5fa5b5aa58bb8de5ab5cb04317e2bda8742691aa546ea3df3aa40d545048bd18",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/bdnn1_gatezo.py": {
+    "source_relative_path": "gate_zo_bdnn/bdnn1_gatezo.py",
+    "source_sha256": "fc88823929f4a513ea4e19f7243536a404f6b645548f8009fbe5a3358bf9978c",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/bdnn2_gatezo.py": {
+    "source_relative_path": "gate_zo_bdnn/bdnn2_gatezo.py",
+    "source_sha256": "25a207248bb4aedf9bbe8e490c2bc2d30f4cedf1cd636ea98b121cbb5413c918",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/compare_texture_methods_gpu.sbatch": {
+    "source_relative_path": "gate_zo_bdnn/compare_texture_methods_gpu.sbatch",
+    "source_sha256": "d5be97850ce30a98c3a2ba9f3f8956665bbcfa78bde26b019ad027581a3f0854",
+    "modified_for_portability": true
+  },
+  "gate_zo_bdnn/compare_texture_methods_legacy_gpu.sbatch": {
+    "source_relative_path": "gate_zo_bdnn/compare_texture_methods_legacy_gpu.sbatch",
+    "source_sha256": "799fd9bc87c06a6787632be7d5456e0acb571ce6569512637faa1a4585cd9312",
+    "modified_for_portability": true
+  },
+  "gate_zo_bdnn/compare_texture_methods_validation_gpu.sbatch": {
+    "source_relative_path": "gate_zo_bdnn/compare_texture_methods_validation_gpu.sbatch",
+    "source_sha256": "b26e4348eaab87ac9257377ae858e9322151f2170a438581b3692835b3cc46eb",
+    "modified_for_portability": true
+  },
+  "gate_zo_bdnn/compare_texture_preselect5_keep2_l0003_validation_gpu.sbatch": {
+    "source_relative_path": "gate_zo_bdnn/compare_texture_preselect5_keep2_l0003_validation_gpu.sbatch",
+    "source_sha256": "837c69dcf8f34f1927190cfe1394995c613e17c014180648ea8db178a4795cd1",
+    "modified_for_portability": true
+  },
+  "gate_zo_bdnn/compare_texture_preselect5_validation_gpu.sbatch": {
+    "source_relative_path": "gate_zo_bdnn/compare_texture_preselect5_validation_gpu.sbatch",
+    "source_sha256": "7721a9c7904862f636b51e9596dbb3a8f7fe41f60f4ff04de259fa1c9b822d0e",
+    "modified_for_portability": true
+  },
+  "gate_zo_bdnn/config_gatezo.py": {
+    "source_relative_path": "gate_zo_bdnn/config_gatezo.py",
+    "source_sha256": "07b30ac8eb084e29b9effd6314c4e9a6d555da78c7e88b319a934c400a1a2c11",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/cuda_backend.py": {
+    "source_relative_path": "gate_zo_bdnn/cuda_backend.py",
+    "source_sha256": "b141b79089d82bd7de3bc2a6a41ab2829bff571c800327e35b4b1fd0c91f3067",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/main_exp1_gatezo.py": {
+    "source_relative_path": "gate_zo_bdnn/main_exp1_gatezo.py",
+    "source_sha256": "aff42bf0fc3f216b5e3633cf4602b30c4c30244a937953c4c283a3b3e9893ce1",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/main_exp2_gatezo.py": {
+    "source_relative_path": "gate_zo_bdnn/main_exp2_gatezo.py",
+    "source_sha256": "0548c65052b077fd19f4545542ce87def9f4c87bdc135674153a5c2ae9f319d2",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/run_seed_sweep_gatezo.py": {
+    "source_relative_path": "gate_zo_bdnn/run_seed_sweep_gatezo.py",
+    "source_sha256": "59965327f887ec61b23726dd1a5d15f749129c3e84dcd5685ef695419e6b7dc4",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/run_texture_comparison_task.py": {
+    "source_relative_path": "gate_zo_bdnn/run_texture_comparison_task.py",
+    "source_sha256": "d3507bf409cb260f909197409fed3aa150e180a0327138b386c7e4b6e3dd885a",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/search_texture_gatezo_constrained_gpu.sbatch": {
+    "source_relative_path": "gate_zo_bdnn/search_texture_gatezo_constrained_gpu.sbatch",
+    "source_sha256": "4fa625cd0505f76f63fb2ab764e33ab2a4281373c64e48b2a36618bdb0d2bcf9",
+    "modified_for_portability": true
+  },
+  "gate_zo_bdnn/search_texture_gatezo_tradeoff_gpu.sbatch": {
+    "source_relative_path": "gate_zo_bdnn/search_texture_gatezo_tradeoff_gpu.sbatch",
+    "source_sha256": "34cff5df9d0dafdb4948055c9c9b5d2a118f961d35a01fd6b440df405978a69a",
+    "modified_for_portability": true
+  },
+  "gate_zo_bdnn/structural_gate.py": {
+    "source_relative_path": "gate_zo_bdnn/structural_gate.py",
+    "source_sha256": "d87d6c22c15e8388cc29432a7a07f61f87f8134c99be6fc1f2d285d7a1b3367f",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/summarize_texture_comparison.py": {
+    "source_relative_path": "gate_zo_bdnn/summarize_texture_comparison.py",
+    "source_sha256": "8fbf98b5facf4855651f74b6adc532a84aeed35640e4e7ce88ccdf62428fde13",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/summarize_texture_gatezo_constrained.py": {
+    "source_relative_path": "gate_zo_bdnn/summarize_texture_gatezo_constrained.py",
+    "source_sha256": "c1ca1e306b39dc95c293e028df1dd168cd94f600bb2621b692cbd9fd1971f62c",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/summarize_texture_gatezo_tradeoff.py": {
+    "source_relative_path": "gate_zo_bdnn/summarize_texture_gatezo_tradeoff.py",
+    "source_sha256": "c6215e2bc94a2466573c2ce5459162d69e7ff3972cc5016db1a4d8a3eb22cf11",
+    "modified_for_portability": false
+  },
+  "gate_zo_bdnn/tests/test_structural_gate.py": {
+    "source_relative_path": "gate_zo_bdnn/tests/test_structural_gate.py",
+    "source_sha256": "7d8e54d2c7fe6abb2463754e3debf031af1028c729b931fe01f3f0ce91cfe1d6",
+    "modified_for_portability": false
+  },
+  "inputsdata.py": {
+    "source_relative_path": "inputsdata.py",
+    "source_sha256": "d35bad193a030a4b80fabb1511f76ce0818b6e63bff180530704d31151950fd9",
+    "modified_for_portability": false
+  },
+  "main_exp1.py": {
+    "source_relative_path": "main_exp1.py",
+    "source_sha256": "393073ac424c852285f489be3b035de3ac7ae911dc995df2618fb2e8e291baeb",
+    "modified_for_portability": false
+  },
+  "main_exp2.py": {
+    "source_relative_path": "main_exp2.py",
+    "source_sha256": "6488f4a39ed592c297e5557b7bb43c7feb9fd7b9e064463d819d40cec7577ca8",
+    "modified_for_portability": false
+  },
+  "readme.md": {
+    "source_relative_path": "readme.md",
+    "source_sha256": "f1904ff64e2c63329ca3256d46e105455bccacf4ec2f3319b0c945759c32f27a",
+    "modified_for_portability": false
+  },
+  "run_seed_sweep.py": {
+    "source_relative_path": "run_seed_sweep.py",
+    "source_sha256": "d7b27a9fba547741b36e44794b402faf1f323f60ef1ae98ba4b26ddbf2a35693",
+    "modified_for_portability": false
+  },
+  "seed_utils.py": {
+    "source_relative_path": "seed_utils.py",
+    "source_sha256": "8477b76cd93c31deb3a87f6c930479d39663dcbfa116be56ad435afe1be28a4b",
+    "modified_for_portability": false
+  },
+  "snnandfunction.py": {
+    "source_relative_path": "snnandfunction.py",
+    "source_sha256": "cc44128e8cc8cc07e00cd1064472eb8009525dab91bb1e5398fac8d1f34900f1",
+    "modified_for_portability": false
+  },
+  "standardmatrxi.py": {
+    "source_relative_path": "standardmatrxi.py",
+    "source_sha256": "d3d4dac42b5b7c7e40ee3c245d5c0c5749c7e3ccee57ac1bb5aca2cf4f0d1e32",
+    "modified_for_portability": false
+  },
+  "updatelist.py": {
+    "source_relative_path": "updatelist.py",
+    "source_sha256": "ed8212d1399ecfba9c470495e325a74f06e15d905bec051371816c48687bc22d",
+    "modified_for_portability": false
+  },
+  "zo_refinement.py": {
+    "source_relative_path": "zo_refinement.py",
+    "source_sha256": "6b7c71058cacb99540dc135308c17fe71f0a87b63d469ef7ef72ab57b26bb9aa",
+    "modified_for_portability": false
+  }
+}

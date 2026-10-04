@@ -1,0 +1,34 @@
+[
+  {
+    "method": "spsn",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 1,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_smoke\\run_20261003_154524_684695\\spsn\\spike\\seed_57"
+  },
+  {
+    "method": "spsn",
+    "dataset": "texture",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 1,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_smoke\\run_20261003_154524_684695\\spsn\\texture\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 1,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_smoke\\run_20261003_154524_684695\\tp\\spike\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "texture",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 1,
+    "output": "D:\\workspace\\pp3\\audit\\implementation_smoke\\run_20261003_154524_684695\\tp\\texture\\seed_57"
+  }
+]

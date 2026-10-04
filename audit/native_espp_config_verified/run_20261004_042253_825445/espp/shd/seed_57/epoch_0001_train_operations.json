@@ -1,0 +1,2662 @@
+{
+  "complete": false,
+  "flops": null,
+  "known_flops_by_stage": {
+    "train": 24536711
+  },
+  "known_flops": 24536711,
+  "fft_flops_estimated": 0,
+  "other_flops_estimated": 0,
+  "unknown": [
+    {
+      "stage": "train",
+      "operator": "native::uncovered",
+      "inputs": [],
+      "outputs": [],
+      "rule": "Native host scalar arithmetic and readout fit not fully audited",
+      "calls": 1,
+      "flops_per_call": null,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    }
+  ],
+  "operations": [
+    {
+      "stage": "train",
+      "operator": "native::uncovered",
+      "inputs": [],
+      "outputs": [],
+      "rule": "Native host scalar arithmetic and readout fit not fully audited",
+      "calls": 1,
+      "flops_per_call": null,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.zeros.default",
+      "inputs": [],
+      "outputs": [
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1"
+        ]
+      ],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 252,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.select.int",
+      "inputs": [
+        {
+          "shape": [
+            16,
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "0",
+        "0"
+      ],
+      "keyword_arguments": {},
+      "calls": 672,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mean.dim",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [
+        [
+          "-1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 2100,
+      "flops": 470400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.lift_fresh.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.t.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            700,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mm.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            700,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "dense_matmul_mac_2",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 33600,
+      "flops": 7526400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.zeros_like.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "device": "cpu",
+        "pin_memory": "False"
+      },
+      "calls": 15,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.sub.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 448,
+      "flops_per_call": 24,
+      "flops": 10752,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.gt.Scalar",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.bool"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "0"
+      ],
+      "keyword_arguments": {},
+      "calls": 448,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.bool"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32"
+      },
+      "calls": 448,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.clone.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.detach.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.clamp.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "0",
+        "1"
+      ],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 24,
+      "flops": 5376,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 434,
+      "flops_per_call": 24,
+      "flops": 10416,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 448,
+      "flops_per_call": 24,
+      "flops": 10752,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.sub.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 24,
+      "flops": 5376,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.lift_fresh.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 225,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.ne.Scalar",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.bool"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "0"
+      ],
+      "keyword_arguments": {},
+      "calls": 240,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten._local_scalar_dense.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.bool"
+        }
+      ],
+      "outputs": [],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 448,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mean.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 16,
+      "flops_per_call": 1,
+      "flops": 16,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.select.int",
+      "inputs": [
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "0",
+        "0"
+      ],
+      "keyword_arguments": {},
+      "calls": 238,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.copy_.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 238,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mean.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 2100,
+      "flops": 470400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mean.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 24,
+      "flops": 5376,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.stack.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            2
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          {
+            "shape": [],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [],
+            "dtype": "torch.float32"
+          }
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add_.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            2
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            2
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            2
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 2,
+      "flops": 448,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add_.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 224,
+      "flops_per_call": 1,
+      "flops": 224,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "profiler._record_function_enter_new.default",
+      "inputs": [],
+      "outputs": [],
+      "rule": "profiler_metadata",
+      "scalar_arguments": [
+        "Optimizer.step#SGD.step"
+      ],
+      "keyword_arguments": {},
+      "calls": 448,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "profiler._record_function_exit._RecordFunction",
+      "inputs": [],
+      "outputs": [],
+      "rule": "profiler_metadata",
+      "scalar_arguments": [
+        "ScriptObject <__torch__.torch.classes.profiler._RecordFunction>"
+      ],
+      "keyword_arguments": {},
+      "calls": 448,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [
+        "0.94"
+      ],
+      "keyword_arguments": {},
+      "calls": 834,
+      "flops_per_call": 24,
+      "flops": 20016,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.div.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [
+        "16"
+      ],
+      "keyword_arguments": {},
+      "calls": 14,
+      "flops_per_call": 1,
+      "flops": 14,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.sum.dim_IntList",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [
+        [
+          "-1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 222,
+      "flops_per_call": 21,
+      "flops": 4662,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.unsqueeze.default",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "-1"
+      ],
+      "keyword_arguments": {},
+      "calls": 222,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.gt.Scalar",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.bool"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "0"
+      ],
+      "keyword_arguments": {},
+      "calls": 14,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.ones_like.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "pin_memory": "False"
+      },
+      "calls": 14,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.where.self",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.bool"
+        },
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 14,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.div.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 14,
+      "flops_per_call": 24,
+      "flops": 336,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.neg.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        }
+      ],
+      "rule": "negation",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 1,
+      "flops": 208,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 416,
+      "flops_per_call": 24,
+      "flops": 9984,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        },
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 3,
+      "flops": 624,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.eq.Scalar",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.bool"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "1"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [
+        "1.5"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 3,
+      "flops": 624,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add_.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 403,
+      "flops_per_call": 3,
+      "flops": 1209,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.gt.Scalar",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.bool"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "0"
+      ],
+      "keyword_arguments": {},
+      "calls": 429,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.bool"
+        },
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.bool"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.bool"
+        }
+      ],
+      "rule": "integer_arithmetic",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten._to_copy.default",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.bool"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {
+        "dtype": "torch.float32"
+      },
+      "calls": 429,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mean.default",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 416,
+      "flops_per_call": 3,
+      "flops": 1248,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.div.Tensor",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [
+        "16"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 1,
+      "flops": 208,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add.Tensor",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [
+        "0"
+      ],
+      "keyword_arguments": {},
+      "calls": 13,
+      "flops_per_call": 1,
+      "flops": 13,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.sub.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [
+        "1"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 24,
+      "flops": 4992,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.pow.Tensor_Scalar",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "special_function_equivalent_1",
+      "scalar_arguments": [
+        "2"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 24,
+      "flops": 4992,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [
+        "1"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 24,
+      "flops": 4992,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.reciprocal.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "special_function_equivalent_1",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 24,
+      "flops": 4992,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.unsqueeze.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "2"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.permute.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "1",
+          "2"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.unsqueeze.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            700,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "2"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.permute.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            1,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "2",
+          "1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8,
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            1,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 16800,
+      "flops": 3494400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.int64"
+        },
+        {
+          "shape": [
+            3,
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 16800,
+      "flops": 3494400,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.permute.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700,
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1",
+          "2",
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.unsqueeze.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            1,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        "2"
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.permute.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            1,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            1,
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1",
+          "2",
+          "0"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.permute.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700,
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700,
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "1",
+          "2"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700,
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            5600,
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1",
+          "5600",
+          "3"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.permute.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            1,
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            1,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "2",
+          "0",
+          "1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            1,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "1",
+          "3",
+          "1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.bmm.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            5600,
+            3
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1,
+            3,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            1,
+            5600,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "dense_matmul_mac_2",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 33600,
+      "flops": 6988800,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            1,
+            5600,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "8",
+          "700",
+          "1"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.permute.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "0",
+          "1",
+          "2"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.view.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          "8",
+          "700"
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.neg.default",
+      "inputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            8,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "negation",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 208,
+      "flops_per_call": 5600,
+      "flops": 1164800,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mul.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_real_or_complex",
+      "scalar_arguments": [
+        "0.94"
+      ],
+      "keyword_arguments": {},
+      "calls": 195,
+      "flops_per_call": 2100,
+      "flops": 409500,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3,
+            700
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 195,
+      "flops_per_call": 2100,
+      "flops": 409500,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add_.Tensor",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 195,
+      "flops_per_call": 1,
+      "flops": 195,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.add_.Tensor",
+      "inputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            3
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [
+        "192.0"
+      ],
+      "keyword_arguments": {},
+      "calls": 13,
+      "flops_per_call": 3,
+      "flops": 39,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.rsub.Scalar",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "elementwise_add_scaled",
+      "scalar_arguments": [
+        "1"
+      ],
+      "keyword_arguments": {},
+      "calls": 13,
+      "flops_per_call": 1,
+      "flops": 13,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.stack.default",
+      "inputs": [
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        },
+        {
+          "shape": [
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [
+            14,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "non_flop",
+      "scalar_arguments": [
+        [
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          },
+          {
+            "shape": [
+              1
+            ],
+            "dtype": "torch.float32"
+          }
+        ]
+      ],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten.mean.default",
+      "inputs": [
+        {
+          "shape": [
+            14,
+            1
+          ],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "rule": "reduction",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 14,
+      "flops": 14,
+      "fft_flops_estimated": 0
+    },
+    {
+      "stage": "train",
+      "operator": "aten._local_scalar_dense.default",
+      "inputs": [
+        {
+          "shape": [],
+          "dtype": "torch.float32"
+        }
+      ],
+      "outputs": [],
+      "rule": "non_flop",
+      "scalar_arguments": [],
+      "keyword_arguments": {},
+      "calls": 1,
+      "flops_per_call": 0,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    }
+  ],
+  "convention": "Arithmetic equivalents; FFT formula estimates; special scalar functions=1; MAC=2",
+  "seconds": 0.819482299964875,
+  "gpu_energy_j": null,
+  "energy_method": "unavailable",
+  "energy_reason": "CPU run: GPU energy unavailable",
+  "gpu_uuid": null,
+  "data_wait_seconds": 0.055756400048267096,
+  "accuracy": null,
+  "loss": 3.188775372109376e-05
+}

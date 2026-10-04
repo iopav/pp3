@@ -1,0 +1,19 @@
+{
+  "method": "ffsnn",
+  "dataset": "shd",
+  "seed": 57,
+  "epoch": 1,
+  "smoke": true,
+  "train_accuracy": 0.25,
+  "train_loss": 2.995732307434082,
+  "train_samples": 8,
+  "train_seconds": 4.959616300009657,
+  "train_data_wait_seconds": 0.020934499974828213,
+  "train_gpu_energy_j": null,
+  "train_energy_method": "unavailable",
+  "train_energy_reason": "CPU run: GPU energy unavailable",
+  "train_complete": false,
+  "train_flops": null,
+  "train_known_flops": 72078888,
+  "train_fft_flops_estimated": 0
+}

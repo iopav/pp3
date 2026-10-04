@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "training_completed": false,
+  "reason": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\BDNNversion1-main\\main_exp1.py\", line 62, in <module>\n    print('the size of weight is : '+ str(suitW.size()))\nTypeError: 'int' object is not callable\n"
+}

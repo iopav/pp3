@@ -1,0 +1,18 @@
+{
+  "method": "tp",
+  "dataset": "texture",
+  "downloaded": false,
+  "output_shape": [
+    4,
+    12
+  ],
+  "shape": [
+    4,
+    16,
+    9
+  ],
+  "weights_changed": true,
+  "finite": true,
+  "scope": "one tiny epoch: 4 training samples, 16 sampled time steps, hidden=8; no accuracy or full-adaptation claim",
+  "status": "completed"
+}

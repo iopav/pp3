@@ -1,0 +1,40 @@
+{
+  "method": "espp",
+  "dataset": "spike",
+  "data": {
+    "root": "D:\\workspace\\Avalanche\\avalanche-master\\dataset\\spike",
+    "steps": 400,
+    "inputs": 64,
+    "classes": 20,
+    "train_x": "X_train_20_cla_400steps.npy",
+    "train_y": "Y_train_20_cla_400steps.npy",
+    "test_x": "X_test_20_cla_400steps.npy",
+    "test_y": "Y_test_20_cla_400steps.npy"
+  },
+  "model": {
+    "epochs": 1,
+    "batch_size": 3,
+    "hidden_size": 8,
+    "layers": 1,
+    "lr": 0.0001,
+    "beta": 0.95,
+    "online": true,
+    "recurrency_type": "dense",
+    "c_y": [
+      1.5,
+      -1.5
+    ],
+    "inp_thr": 0.05,
+    "readout_lr": 0.001
+  },
+  "workers": 0,
+  "threads": 2,
+  "seed": 57,
+  "output": "D:\\workspace\\pp3\\audit\\all_methods_probe\\run_20261003_182818_287155\\espp\\spike\\seed_57",
+  "power_sample_seconds": 0.1,
+  "smoke": true,
+  "smoke_samples": 4,
+  "smoke_steps": 16,
+  "device": "cpu",
+  "gpu_token": "cpu"
+}

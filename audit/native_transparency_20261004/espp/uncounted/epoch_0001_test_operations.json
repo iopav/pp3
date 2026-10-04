@@ -1,0 +1,45 @@
+{
+  "complete": false,
+  "flops": null,
+  "known_flops_by_stage": {
+    "test": 0
+  },
+  "known_flops": 0,
+  "fft_flops_estimated": 0,
+  "other_flops_estimated": 0,
+  "unknown": [
+    {
+      "stage": "test",
+      "operator": "native::disabled",
+      "inputs": [],
+      "outputs": [],
+      "rule": "Counting disabled for transparency test",
+      "calls": 1,
+      "flops_per_call": null,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    }
+  ],
+  "operations": [
+    {
+      "stage": "test",
+      "operator": "native::disabled",
+      "inputs": [],
+      "outputs": [],
+      "rule": "Counting disabled for transparency test",
+      "calls": 1,
+      "flops_per_call": null,
+      "flops": 0,
+      "fft_flops_estimated": 0
+    }
+  ],
+  "convention": "Arithmetic equivalents; FFT formula estimates; special scalar functions=1; MAC=2",
+  "seconds": 0.21851380000589415,
+  "gpu_energy_j": null,
+  "energy_method": "unavailable",
+  "energy_reason": "CPU run: GPU energy unavailable",
+  "gpu_uuid": null,
+  "data_wait_seconds": 0.0025561999646015465,
+  "accuracy": 0.05000000074505806,
+  "loss": null
+}

@@ -1,0 +1,65 @@
+{
+  "complete_training_rerun": false,
+  "checks": {
+    "syntax_and_absolute_imports": {
+      "status": "passed",
+      "python_files": 27
+    },
+    "two_stage_real_data_loading": {
+      "status": "passed",
+      "stages": [
+        {
+          "stage": 1,
+          "X_train": [
+            478,
+            3775,
+            9
+          ],
+          "T_train": [
+            478,
+            6
+          ],
+          "X_test": [
+            122,
+            3775,
+            9
+          ],
+          "T_test": [
+            122,
+            6
+          ]
+        },
+        {
+          "stage": 2,
+          "X_train": [
+            482,
+            3775,
+            9
+          ],
+          "T_train": [
+            482,
+            6
+          ],
+          "X_test": [
+            118,
+            3775,
+            9
+          ],
+          "T_test": [
+            118,
+            6
+          ]
+        }
+      ]
+    },
+    "gatezo_entrypoint_imports": "passed",
+    "command_line_help": "passed (shortcut checked separately before this verification)",
+    "slurm_portable_project_path_and_lf": "passed",
+    "existing_structural_gate_tests": {
+      "status": "passed",
+      "output": "8 passed, 1 warning in 4.80s",
+      "command": "python -m pytest -q -p no:cacheprovider gate_zo_bdnn/tests/test_structural_gate.py",
+      "note": "Executed separately from the standalone bundle directory before this verification; warning is the legacy NumPy matlib deprecation."
+    }
+  }
+}

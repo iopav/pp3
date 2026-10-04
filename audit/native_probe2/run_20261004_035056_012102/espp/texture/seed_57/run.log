@@ -1,0 +1,23 @@
+D:\workspace\pp3\ESPP-main\data.py:71: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  imgs.append(torch.tensor(im).view(im.shape[0], -1))
+Traceback (most recent call last):
+  File "D:\workspace\pp3\ESPP-main\main.py", line 90, in <module>
+    loss_hist = train(SNN, train_loader, args.epochs, args.device, args.model_name,
+  File "D:\workspace\pp3\ESPP-main\utils.py", line 91, in train
+    samples, labels = get_samples(monitored, trainloader, args.n_hidden, device)
+  File "D:\workspace\pp3\ESPP-main\utils.py", line 281, in get_samples
+    for idx in trange((len(dataloader)+batch-1)//batch):
+  File "D:\anaconda3\envs\py310\lib\site-packages\tqdm\notebook.py", line 312, in tnrange
+    return tqdm_notebook(range(*args), **kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\tqdm\notebook.py", line 236, in __init__
+    self.container = self.status_printer(self.fp, total, self.desc, self.ncols)
+  File "D:\anaconda3\envs\py310\lib\site-packages\tqdm\notebook.py", line 110, in status_printer
+    raise ImportError(WARN_NOIPYW)
+ImportError: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+Exception ignored in: <function tqdm.__del__ at 0x00000262222E5090>
+Traceback (most recent call last):
+  File "D:\anaconda3\envs\py310\lib\site-packages\tqdm\std.py", line 1154, in __del__
+    self.close()
+  File "D:\anaconda3\envs\py310\lib\site-packages\tqdm\notebook.py", line 279, in close
+    self.disp(bar_style='danger', check_delay=False)
+AttributeError: 'tqdm_notebook' object has no attribute 'disp'

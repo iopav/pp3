@@ -1,0 +1,4 @@
+{
+  "status": "failed",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\pp3\\worker.py\", line 130, in main\n    execute(config)\n  File \"D:\\workspace\\pp3\\pp3\\worker.py\", line 82, in execute\n    train_loader,test_loader,prepare_seconds=build_loaders(config)\n  File \"D:\\workspace\\pp3\\pp3\\data.py\", line 89, in build_loaders\n    ds = EventFrames(spec,train,config['seed'],limit,steps)\n  File \"D:\\workspace\\pp3\\pp3\\data.py\", line 58, in __init__\n    source = SHDEvents(Path(spec['root'])/('shd_train.h5' if train else 'shd_test.h5'))\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_bdnn_rsnn_pure.py\", line 40, in __init__\n    raise FileNotFoundError(\"SHD file not found: {}\".format(self.path))\nFileNotFoundError: SHD file not found: D:\\workspace\\pp3\\audit\\intentionally_missing_shd\\shd_train.h5\n"
+}

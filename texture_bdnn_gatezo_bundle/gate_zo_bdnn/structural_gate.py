@@ -368,6 +368,7 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
         growth_X, growth_T = X, T
         checkpoint_X, checkpoint_T = X_test, T_test
 
+    runtime = getattr(model, '_pp3_runtime', None)
     attempts = 0
     error_list, train_rates, test_rates, time_list = [], [], [], []
     rate_window = [0.0]
@@ -392,9 +393,14 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
             rate_window = []
         start = time.time()
         attempts += 1
+        if runtime:
+            runtime.begin('train', attempts, unknown='NumPy candidate search, ridge, mask score and scalar arithmetic not fully counted')
         old_count = 0 if isinstance(model.W, list) else int(np.asarray(model.W).shape[1])
         w_new, u_new, flag = model.sc_Search(growth_X, growth_T)
         if flag == 1:
+            if runtime:
+                runtime.end()
+                runtime.epoch_row(attempts, unit='growth_round_failed')
             break
         model.addNodes(w_new, u_new)
         proposed = int(w_new.shape[1])
@@ -435,6 +441,15 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
             "hidden_after": int(np.asarray(model.W).shape[1]),
         })
         selector.history.append(record)
+        if runtime:
+            runtime.end(train_metrics['accuracy'], train_metrics['mse'])
+            runtime.begin('test', attempts, unknown='NumPy readout matrix multiply and metric arithmetic not counted')
+            test_h, _ = model.getH(X_test)
+            observed = classification_metrics(np.asarray(test_h), T_test, model.Beta)
+            runtime.end(observed['accuracy'], observed['mse'])
+            runtime.epoch_row(attempts, unit='growth_round')
+            runtime.rows[-1]['validation_accuracy'] = checkpoint_metrics['accuracy']
+            runtime._csv()
         if selector.config.verbose:
             print(
                 "[{}:{}] round={} proposed={} kept={} hidden={} "
@@ -447,10 +462,14 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
 
     if best_state is None:
         raise RuntimeError("BDNN could not produce a checkpoint")
+    if runtime:
+        runtime.begin('final_refit_and_test', unknown='NumPy readout fit and evaluation arithmetic not fully counted')
     selector.restore(model, best_state)
     train_metrics, test_metrics = refit_and_measure(
         model, X, T, X_test, T_test, selector.config.ridge
     )
+    if runtime:
+        runtime.end(test_metrics['accuracy'], test_metrics['mse'])
     model.COST = train_metrics["mse"]
     model.gate_zo_history = selector.history
     model.gate_zo_summary = {

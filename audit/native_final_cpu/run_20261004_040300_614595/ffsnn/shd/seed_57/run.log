@@ -1,0 +1,47 @@
+Using device: cuda
+Traceback (most recent call last):
+  File "D:\workspace\pp3\SNN_FF-main\FF_SNN\SNNFF_SHD.py", line 331, in <module>
+    x_pos, x_neg = make_examples(model, x, y)
+  File "D:\workspace\pp3\SNN_FF-main\FF_SNN\SNNFF_SHD.py", line 215, in make_examples
+    g = goodness_per_class(model, x)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\utils\_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+  File "D:\workspace\pp3\SNN_FF-main\FF_SNN\SNNFF_SHD.py", line 205, in goodness_per_class
+    g_candidate = sum(goodness(h) for h in LayerOutputs(model, x_candidate))
+  File "D:\workspace\pp3\SNN_FF-main\FF_SNN\SNNFF_SHD.py", line 205, in <genexpr>
+    g_candidate = sum(goodness(h) for h in LayerOutputs(model, x_candidate))
+  File "D:\workspace\pp3\SNN_FF-main\FF_SNN\SNNFF_SHD.py", line 58, in __next__
+    self.x = layer(self.x)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\container.py", line 253, in forward
+    input = module(input)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "D:\workspace\pp3\SNN_FF-main\FF_SNN\SNNFF_SHD.py", line 83, in forward
+    cur1 = self.fc1(x.select(dim=1, index=step))
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\module.py", line 1779, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\module.py", line 1790, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\nn\modules\linear.py", line 134, in forward
+    return F.linear(input, self.weight, self.bias)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\_compile.py", line 54, in inner
+    return disable_fn(*args, **kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\_dynamo\eval_frame.py", line 1263, in _fn
+    return fn(*args, **kwargs)
+  File "D:\workspace\pp3\pp3\flops.py", line 190, in __torch_dispatch__
+    out=func(*args,**kwargs)
+  File "D:\anaconda3\envs\py310\lib\site-packages\torch\_ops.py", line 865, in __call__
+    return self._op(*args, **kwargs)
+RuntimeError: Expected all tensors to be on the same device, but got mat1 is on cpu, different from other tensors on cuda:0 (when checking argument in method wrapper_CUDA_addmm)
+Exception ignored in: <function SHDEvents.__del__ at 0x0000026E4AF88D30>
+Traceback (most recent call last):
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_bdnn_rsnn_pure.py", line 93, in __del__
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_bdnn_rsnn_pure.py", line 89, in close
+  File "D:\workspace\pp3\python_deps\h5py\_hl\files.py", line 620, in close
+TypeError: bad operand type for unary ~: 'NoneType'

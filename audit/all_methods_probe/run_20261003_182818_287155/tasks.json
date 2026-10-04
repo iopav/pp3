@@ -1,0 +1,50 @@
+[
+  {
+    "method": "ffsnn",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 1,
+    "output": "D:\\workspace\\pp3\\audit\\all_methods_probe\\run_20261003_182818_287155\\ffsnn\\spike\\seed_57"
+  },
+  {
+    "method": "ffsnn",
+    "dataset": "texture",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 1,
+    "output": "D:\\workspace\\pp3\\audit\\all_methods_probe\\run_20261003_182818_287155\\ffsnn\\texture\\seed_57"
+  },
+  {
+    "method": "ffsnn",
+    "dataset": "shd",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 1,
+    "output": "D:\\workspace\\pp3\\audit\\all_methods_probe\\run_20261003_182818_287155\\ffsnn\\shd\\seed_57"
+  },
+  {
+    "method": "espp",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 0,
+    "output": "D:\\workspace\\pp3\\audit\\all_methods_probe\\run_20261003_182818_287155\\espp\\spike\\seed_57"
+  },
+  {
+    "method": "espp",
+    "dataset": "texture",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 0,
+    "output": "D:\\workspace\\pp3\\audit\\all_methods_probe\\run_20261003_182818_287155\\espp\\texture\\seed_57"
+  },
+  {
+    "method": "espp",
+    "dataset": "shd",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 0,
+    "output": "D:\\workspace\\pp3\\audit\\all_methods_probe\\run_20261003_182818_287155\\espp\\shd\\seed_57"
+  }
+]

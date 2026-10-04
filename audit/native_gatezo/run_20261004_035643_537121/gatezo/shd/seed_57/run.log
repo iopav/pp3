@@ -1,0 +1,13 @@
+structural-ZO mode=gatezo seed=57 train=4 val=2 preselect=2 zo_samples=4 lambda=2.5e-05 hidden=0 max_hidden=unlimited input_channels=700 jitter_std=20.0 jitter_copies=1 val_acc=0.0000
+Traceback (most recent call last):
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_radlif_residual_proposal.py", line 19, in <module>
+    main()
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_radlif_residual_proposal.py", line 15, in main
+    trainer.main()
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_individual_pool_structural_zo.py", line 679, in main
+    fit_positions, cal_positions = internal_positions(
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_individual_pool_structural_zo.py", line 355, in internal_positions
+    balanced_sample(fit_pool, labels, fit_count, rng),
+  File "D:\workspace\pp3\gate_zo_bdnn\shd_gatezo_support.py", line 104, in balanced_sample
+    classes = np.unique(labels[pool])
+IndexError: arrays used as indices must be of integer (or boolean) type

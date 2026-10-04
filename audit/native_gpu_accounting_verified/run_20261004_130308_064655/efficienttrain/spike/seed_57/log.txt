@@ -1,0 +1,1 @@
+{"train_lr": 0.0030002500000000003, "train_min_lr": 0.0030002500000000003, "train_loss": 10.748465776443481, "train_class_acc": 0.0, "train_weight_decay": 0.05, "test_loss": 2.714750647544861, "test_acc1": 25.000001907348633, "test_acc5": 100.0, "epoch": 0, "n_parameters": 23549012}

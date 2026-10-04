@@ -1,0 +1,10 @@
+[
+  {
+    "method": "gatezo",
+    "dataset": "shd",
+    "seed": 57,
+    "device": "cpu",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_fix_cpu\\run_20261004_040600_940887\\gatezo\\shd\\seed_57"
+  }
+]

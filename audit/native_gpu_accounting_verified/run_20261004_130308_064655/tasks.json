@@ -1,0 +1,58 @@
+[
+  {
+    "method": "spsn",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_gpu_accounting_verified\\run_20261004_130308_064655\\spsn\\spike\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_gpu_accounting_verified\\run_20261004_130308_064655\\tp\\spike\\seed_57"
+  },
+  {
+    "method": "gatezo",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_gpu_accounting_verified\\run_20261004_130308_064655\\gatezo\\spike\\seed_57"
+  },
+  {
+    "method": "ffsnn",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_gpu_accounting_verified\\run_20261004_130308_064655\\ffsnn\\spike\\seed_57"
+  },
+  {
+    "method": "espp",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_gpu_accounting_verified\\run_20261004_130308_064655\\espp\\spike\\seed_57"
+  },
+  {
+    "method": "bdnn",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_gpu_accounting_verified\\run_20261004_130308_064655\\bdnn\\spike\\seed_57"
+  },
+  {
+    "method": "efficienttrain",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "0",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\native_gpu_accounting_verified\\run_20261004_130308_064655\\efficienttrain\\spike\\seed_57"
+  }
+]

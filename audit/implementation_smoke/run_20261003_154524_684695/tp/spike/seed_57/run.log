@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "D:\anaconda3\envs\py310\lib\runpy.py", line 196, in _run_module_as_main
+    return _run_code(code, main_globals, None,
+  File "D:\anaconda3\envs\py310\lib\runpy.py", line 86, in _run_code
+    exec(code, run_globals)
+  File "D:\workspace\pp3\pp3\worker.py", line 13, in <module>
+    from .data import build_loaders
+  File "D:\workspace\pp3\pp3\data.py", line 7, in <module>
+    from gate_zo_bdnn.train_shd_bdnn_rsnn_pure import SHDEvents, SHDBinner
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_bdnn_rsnn_pure.py", line 29, in <module>
+    import h5py
+ModuleNotFoundError: No module named 'h5py'

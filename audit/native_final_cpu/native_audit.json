@@ -1,0 +1,345 @@
+[
+  {
+    "method": "bdnn",
+    "dataset": "shd",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\BDNNversion1-main\\main_exp1.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native NumPy pseudoinverse and final model selection not fully counted",
+      "native::uncovered: NumPy candidate search, pinv, normalization and Python scalar arithmetic not counted",
+      "native::uncovered: NumPy normalization and metrics not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\bdnn\\shd\\seed_57"
+  },
+  {
+    "method": "bdnn",
+    "dataset": "spike",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\BDNNversion1-main\\main_exp1.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native NumPy pseudoinverse and final model selection not fully counted",
+      "native::uncovered: NumPy candidate search, pinv, normalization and Python scalar arithmetic not counted",
+      "native::uncovered: NumPy normalization and metrics not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\bdnn\\spike\\seed_57"
+  },
+  {
+    "method": "bdnn",
+    "dataset": "texture",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\BDNNversion1-main\\main_exp1.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native NumPy pseudoinverse and final model selection not fully counted",
+      "native::uncovered: NumPy candidate search, pinv, normalization and Python scalar arithmetic not counted",
+      "native::uncovered: NumPy normalization and metrics not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\bdnn\\texture\\seed_57"
+  },
+  {
+    "method": "efficienttrain",
+    "dataset": "shd",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\EfficientTrain-main\\main_buffer.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "aten.convolution.default: unknown",
+      "aten.convolution_backward.default: unknown",
+      "aten.max_pool2d_with_indices.default: unknown",
+      "aten.max_pool2d_with_indices_backward.default: unknown",
+      "aten.median.default: unknown",
+      "aten.native_batch_norm.default: unknown",
+      "aten.native_batch_norm_backward.default: unknown",
+      "aten.normal_.default: normal_rng_transform_not_audited",
+      "aten.scatter_add.default: unknown",
+      "native::uncovered: Native optimizer host arithmetic and fused convolution/batch-normalization coverage incomplete",
+      "native::uncovered: NumPy learning rate schedule and native initialization arithmetic not fully counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\efficienttrain\\shd\\seed_57"
+  },
+  {
+    "method": "efficienttrain",
+    "dataset": "spike",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\EfficientTrain-main\\main_buffer.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "aten.convolution.default: unknown",
+      "aten.convolution_backward.default: unknown",
+      "aten.max_pool2d_with_indices.default: unknown",
+      "aten.max_pool2d_with_indices_backward.default: unknown",
+      "aten.median.default: unknown",
+      "aten.native_batch_norm.default: unknown",
+      "aten.native_batch_norm_backward.default: unknown",
+      "aten.normal_.default: normal_rng_transform_not_audited",
+      "aten.scatter_add.default: unknown",
+      "native::uncovered: Native optimizer host arithmetic and fused convolution/batch-normalization coverage incomplete",
+      "native::uncovered: NumPy learning rate schedule and native initialization arithmetic not fully counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\efficienttrain\\spike\\seed_57"
+  },
+  {
+    "method": "efficienttrain",
+    "dataset": "texture",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\EfficientTrain-main\\main_buffer.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "aten.convolution.default: unknown",
+      "aten.convolution_backward.default: unknown",
+      "aten.max_pool2d_with_indices.default: unknown",
+      "aten.max_pool2d_with_indices_backward.default: unknown",
+      "aten.median.default: unknown",
+      "aten.native_batch_norm.default: unknown",
+      "aten.native_batch_norm_backward.default: unknown",
+      "aten.normal_.default: normal_rng_transform_not_audited",
+      "aten.scatter_add.default: unknown",
+      "native::uncovered: Native optimizer host arithmetic and fused convolution/batch-normalization coverage incomplete",
+      "native::uncovered: NumPy learning rate schedule and native initialization arithmetic not fully counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\efficienttrain\\texture\\seed_57"
+  },
+  {
+    "method": "espp",
+    "dataset": "shd",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\ESPP-main\\main.py",
+    "status": "flops_incomplete",
+    "phases": 4,
+    "rows": 1,
+    "unknown": [
+      "aten.index_fill_.int_Scalar: unknown",
+      "native::uncovered: Native host scalar arithmetic and readout fit not fully audited",
+      "native::uncovered: Native initialization Python arithmetic not audited",
+      "native::uncovered: Native readout NumPy/Python arithmetic not fully counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\espp\\shd\\seed_57"
+  },
+  {
+    "method": "espp",
+    "dataset": "spike",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\ESPP-main\\main.py",
+    "status": "flops_incomplete",
+    "phases": 4,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native host scalar arithmetic and readout fit not fully audited",
+      "native::uncovered: Native initialization Python arithmetic not audited",
+      "native::uncovered: Native readout NumPy/Python arithmetic not fully counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\espp\\spike\\seed_57"
+  },
+  {
+    "method": "espp",
+    "dataset": "texture",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\ESPP-main\\main.py",
+    "status": "flops_incomplete",
+    "phases": 4,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native host scalar arithmetic and readout fit not fully audited",
+      "native::uncovered: Native initialization Python arithmetic not audited",
+      "native::uncovered: Native readout NumPy/Python arithmetic not fully counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\espp\\texture\\seed_57"
+  },
+  {
+    "method": "ffsnn",
+    "dataset": "shd",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\SNN_FF-main\\FF_SNN\\SNNFF_SHD.py",
+    "status": "failed",
+    "phases": 2,
+    "rows": 0,
+    "unknown": [
+      "native::uncovered: Native Adam Python scalar bias correction not counted",
+      "native::uncovered: Native Python initialization arithmetic not audited"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\ffsnn\\shd\\seed_57"
+  },
+  {
+    "method": "ffsnn",
+    "dataset": "spike",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\SNN_FF-main\\FF_SNN\\SNNFF_SHD.py",
+    "status": "failed",
+    "phases": 2,
+    "rows": 0,
+    "unknown": [
+      "native::uncovered: Native Adam Python scalar bias correction not counted",
+      "native::uncovered: Native Python initialization arithmetic not audited"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\ffsnn\\spike\\seed_57"
+  },
+  {
+    "method": "ffsnn",
+    "dataset": "texture",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\SNN_FF-main\\FF_SNN\\SNNFF_SHD.py",
+    "status": "failed",
+    "phases": 2,
+    "rows": 0,
+    "unknown": [
+      "native::uncovered: Native Adam Python scalar bias correction not counted",
+      "native::uncovered: Native Python initialization arithmetic not audited"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\ffsnn\\texture\\seed_57"
+  },
+  {
+    "method": "gatezo",
+    "dataset": "shd",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_radlif_residual_proposal.py",
+    "status": "failed",
+    "phases": 3,
+    "rows": 0,
+    "unknown": [
+      "aten._linalg_check_errors.default: unknown",
+      "aten._linalg_solve_ex.default: unknown",
+      "aten.diag_embed.default: unknown",
+      "aten.index_add_.default: unknown",
+      "aten.matmul.default: unknown",
+      "aten.one_hot.default: unknown",
+      "aten.resolve_neg.default: unknown",
+      "aten.std.correction: unknown",
+      "native::uncovered: Native host scalar metrics not fully audited",
+      "native::uncovered: NumPy proposal/partition and host scalar arithmetic not fully counted",
+      "native::uncovered: NumPy proposals and host scalar arithmetic not counted; solve operators audited individually"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\gatezo\\shd\\seed_57"
+  },
+  {
+    "method": "gatezo",
+    "dataset": "spike",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\spike_bdnn_gatezo_bundle\\run_texture.py",
+    "status": "flops_incomplete",
+    "phases": 4,
+    "rows": 1,
+    "unknown": [
+      "aten.matmul.default: unknown",
+      "native::uncovered: Native Python/NumPy initialization not fully counted",
+      "native::uncovered: NumPy candidate search, ridge, mask score and scalar arithmetic not fully counted",
+      "native::uncovered: NumPy readout fit and evaluation arithmetic not fully counted",
+      "native::uncovered: NumPy readout matrix multiply and metric arithmetic not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\gatezo\\spike\\seed_57"
+  },
+  {
+    "method": "gatezo",
+    "dataset": "texture",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\texture_bdnn_gatezo_bundle\\run_texture.py",
+    "status": "flops_incomplete",
+    "phases": 4,
+    "rows": 1,
+    "unknown": [
+      "aten.matmul.default: unknown",
+      "native::uncovered: Native Python/NumPy initialization not fully counted",
+      "native::uncovered: NumPy candidate search, ridge, mask score and scalar arithmetic not fully counted",
+      "native::uncovered: NumPy readout fit and evaluation arithmetic not fully counted",
+      "native::uncovered: NumPy readout matrix multiply and metric arithmetic not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\gatezo\\texture\\seed_57"
+  },
+  {
+    "method": "spsn",
+    "dataset": "shd",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\Stochastic-Parallelizable-Spiking-Neuron-SPSN-main\\run.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Adamax Python scalar bias correction not yet counted",
+      "native::uncovered: Python scalar neuron initialization has not been audited"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\spsn\\shd\\seed_57"
+  },
+  {
+    "method": "spsn",
+    "dataset": "spike",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\Stochastic-Parallelizable-Spiking-Neuron-SPSN-main\\run.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Adamax Python scalar bias correction not yet counted",
+      "native::uncovered: Python scalar neuron initialization has not been audited"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\spsn\\spike\\seed_57"
+  },
+  {
+    "method": "spsn",
+    "dataset": "texture",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\Stochastic-Parallelizable-Spiking-Neuron-SPSN-main\\run.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Adamax Python scalar bias correction not yet counted",
+      "native::uncovered: Python scalar neuron initialization has not been audited"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\spsn\\texture\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "shd",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\traces_propagation-main\\main.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native initialization Python/NumPy arithmetic not audited",
+      "native::uncovered: Native optimizer/scheduler Python scalar arithmetic not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\tp\\shd\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "spike",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\traces_propagation-main\\main.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native initialization Python/NumPy arithmetic not audited",
+      "native::uncovered: Native optimizer/scheduler Python scalar arithmetic not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\tp\\spike\\seed_57"
+  },
+  {
+    "method": "tp",
+    "dataset": "texture",
+    "seed": 57,
+    "entrypoint": "D:\\workspace\\pp3\\traces_propagation-main\\main.py",
+    "status": "flops_incomplete",
+    "phases": 3,
+    "rows": 1,
+    "unknown": [
+      "native::uncovered: Native initialization Python/NumPy arithmetic not audited",
+      "native::uncovered: Native optimizer/scheduler Python scalar arithmetic not counted"
+    ],
+    "output": "audit\\native_final_cpu\\run_20261004_040300_614595\\tp\\texture\\seed_57"
+  }
+]

@@ -1,0 +1,6 @@
+# Python >= 3.10. FLOPs host formulas audited against PyTorch 2.11.
+# Install the cluster-compatible PyTorch build first; this keeps its installed CUDA build.
+torch==2.11.*
+numpy>=1.24,<3
+h5py>=3.8,<4
+nvidia-ml-py>=12,<14

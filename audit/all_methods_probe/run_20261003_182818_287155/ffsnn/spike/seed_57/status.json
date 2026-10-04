@@ -1,0 +1,4 @@
+{
+  "status": "failed",
+  "traceback": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\pp3\\worker.py\", line 147, in main\n    execute(config)\n  File \"D:\\workspace\\pp3\\pp3\\worker.py\", line 122, in execute\n    raise RuntimeError(f'Uncovered {phase} operators; see epoch operation report')\nRuntimeError: Uncovered train operators; see epoch operation report\n"
+}

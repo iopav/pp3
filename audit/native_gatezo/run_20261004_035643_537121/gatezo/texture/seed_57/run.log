@@ -1,0 +1,15 @@
+[compute] device=cpu batch_size=3 cuda_available=True
+Traceback (most recent call last):
+  File "D:\workspace\pp3\texture_bdnn_gatezo_bundle\run_texture.py", line 16, in <module>
+    main()
+  File "D:\workspace\pp3\texture_bdnn_gatezo_bundle\gate_zo_bdnn\run_texture_comparison_task.py", line 157, in main
+    result = model.classification(x, targets, x_test, test_targets)
+  File "D:\workspace\pp3\texture_bdnn_gatezo_bundle\gate_zo_bdnn\bdnn1_gatezo.py", line 43, in classification
+    return run_gatezo_growth(self, X, T, X2, T2, self.structural_gate)
+  File "D:\workspace\pp3\texture_bdnn_gatezo_bundle\gate_zo_bdnn\structural_gate.py", line 407, in run_gatezo_growth
+    record = selector.select(
+  File "D:\workspace\pp3\texture_bdnn_gatezo_bundle\gate_zo_bdnn\structural_gate.py", line 231, in select
+    local_fit, local_cal = stratified_split(
+  File "D:\workspace\pp3\texture_bdnn_gatezo_bundle\gate_zo_bdnn\structural_gate.py", line 95, in stratified_split
+    raise ValueError("gate-ZO needs at least two samples in one class")
+ValueError: gate-ZO needs at least two samples in one class

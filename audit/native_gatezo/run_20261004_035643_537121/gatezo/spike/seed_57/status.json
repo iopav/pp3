@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "training_completed": false,
+  "reason": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\spike_bdnn_gatezo_bundle\\run_texture.py\", line 16, in <module>\n    main()\n  File \"D:\\workspace\\pp3\\spike_bdnn_gatezo_bundle\\gate_zo_bdnn\\run_texture_comparison_task.py\", line 157, in main\n    result = model.classification(x, targets, x_test, test_targets)\n  File \"D:\\workspace\\pp3\\spike_bdnn_gatezo_bundle\\gate_zo_bdnn\\bdnn1_gatezo.py\", line 43, in classification\n    return run_gatezo_growth(self, X, T, X2, T2, self.structural_gate)\n  File \"D:\\workspace\\pp3\\spike_bdnn_gatezo_bundle\\gate_zo_bdnn\\structural_gate.py\", line 407, in run_gatezo_growth\n    record = selector.select(\n  File \"D:\\workspace\\pp3\\spike_bdnn_gatezo_bundle\\gate_zo_bdnn\\structural_gate.py\", line 231, in select\n    local_fit, local_cal = stratified_split(\n  File \"D:\\workspace\\pp3\\spike_bdnn_gatezo_bundle\\gate_zo_bdnn\\structural_gate.py\", line 95, in stratified_split\n    raise ValueError(\"gate-ZO needs at least two samples in one class\")\nValueError: gate-ZO needs at least two samples in one class\n"
+}

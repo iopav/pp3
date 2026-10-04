@@ -1,0 +1,18 @@
+{
+  "method": "tp",
+  "dataset": "spike",
+  "downloaded": false,
+  "output_shape": [
+    4,
+    20
+  ],
+  "shape": [
+    4,
+    16,
+    64
+  ],
+  "weights_changed": false,
+  "finite": true,
+  "scope": "one tiny epoch: 4 training samples, 16 sampled time steps, hidden=8; no accuracy or full-adaptation claim",
+  "status": "completed"
+}

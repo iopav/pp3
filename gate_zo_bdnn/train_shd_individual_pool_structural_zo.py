@@ -13,6 +13,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import os
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +28,7 @@ try:
         propose_individual_pool,
         select_residual_diverse_neurons,
         solve_sequence_ridge,
+        apply_sequence_readout,
         temporal_window_features,
         profiled_ridge_metrics,
         stratified_fit_calibration_split,
@@ -40,6 +42,7 @@ except ImportError:
         propose_individual_pool,
         select_residual_diverse_neurons,
         solve_sequence_ridge,
+        apply_sequence_readout,
         temporal_window_features,
         profiled_ridge_metrics,
         stratified_fit_calibration_split,
@@ -258,6 +261,29 @@ def parse_args():
         help="stop after structure validation; use this during hyperparameter search",
     )
     parser.add_argument("--resume", action="store_true")
+    if os.environ.get('PP3_CONFIG'):
+        config = json.loads(Path(os.environ['PP3_CONFIG']).read_text(encoding='utf-8'))
+        model, data = config['model'], config['data']
+        values = dict(model.get('native_args', {}))
+        values.update({key: value for key, value in model.items()
+                       if key in {action.dest for action in parser._actions}})
+        values.update(data_dir=data['root'], output_dir=config['output'], seed=config['seed'],
+            device=config['device'], num_workers=config['workers'], batch_size=model['batch_size'],
+            candidate_pool_size=model['pool_size'], max_growth_rounds=model['epochs'],
+            max_hidden=model.get('max_hidden', 0), dt=data['dt'], max_time=data['max_time'],
+            train_channel_jitter_std=data['jitter_std'], train_jitter_copies=data['jitter_copies'],
+            train_time_scale_min=data['time_scale_min'], train_time_scale_max=data['time_scale_max'])
+        argv = []
+        for action in parser._actions:
+            if action.dest not in values:
+                continue
+            value = values[action.dest]
+            if isinstance(action, argparse._StoreTrueAction):
+                if value:
+                    argv.append(action.option_strings[0])
+            else:
+                argv.extend([action.option_strings[0], *map(str, value if isinstance(value, list) else [value])])
+        return parser.parse_args(argv)
     return parser.parse_args()
 
 
@@ -423,6 +449,13 @@ def choose_new_neurons(
 
 def main():
     args = parse_args()
+    runtime = None
+    if os.environ.get('PP3_CONFIG'):
+        from pp3.native_runtime import from_environment, MeasuredLoader, write_json
+        runtime = from_environment()
+        if runtime.config.get('smoke'):
+            args.pp3_smoke_samples = runtime.config.get('smoke_samples', 4)
+        write_json(runtime.output/'native_args.json', vars(args))
     if not 0.0 < args.zo_calibration_ratio < 1.0:
         raise ValueError("zo-calibration-ratio must be in (0, 1)")
     if args.growth_step <= 0 or args.zo_min_keep <= 0:
@@ -478,6 +511,10 @@ def main():
     (
         _, _, train_loader, val_loader, test_loader, _, _, held_out_speakers
     ) = blocks.build_speaker_loaders(args)
+    if runtime:
+        train_loader, val_loader, test_loader = [MeasuredLoader(loader, runtime)
+            for loader in (train_loader, val_loader, test_loader)]
+        runtime.begin('prepare', unknown='NumPy proposal/partition and host scalar arithmetic not fully counted')
     labels_by_position = dataset_labels(train_loader.dataset)
     proposal_pool = ()
     structural_partitions = None
@@ -576,6 +613,8 @@ def main():
         f"val_acc={current_val['accuracy']:.4f}", flush=True,
     )
 
+    if runtime:
+        runtime.end()
     for round_index in range(start_round, args.max_growth_rounds + 1):
         capacity = (
             args.max_hidden - state.hidden_size
@@ -584,6 +623,8 @@ def main():
         )
         if args.max_hidden > 0 and capacity <= 0:
             break
+        if runtime:
+            runtime.begin('train', round_index, unknown='NumPy proposals and host scalar arithmetic not counted; solve operators audited individually')
         old_hidden = state.hidden_size
         candidate_rng = np.random.RandomState(args.seed + round_index * 1009)
         round_pool_size = (
@@ -716,6 +757,19 @@ def main():
                 f"base_val={current_val['accuracy']:.4f} "
                 f"failures={failures}/{args.growth_failure_patience}", flush=True,
             )
+        if runtime:
+            runtime.end(current_train['accuracy'])
+            runtime.begin('test', round_index, unknown='Native host scalar metrics not fully audited')
+            observed_traces, observed_labels, _ = core.extract_readout_traces(
+                test_loader, state, device, args.readout_bins)
+            observed_features = sequence_features(observed_traces, args)
+            observed_logits = apply_sequence_readout(observed_features, beta, feature_mean, feature_scale)
+            observed_metrics = blocks.core.classification_metrics(observed_logits, observed_labels)
+            runtime.end(observed_metrics['accuracy'])
+            # Monitoring only: no test quantity feeds the growth decision or final refit.
+            runtime.epoch_row(round_index, unit='growth_round')
+            runtime.rows[-1]['validation_accuracy'] = current_val['accuracy']
+            runtime._csv()
         torch.save(
             {
                 "state": state.checkpoint(), "history": history,
@@ -727,6 +781,8 @@ def main():
         if failures >= args.growth_failure_patience:
             break
 
+    if runtime:
+        runtime.begin('final_refit_and_test', unknown='Host scalar arithmetic and native solve coverage incomplete')
     if args.skip_test:
         full_metrics = None
         test_metrics = None
@@ -741,6 +797,8 @@ def main():
             full_features, full_labels, test_features, test_labels, args.ridge, device
         )
     checkpoint = args.output_dir / "final_structural_zo.pt"
+    if runtime:
+        runtime.end(None if test_metrics is None else test_metrics['accuracy'])
     torch.save(
         {
             "state": state.checkpoint(), "beta": beta,
@@ -750,6 +808,9 @@ def main():
         }, checkpoint,
     )
     accepted = [item for item in history if item["accepted"]]
+    if runtime:
+        runtime.finish(dict(state=state.checkpoint(), beta=beta,
+                            feature_mean=feature_mean, feature_scale=feature_scale))
     summary = {
         "selection_mode": args.selection_mode,
         "hidden_size": state.hidden_size,

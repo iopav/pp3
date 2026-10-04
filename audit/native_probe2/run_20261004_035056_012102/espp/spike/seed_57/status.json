@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "training_completed": false,
+  "reason": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\ESPP-main\\main.py\", line 90, in <module>\n    loss_hist = train(SNN, train_loader, args.epochs, args.device, args.model_name,\n  File \"D:\\workspace\\pp3\\ESPP-main\\utils.py\", line 91, in train\n    samples, labels = get_samples(monitored, trainloader, args.n_hidden, device)\n  File \"D:\\workspace\\pp3\\ESPP-main\\utils.py\", line 281, in get_samples\n    for idx in trange((len(dataloader)+batch-1)//batch):\n  File \"D:\\anaconda3\\envs\\py310\\lib\\site-packages\\tqdm\\notebook.py\", line 312, in tnrange\n    return tqdm_notebook(range(*args), **kwargs)\n  File \"D:\\anaconda3\\envs\\py310\\lib\\site-packages\\tqdm\\notebook.py\", line 236, in __init__\n    self.container = self.status_printer(self.fp, total, self.desc, self.ncols)\n  File \"D:\\anaconda3\\envs\\py310\\lib\\site-packages\\tqdm\\notebook.py\", line 110, in status_printer\n    raise ImportError(WARN_NOIPYW)\nImportError: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html\n"
+}

@@ -1,0 +1,12 @@
+structural-ZO mode=gatezo seed=57 train=8 val=4 preselect=2 zo_samples=4 lambda=2.5e-05 hidden=0 max_hidden=unlimited input_channels=700 jitter_std=20.0 jitter_copies=1 val_acc=0.5000
+D:\workspace\pp3\gate_zo_bdnn\shd_gatezo_support.py:250: UserWarning: std(): degrees of freedom is <= 0. Correction should be strictly less than the reduction factor (input numel divided by output numel). (Triggered internally at C:\actions-runner\_work\pytorch\pytorch\pytorch\aten\src\ATen\native\ReduceOps.cpp:1858.)
+  scale = fit.std(0, unbiased=False).clamp_min(1e-6)
+[commit] round=1 preselected=1 kept=1 hidden=1 val_acc=1.0000
+Traceback (most recent call last):
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_radlif_residual_proposal.py", line 19, in <module>
+    main()
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_radlif_residual_proposal.py", line 15, in main
+    trainer.main()
+  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_individual_pool_structural_zo.py", line 767, in main
+    observed_metrics = core.classification_metrics(observed_logits, observed_labels)
+AttributeError: module 'shd_radlif_residual_proposal_core' has no attribute 'classification_metrics'

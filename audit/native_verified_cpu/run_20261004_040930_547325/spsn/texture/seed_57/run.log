@@ -1,0 +1,5 @@
+Train 1 epochs:   0%|          | 0/1 [00:00<?, ?it/s]Train 1 epochs:   0%|          | 0/1 [00:00<?, ?it/s, _batch=1/2, accuracy=0.333, loss=0.888]Train 1 epochs:   0%|          | 0/1 [00:00<?, ?it/s, _batch=2/2, accuracy=0.25, loss=1.32]  
+Test:   0%|          | 0/2 [00:00<?, ?it/s][A
+Test:   0%|          | 0/2 [00:00<?, ?it/s, accuracy=0][A
+Test:   0%|          | 0/2 [00:00<?, ?it/s, accuracy=0.25][ATest: 100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 2/2 [00:00<00:00, 500.04it/s, accuracy=0.25]
+Train 1 epochs: 100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 1/1 [00:00<00:00, 23.04it/s, _batch=2/2, accuracy=0.25, loss=1.32]

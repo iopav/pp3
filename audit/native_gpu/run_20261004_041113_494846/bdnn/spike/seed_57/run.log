@@ -1,0 +1,100 @@
+Producing data...
+Loading data...
+Y_test is tensor([[1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1., 0.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 1.,
+         0., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         1., 0.],
+        [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.,
+         0., 1.]])
+D:\workspace\pp3\BDNNversion1-main\bdnn1.py:134: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  h1_from_inputs = torch.einsum("abc,cd->abd", (torch.tensor(X, dtype=torch.float32), torch.tensor(WT, dtype=torch.float32)))
+D:\workspace\pp3\BDNNversion1-main\bdnn1.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  h1 = h1_from_inputs[:, i, :] + torch.einsum("ab,bc->ac", (torch.tensor(out, dtype=torch.float32), torch.tensor(UT, dtype=torch.float32)))
+D:\workspace\pp3\BDNNversion1-main\bdnn1.py:84: RuntimeWarning: invalid value encountered in divide
+  ksi = ((eq.conj().T @ gk) ** 2) / (gk.conj().T @ gk) - \
+D:\workspace\pp3\BDNNversion1-main\bdnn1.py:302: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  h1 = h1_from_inputs[:, i, :] + torch.einsum("ab,bc->ac", (torch.tensor(out).float(), torch.tensor(self.U).float()))
+D:\workspace\pp3\BDNNversion1-main\bdnn1.py:302: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  h1 = h1_from_inputs[:, i, :] + torch.einsum("ab,bc->ac", (torch.tensor(out).float(), torch.tensor(self.U).float()))
+D:\workspace\pp3\BDNNversion1-main\bdnn1.py:302: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  h1 = h1_from_inputs[:, i, :] + torch.einsum("ab,bc->ac", (torch.tensor(out).float(), torch.tensor(self.U).float()))
+highest testing accuracy is: tensor(0.0500, dtype=torch.float64)
+D:\workspace\pp3\BDNNversion1-main\bdnn1.py:302: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  h1 = h1_from_inputs[:, i, :] + torch.einsum("ab,bc->ac", (torch.tensor(out).float(), torch.tensor(self.U).float()))
+index of max value is: tensor(0)
+Suitable W.shape is: torch.Size([64, 0])
+Suitable U.shape is: torch.Size([0, 0])
+End Searching ...
+#L:1	RMSE:0.0651 	ACC:0.0500 	ACC-test:0.0500
+***************************************
+   Name:Stochastic Configuration Networks
+version:1.0 beta
+      L:1
+      W:torch.Size([64, 0])
+      U:torch.Size([0, 0])
+   Beta:(0, 20)
+      r:tensor([0.9900, 0.9990, 0.9999, 1.0000, 1.0000])
+    tol:0.0005
+Lambdas:tensor([  0.5000,   1.0000,   3.0000,   5.0000,   7.0000,   9.0000,  15.0000,
+         25.0000,  50.0000, 100.0000, 150.0000, 200.0000])
+  L_max:1
+  T_max:16
+     nB:3
+verbose:7
+   COST:0.06514447927474976
+²âÊÔ½×¶Î×¼È·ÂÊ 0.05 ²âÊÔ»ìÏý¾ØÕóÊÇ [[1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]
+ [1 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0]]
+the shape of weight is : torch.Size([64, 0])
+Time taken =  0.0006302040815353393

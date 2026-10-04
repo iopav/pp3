@@ -1,0 +1,14 @@
+# Python 3.10. Locally verified versions. Use the cluster's matching CUDA/ARM
+# PyTorch installation; this file never downloads datasets or pretrained weights.
+torch==2.11.0
+torchvision==0.26.0
+numpy==2.2.5
+scipy==1.15.3
+scikit-learn==1.7.1
+snntorch==1.0.0
+h5py==3.16.0
+nvidia-ml-py==13.615.71
+timm==0.6.13
+tensorboardX==2.6.4
+matplotlib==3.10.8
+tqdm==4.70.0

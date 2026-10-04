@@ -127,6 +127,37 @@ def save_stage(directory, model, result, summary):
 
 
 def main():
+    import os
+    if os.environ.get('PP3_CONFIG'):
+        import torch
+        from pp3.native_runtime import from_environment, write_json
+        runtime = from_environment()
+        settings = runtime.config['model']
+        config = dict(GATE_ZO_DEFAULTS)
+        config.pop('seed', None)
+        config.update(selection_mode='gatezo', growth_protocol='validation_checkpoint',
+            L_max=settings['epochs'], T_max=settings['pool_size'], nB=settings['growth_step'],
+            gate_zo_min_keep=settings['zo_min_keep'], gate_zo_sparsity_lambda=settings['zo_sparsity_lambda'],
+            gate_zo_sample_size=settings['zo_sample_size'] or None,
+            gate_zo_calibration_ratio=settings['calibration_ratio'],
+            gate_zo_validation_ratio=settings['validation_ratio'], gate_zo_ridge=settings['ridge'],
+            gate_zo_growth_min_delta=settings['growth_min_delta'],
+            gate_zo_failure_patience=settings['growth_failure_patience'],
+            gate_zo_seed=runtime.config['seed'], compute_device=str(runtime.device),
+            compute_batch_size=settings['batch_size'], zo_steps=0)
+        write_json(runtime.output/'native_args.json', config)
+        x, y, x_test, y_test = runtime.arrays()
+        classes = runtime.config['data']['classes']
+        targets = torch.nn.functional.one_hot(y, classes).float()
+        test_targets = torch.nn.functional.one_hot(y_test, classes).float()
+        runtime.begin('prepare', unknown='Native Python/NumPy initialization not fully counted')
+        model = BDNN1GateZO(**config)
+        model._pp3_runtime = runtime
+        runtime.end()
+        result = model.classification(x, targets, x_test, test_targets)
+        runtime.finish(dict(W=result[4], U=result[5], Beta=result[6]))
+        write_json(runtime.output/'native_summary.json', model.gate_zo_summary)
+        return
     args = parse_args()
     set_global_seed(args.seed)
     destination = (
