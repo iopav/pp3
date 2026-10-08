@@ -246,7 +246,7 @@ def main(args):
     seed = args.seed + utils.get_rank()
     torch.manual_seed(seed)
     np.random.seed(seed)
-    cudnn.benchmark = True
+    cudnn.benchmark = runtime is None
 
     if runtime:
         common_train, common_test = runtime.loaders()

@@ -1,0 +1,82 @@
+{
+  "method": "efficienttrain",
+  "dataset": "spike",
+  "data": {
+    "root": "D:\\workspace\\Avalanche\\avalanche-master\\dataset\\spike",
+    "steps": 400,
+    "inputs": 64,
+    "classes": 20,
+    "train_x": "X_train_20_cla_400steps.npy",
+    "train_y": "Y_train_20_cla_400steps.npy",
+    "test_x": "X_test_20_cla_400steps.npy",
+    "test_y": "Y_test_20_cla_400steps.npy"
+  },
+  "model": {
+    "epochs": 1,
+    "batch_size": 2,
+    "hidden_size": 8,
+    "layers": 1,
+    "lr": 0.004,
+    "input_size": 64,
+    "warmup_epochs": 0,
+    "mixup": 0.0,
+    "cutmix": 0.0,
+    "smoothing": 0.1,
+    "weight_decay": 0.05,
+    "model": "resnet50"
+  },
+  "validation": {
+    "ratio": 0.2,
+    "speakers": 2
+  },
+  "workers": 0,
+  "threads": 2,
+  "seed": 57,
+  "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\spike\\efficienttrain\\seed_57",
+  "power_sample_seconds": 0.1,
+  "smoke": true,
+  "smoke_samples": 4,
+  "smoke_steps": 16,
+  "split_dir": "D:\\workspace\\pp3\\audit\\result_layout_verified\\_splits",
+  "entrypoint": "D:\\workspace\\pp3\\EfficientTrain-main\\main_buffer.py",
+  "source_sha256": "a6b7afabdb2fcba979e08cd3ede31cad6de7feef69e014d7b008feb3deac87bb",
+  "data_signature": [
+    {
+      "path": "D:\\workspace\\Avalanche\\avalanche-master\\dataset\\spike\\X_train_20_cla_400steps.npy",
+      "size": 329625728,
+      "mtime_ns": 1761931836000000000
+    },
+    {
+      "path": "D:\\workspace\\Avalanche\\avalanche-master\\dataset\\spike\\Y_train_20_cla_400steps.npy",
+      "size": 13004,
+      "mtime_ns": 1761931836000000000
+    },
+    {
+      "path": "D:\\workspace\\Avalanche\\avalanche-master\\dataset\\spike\\X_test_20_cla_400steps.npy",
+      "size": 79974528,
+      "mtime_ns": 1761931836000000000
+    },
+    {
+      "path": "D:\\workspace\\Avalanche\\avalanche-master\\dataset\\spike\\Y_test_20_cla_400steps.npy",
+      "size": 3252,
+      "mtime_ns": 1761931836000000000
+    }
+  ],
+  "execution_device": "cpu",
+  "python_runtime": {
+    "executable": "D:\\anaconda3\\envs\\py310\\python.exe",
+    "version": "3.10.20 | packaged by Anaconda, Inc. | (main, Mar 11 2026, 17:42:35) [MSC v.1942 64 bit (AMD64)]",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "numpy": "2.2.5",
+      "scipy": "1.15.3",
+      "snntorch": "1.0.0",
+      "h5py": "3.16.0",
+      "timm": "0.6.13"
+    }
+  },
+  "experiment_id": "a82d948eead7262a1492f12737faeeccea489823bdae1608a80ee153bcc91ba3",
+  "device": "cpu",
+  "gpu_token": "cpu"
+}

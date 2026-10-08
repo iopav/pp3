@@ -1,0 +1,24 @@
+{
+  "selection_mode": "gatezo",
+  "growth_protocol": "validation_checkpoint",
+  "accepted_rounds": 1,
+  "attempted_rounds": 1,
+  "hidden_size": 1,
+  "structure_validation": {
+    "loss": 2.9901747703552246,
+    "mse": 0.04747220501303673,
+    "accuracy": 0.05
+  },
+  "training": {
+    "loss": 2.9886112213134766,
+    "mse": 0.047464266419410706,
+    "accuracy": 0.06875
+  },
+  "test": {
+    "loss": 2.9885871410369873,
+    "mse": 0.047464508563280106,
+    "accuracy": 0.0625
+  },
+  "checkpoint_accuracy": 0.05,
+  "test_used_for_selection": false
+}

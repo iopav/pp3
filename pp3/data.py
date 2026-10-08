@@ -22,7 +22,7 @@ def balanced_indices(labels, limit):
 
 
 class ArrayDataset(Dataset):
-    def __init__(self, root, x, y, spec, limit=None, steps=None):
+    def __init__(self, root, x, y, spec, limit=None, steps=None, indices=None):
         self.x_path, self.y_path = str(Path(root)/x), str(Path(root)/y)
         self.x = self.y = None
         self.open()
@@ -32,11 +32,11 @@ class ArrayDataset(Dataset):
             raise ValueError('Labels must be an integer vector matching X')
         if not len(self.y) or self.y.min() < 0 or self.y.max() >= spec['classes']:
             raise ValueError('Empty dataset or labels outside configured classes')
-        self.count = min(len(self.y), limit) if limit else len(self.y)
-        self.indices=np.arange(len(self.y))
+        self.indices=np.arange(len(self.y)) if indices is None else np.asarray(indices,dtype=np.int64)
+        self.count = min(len(self.indices), limit) if limit else len(self.indices)
         if limit:
             # A tiny smoke split still needs distinct classes for contrastive samplers.
-            self.indices=balanced_indices(self.y, self.count)
+            self.indices=self.indices[balanced_indices(self.y[self.indices], self.count)]
         self.targets=np.asarray(self.y[self.indices],dtype=np.int64)
         self.origin_indices=self.indices.copy()
         self.is_augmented=np.zeros(self.count,dtype=bool)
@@ -75,15 +75,18 @@ class ArrayDataset(Dataset):
 
 
 class EventFrames(Dataset):
-    def __init__(self, spec, train, seed, limit=None, steps=None):
+    def __init__(self, spec, train, seed, limit=None, steps=None, config=None):
         from gate_zo_bdnn.train_shd_bdnn_rsnn_pure import SHDEvents, SHDBinner
         from gate_zo_bdnn.train_shd_bdnn_rsnn_blocks import DeterministicJitterAugmentedSubset
         source = SHDEvents(Path(spec['root'])/('shd_train.h5' if train else 'shd_test.h5'))
         if not len(source) or source.labels.min()<0 or source.labels.max()>=spec['classes']:
             raise ValueError('Invalid SHD labels')
         indices = np.arange(len(source))
+        if train and config and config['method'] == 'gatezo':
+            from .splits import outer_split
+            indices, _ = outer_split(source.labels, config, source.speakers)
         if limit:
-            indices = balanced_indices(source.labels, limit)
+            indices = indices[balanced_indices(source.labels[indices], limit)]
         from torch.utils.data import Subset
         if train and spec['jitter_copies'] and (spec['jitter_std'] or spec['time_scale_min']!=1 or spec['time_scale_max']!=1):
             self.source = DeterministicJitterAugmentedSubset(source, indices,
@@ -106,38 +109,6 @@ class EventFrames(Dataset):
     def __getitem__(self, i):
         x,y = self.binner([self.source[i]])
         return x[0,self.time_indices], int(y[0])
-
-
-class ClasswiseBatchSampler:
-    """ESPP's same-class / different-class stream, with lazy sample loading."""
-    def __init__(self,targets,batch_size,seed):
-        self.targets=np.asarray(targets); self.batch_size=batch_size
-        self.rng=np.random.RandomState(seed)
-        self.classes=np.unique(self.targets)
-        if len(self.classes)<2:
-            raise ValueError('ESPP contrastive learning requires at least two classes')
-        self.pools={int(k):np.flatnonzero(self.targets==k) for k in self.classes}
-        self.positions={int(k):0 for k in self.classes}
-        for indices in self.pools.values():
-            self.rng.shuffle(indices)
-        self.previous=self.rng.choice(self.classes,batch_size); self.bf=0
-
-    def __len__(self):
-        return (len(self.targets)+self.batch_size-1)//self.batch_size
-
-    def __iter__(self):
-        for _ in range(len(self)):
-            chosen=[]
-            for slot,label in enumerate(self.previous):
-                if self.bf==-1:
-                    label=self.rng.choice(self.classes[self.classes!=label])
-                label=int(label); pool=self.pools[label]
-                if self.positions[label]>=len(pool):
-                    self.rng.shuffle(pool); self.positions[label]=0
-                chosen.append(int(pool[self.positions[label]])); self.positions[label]+=1
-                self.previous[slot]=label
-            self.bf=1 if self.bf!=1 else -1
-            yield chosen
 
 
 class FloatImageDataset(Dataset):
@@ -165,16 +136,21 @@ def build_loaders(config):
     sets=[]
     for train in (True,False):
         if config['dataset']=='shd':
-            ds = EventFrames(spec,train,config['seed'],limit,steps)
+            ds = EventFrames(spec,train,config['seed'],limit,steps,config=config)
         else:
             prefix='train' if train else 'test'
-            ds=ArrayDataset(spec['root'],spec[prefix+'_x'],spec[prefix+'_y'],spec,limit,steps)
+            indices = None
+            if train and config['method'] == 'gatezo':
+                from .splits import outer_split
+                labels=np.load(Path(spec['root'])/spec['train_y'],allow_pickle=False)
+                indices, validation_indices=outer_split(labels,config)
+            ds=ArrayDataset(spec['root'],spec[prefix+'_x'],spec[prefix+'_y'],spec,limit,steps,indices)
+            if train and config['method']=='gatezo':
+                ds.validation_dataset=ArrayDataset(spec['root'],spec['train_x'],spec['train_y'],
+                    spec,limit,steps,validation_indices)
         sets.append(ds)
     generator=torch.Generator().manual_seed(config['seed'])
     loaders=[DataLoader(ds,batch_size=config['model']['batch_size'],shuffle=(i==0),
                num_workers=config['workers'],generator=generator if i==0 else None,
                drop_last=False, pin_memory=False) for i,ds in enumerate(sets)]
-    if config['method']=='espp':
-        loaders[0]=DataLoader(sets[0],batch_sampler=ClasswiseBatchSampler(sets[0].targets,
-            config['model']['batch_size'],config['seed']),num_workers=config['workers'],generator=generator)
     return *loaders, time.perf_counter()-start

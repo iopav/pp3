@@ -4,6 +4,26 @@ from pp3.flops import FlopCounter
 
 
 class NativeAccountingTests(unittest.TestCase):
+    def test_batchnorm_reference_estimate(self):
+        x=torch.ones(2,3,2,2); w=torch.ones(3); b=torch.zeros(3)
+        mean=torch.zeros(3); var=torch.ones(3)
+        counter=FlopCounter()
+        with counter:
+            output,saved_mean,saved_inv=torch.ops.aten.native_batch_norm.default(x,w,b,mean,var,True,.1,1e-5)
+        self.assertEqual(counter.summary()['flops'],8*24+9*3+5)
+        grad=torch.ones_like(x)
+        counter=FlopCounter()
+        with counter:
+            torch.ops.aten.native_batch_norm_backward.default(grad,x,w,mean,var,saved_mean,saved_inv,True,1e-5,[True,True,True])
+        self.assertEqual(counter.summary()['flops'],9*24+4*3+2)
+        self.assertGreater(counter.summary()['other_flops_estimated'],0)
+
+    def test_lu_solve_estimate(self):
+        matrix=torch.eye(3);rhs=torch.ones(3,2)
+        counter=FlopCounter()
+        with counter:
+            torch.linalg.solve(matrix,rhs)
+        self.assertEqual(counter.summary()['flops'],18+36)
     def test_foreach_inplace_void_return_and_per_tensor_scale(self):
         destination = [torch.zeros(2), torch.zeros(3)]
         left = [torch.ones(2), torch.ones(3)]

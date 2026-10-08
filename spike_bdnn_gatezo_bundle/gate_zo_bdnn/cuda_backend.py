@@ -78,7 +78,7 @@ class CudaBDNNMixin:
         return hidden, None
 
     def sc_Search(self, X, E0):
-        """CUDA-backed equivalent of the legacy BDNN candidate search."""
+        """CUDA-backed candidate search with scalar scores and source indices."""
         X = np.asarray(X)
         E0 = np.asarray(E0)
         dimensions = X.shape[2]
@@ -86,9 +86,10 @@ class CudaBDNNMixin:
         candidates = []
         candidate_w = []
         candidate_u = []
+        candidate_sources = []
         candidate_count = 0
 
-        for lambda_value in self.Lambdas:
+        for pool_id, lambda_value in enumerate(self.Lambdas):
             scale = float(lambda_value.item())
             W_pool = scale * (2 * np.random.rand(dimensions, self.T_max) - 1)
             U_pool = scale * (2 * np.random.randn(self.T_max, self.T_max) - 1)
@@ -104,13 +105,13 @@ class CudaBDNNMixin:
                             target, feature, r_value
                         )
                     if np.min(ksi) > 0:
-                        # Preserve the legacy score layout and selection order;
-                        # this backend changes device placement, not BDNN logic.
-                        score = np.sum(ksi, axis=0).reshape(-1, 1)
+                        # Rank each candidate by its total over all outputs.
+                        score = float(np.sum(ksi))
                         candidates.append(score)
                         candidate_w.append(W_pool[:, index].reshape(-1, 1))
                         candidate_u.append(U_pool[:, index].reshape(-1, 1))
-                candidate_count = output_count if candidates else 0
+                        candidate_sources.append((pool_id, index))
+                candidate_count = len(candidates)
                 if candidate_count >= self.nB:
                     break
             if candidate_count >= self.nB:
@@ -119,11 +120,14 @@ class CudaBDNNMixin:
         if not candidates or candidate_count < self.nB:
             return [[], [], 1]
 
-        C = np.concatenate(candidates, axis=1)
+        C = np.asarray(candidates)
         W_block = np.concatenate(candidate_w, axis=1)
         U_columns = np.concatenate(candidate_u, axis=1)
-        order = C.argsort(axis=1)[::-1]
-        selected = order[0, :self.nB]
+        selected = np.argsort(-C, kind="stable")[:self.nB]
         W_block = W_block[:, selected]
-        U_block = U_columns[selected, :][:, selected]
+        # Rows of U_columns retain original pool indices; columns are filtered.
+        # Independent pools have no sampled connections between them.
+        sources = np.asarray(candidate_sources)[selected]
+        U_block = U_columns[np.ix_(sources[:, 1], selected)].copy()
+        U_block[sources[:, 0, None] != sources[None, :, 0]] = 0.0
         return [W_block, U_block, 0]

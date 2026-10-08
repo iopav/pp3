@@ -1,0 +1,31 @@
+{
+  "tests_passed": 30,
+  "completed_small_runs": 6,
+  "skip_verified": true,
+  "archive_verified": true,
+  "summary_numeric_flops": true,
+  "summary_audit_columns_removed": true,
+  "shared_index_files": 2,
+  "remaining_unknown_operators": {
+    "spike/spsn": [
+      "native::uncovered"
+    ],
+    "spike/gatezo": [
+      "native::uncovered"
+    ],
+    "spike/efficienttrain": [
+      "aten.normal_.default",
+      "native::uncovered"
+    ],
+    "shd/spsn": [
+      "native::uncovered"
+    ],
+    "shd/gatezo": [
+      "native::uncovered"
+    ],
+    "shd/efficienttrain": [
+      "aten.normal_.default",
+      "native::uncovered"
+    ]
+  }
+}

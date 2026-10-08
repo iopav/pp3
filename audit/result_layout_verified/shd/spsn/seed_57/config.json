@@ -1,0 +1,74 @@
+{
+  "method": "spsn",
+  "dataset": "shd",
+  "data": {
+    "root": "D:\\workspace\\pp3\\audit\\fixtures\\artificial_shd_20class",
+    "steps": 2000,
+    "inputs": 700,
+    "classes": 20,
+    "dt": 0.0005,
+    "max_time": 1.0,
+    "channel_group_size": 1,
+    "jitter_std": 20.0,
+    "jitter_copies": 1,
+    "time_scale_min": 0.9,
+    "time_scale_max": 1.1
+  },
+  "model": {
+    "epochs": 1,
+    "batch_size": 3,
+    "hidden_size": 8,
+    "layers": 1,
+    "lr": 0.001,
+    "tau_mem": 0.02,
+    "tau_syn": 0.02,
+    "time_step": 0.0005,
+    "spike_mode": "SB",
+    "loss_mode": "mean",
+    "reg_thr": 0.0
+  },
+  "validation": {
+    "ratio": 0.2,
+    "speakers": 2
+  },
+  "workers": 0,
+  "threads": 2,
+  "seed": 57,
+  "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\shd\\spsn\\seed_57",
+  "power_sample_seconds": 0.1,
+  "smoke": true,
+  "smoke_samples": 4,
+  "smoke_steps": 16,
+  "split_dir": "D:\\workspace\\pp3\\audit\\result_layout_verified\\_splits",
+  "entrypoint": "D:\\workspace\\pp3\\Stochastic-Parallelizable-Spiking-Neuron-SPSN-main\\run.py",
+  "source_sha256": "e55c42e380a73f4546e8931ce3093a67b7dcb928360f06b9a089f67372a4c34b",
+  "data_signature": [
+    {
+      "path": "D:\\workspace\\pp3\\audit\\fixtures\\artificial_shd_20class\\shd_train.h5",
+      "size": 147600,
+      "mtime_ns": 1791057540272107800
+    },
+    {
+      "path": "D:\\workspace\\pp3\\audit\\fixtures\\artificial_shd_20class\\shd_test.h5",
+      "size": 43536,
+      "mtime_ns": 1791057540278150200
+    }
+  ],
+  "execution_device": "cpu",
+  "python_runtime": {
+    "executable": "D:\\anaconda3\\envs\\py310\\python.exe",
+    "version": "3.10.20 | packaged by Anaconda, Inc. | (main, Mar 11 2026, 17:42:35) [MSC v.1942 64 bit (AMD64)]",
+    "packages": {
+      "torch": "2.11.0+cu128",
+      "torchvision": "0.26.0+cu128",
+      "numpy": "2.2.5",
+      "scipy": "1.15.3",
+      "snntorch": "1.0.0",
+      "h5py": "3.16.0",
+      "timm": "0.6.13"
+    }
+  },
+  "experiment_id": "8cabeed85884fe03bb395358e69005cb2644bc4fd2aac4bdf31f0cf7ba001633",
+  "device": "cpu",
+  "gpu_token": "cpu"
+}

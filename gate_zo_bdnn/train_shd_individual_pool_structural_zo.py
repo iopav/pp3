@@ -268,6 +268,7 @@ def parse_args():
         values.update({key: value for key, value in model.items()
                        if key in {action.dest for action in parser._actions}})
         values.update(data_dir=data['root'], output_dir=config['output'], seed=config['seed'],
+            validation_speakers=config.get('validation', {}).get('speakers', 2),
             device=config['device'], num_workers=config['workers'], batch_size=model['batch_size'],
             candidate_pool_size=model['pool_size'], max_growth_rounds=model['epochs'],
             max_hidden=model.get('max_hidden', 0), dt=data['dt'], max_time=data['max_time'],

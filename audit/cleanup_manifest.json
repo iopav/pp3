@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-04",
+  "guide": "统一运行与修改说明.md",
+  "deleted": [
+    {
+      "path": "本地验证记录.md",
+      "sha256": "8a5ce8e8fe0abad8c127eb20a1cc5b521620b541441c0fee5336236db0e06b0c"
+    },
+    {
+      "path": "原脚本_FLOPs审计.md",
+      "sha256": "cdbf994e88a2f18f52d8436b925a173685465614dd2cfd53e134abb73a213a5e"
+    },
+    {
+      "path": "原脚本运行说明.md",
+      "sha256": "be536bb07a00429029081a9d2c4e39d408a60bb00ca92bf8114c8ece5482399d"
+    },
+    {
+      "path": "重新审计_简明版_2026-10-03.md",
+      "sha256": "cacdae979a3f46fe9e2f6cf1d52b212a64a994a3de97a46810bd8330b1bb9d11"
+    },
+    {
+      "path": "SPSN_TP_运行说明.md",
+      "sha256": "ff84bbe9ee6451e48a0db93a333729cabbbdb496db2a990b12903ab49bec8048"
+    },
+    {
+      "path": "SPSN_TP_FLOPs说明.md",
+      "sha256": "ccd79f3a79117342b128c16de36caef92333af451079409157e6879382b32f32"
+    },
+    {
+      "path": "audit/SPSN_TP_验证记录.md",
+      "sha256": "1a52a000d577da43e8f0abf8ddca674958dd60f033f67e40a4b57d443c5b86dd"
+    },
+    {
+      "path": "audit/COMPARISON_AUDIT_CN.md",
+      "sha256": "1d6b63987833a7490e91955bb3a3c4137dfcd41edfb9e9c138e4609d6ea9136b"
+    },
+    {
+      "path": "pp3/models.py",
+      "sha256": "5bf212b4a22afb584eaf1dd62e96ce35d039d1e0051e8ae19739d32cb6d4bac0"
+    },
+    {
+      "path": "pp3/worker.py",
+      "sha256": "8140f4aa185e015fcabda78ea6cf6f473b87ec6b4e3bd0e15020f3298d5c8dd1"
+    },
+    {
+      "path": "tests/check_model.py",
+      "sha256": "dbf7304e2ee06f5eae1cb636ebc1d6aa3dfcaed13135a49feed3cd518068039c"
+    },
+    {
+      "path": "tests/test_worker.py",
+      "sha256": "813059b4a9d3cd2910deab2ae3e254c563b138482c9f0dae2d92f4ccc096ae8c"
+    },
+    {
+      "path": "audit/patch_native_entries.py",
+      "sha256": "e31e42dabffa16d12a624d249d2e0299ab9470722013021a744b010b94030eec"
+    },
+    {
+      "path": "audit/patch_gatezo_entries.py",
+      "sha256": "9e44e52974b84ecc9dfebfc8f307138d3671b6cfa3a661e0726ee58df8e1617c"
+    },
+    {
+      "path": "audit/minimal_probe.py",
+      "sha256": "2f2df95dbdee867427702ab9e846c426bea211cc4ac5f04be9dd2b5ed78af24c"
+    },
+    {
+      "path": "audit/recheck_20261003.py",
+      "sha256": "6b74f05720c36451893be4deee3275c5bc69ca534c1c2371955517dab4e2ced2"
+    },
+    {
+      "path": "audit/verify_spsn_tp_outputs.py",
+      "sha256": "fa50421a2bbfa36b4ff3c740138f94f2859ac8036c81c44ddbe1a332362afb75"
+    },
+    {
+      "path": "requirements-experiments.txt",
+      "sha256": "43beb3ae474542460a90451ad8d76e64dc07e62067b9b777b658424677acf94d"
+    },
+    {
+      "path": "submit_spsn_tp.sh",
+      "sha256": "6459b258b999a46b476e94fbc5fa71995e3f355fd3e0c04d7e9de4e7e5543704"
+    }
+  ]
+}

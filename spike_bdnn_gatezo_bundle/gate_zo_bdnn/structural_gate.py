@@ -129,7 +129,7 @@ class GateZOConfig:
     calibration_ratio: float = 0.5
     ridge: float = 0.0
     validation_ratio: float = 0.2
-    growth_min_delta: float = 1e-4
+    growth_min_delta: float = 1e-4 #这俩疑似没用的超参
     failure_patience: int = 10
     seed: int | None = None
     verbose: bool = True
@@ -361,7 +361,9 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
     X_test, T_test = np.asarray(X_test), np.asarray(T_test)
     protocol = selector.config.growth_protocol
     if protocol == "validation_checkpoint":
-        growth_indices, checkpoint_indices = selector.make_outer_split(T)
+        shared_runtime = getattr(model, '_pp3_runtime', None)
+        growth_indices, checkpoint_indices = (shared_runtime.outer_array_indices
+            if shared_runtime is not None else selector.make_outer_split(T))
         growth_X, growth_T = X[growth_indices], T[growth_indices]
         checkpoint_X, checkpoint_T = X[checkpoint_indices], T[checkpoint_indices]
     else:

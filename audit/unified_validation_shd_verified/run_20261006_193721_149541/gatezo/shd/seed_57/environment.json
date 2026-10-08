@@ -1,0 +1,8 @@
+{
+  "python": "3.10.20",
+  "torch": "2.11.0+cu128",
+  "numpy": "2.2.5",
+  "requested_device": "cpu",
+  "entrypoint": "D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_radlif_residual_proposal.py",
+  "cuda_visible_devices": ""
+}

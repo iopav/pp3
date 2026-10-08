@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "training_completed": false,
+  "reason": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_radlif_residual_proposal.py\", line 19, in <module>\n    main()\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_radlif_residual_proposal.py\", line 15, in main\n    trainer.main()\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_individual_pool_structural_zo.py\", line 681, in main\n    fit_positions, cal_positions = internal_positions(\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_individual_pool_structural_zo.py\", line 357, in internal_positions\n    balanced_sample(fit_pool, labels, fit_count, rng),\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\shd_gatezo_support.py\", line 104, in balanced_sample\n    classes = np.unique(labels[pool])\nIndexError: arrays used as indices must be of integer (or boolean) type\n"
+}

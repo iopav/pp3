@@ -1,1 +1,1 @@
-"""Minimal independent benchmark adapters; original model sources remain untouched."""
+"""Shared data, configuration and measurements for original model entry scripts."""

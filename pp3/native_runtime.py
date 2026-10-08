@@ -83,6 +83,10 @@ class MeasuredLoader:
 class Runtime:
     def __init__(self):
         self.config = json.loads(Path(os.environ['PP3_CONFIG']).read_text(encoding='utf-8'))
+        os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+        torch.use_deterministic_algorithms(True, warn_only=False)
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
         self.output = Path(self.config['output'])
         self.output.mkdir(parents=True, exist_ok=True)
         self.device = torch.device(self.config['device'])
@@ -102,7 +106,12 @@ class Runtime:
         write_json(self.output/'config.json', self.config)
         write_json(self.output/'environment.json', dict(python=platform.python_version(),
             torch=torch.__version__, numpy=np.__version__, requested_device=str(self.device),
-            entrypoint=sys.argv[0], cuda_visible_devices=os.environ.get('CUDA_VISIBLE_DEVICES')))
+            entrypoint=sys.argv[0], cuda_visible_devices=os.environ.get('CUDA_VISIBLE_DEVICES'),
+            deterministic_algorithms=torch.are_deterministic_algorithms_enabled(),
+            deterministic_warn_only=torch.is_deterministic_algorithms_warn_only_enabled(),
+            cudnn_deterministic=torch.backends.cudnn.deterministic,
+            cudnn_benchmark=torch.backends.cudnn.benchmark,
+            cublas_workspace_config=os.environ.get('CUBLAS_WORKSPACE_CONFIG')))
         previous_hook = sys.excepthook
         def hook(kind, value, tb):
             self.error = ''.join(traceback.format_exception(kind, value, tb))
@@ -123,8 +132,14 @@ class Runtime:
         train, test = self.loaders()
         values = []
         for loader in (train, test):
+            dataset=loader.dataset
+            if loader is train and self.config['method']=='gatezo':
+                validation=dataset.validation_dataset
+                self.outer_array_indices=(np.arange(len(dataset)),
+                    np.arange(len(dataset),len(dataset)+len(validation)))
+                dataset=torch.utils.data.ConcatDataset([dataset,validation])
             # Dataset order is deterministic; do not consume shuffled sampler state.
-            pairs = [loader.dataset[i] for i in range(len(loader.dataset))]
+            pairs = [dataset[i] for i in range(len(dataset))]
             values.extend((torch.stack([p[0] for p in pairs]),
                            torch.tensor([p[1] for p in pairs], dtype=torch.long)))
         write_json(self.output/'array_preparation.json', dict(seconds=time.perf_counter()-tick,
@@ -186,7 +201,7 @@ class Runtime:
 
     def epoch_row(self, epoch, unit='epoch'):
         row = dict(method=self.config['method'], dataset=self.config['dataset'],
-                   seed=self.config['seed'], epoch=epoch, unit=unit,
+                   seed=self.config['seed'], epoch=epoch, unit='epoch', source_unit=unit,
                    smoke=self.config.get('smoke', False))
         phases = ['train', 'test'] + [phase for number, phase in self.results
             if number == epoch and phase not in ('train', 'test')]

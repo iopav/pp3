@@ -1,0 +1,16 @@
+{
+  "input_directories": [
+    "audit/skip_completed_verified"
+  ],
+  "selected_tasks": [
+    {
+      "method": "spsn",
+      "dataset": "spike",
+      "seed": 57,
+      "output": "D:\\workspace\\pp3\\audit\\skip_completed_verified\\run_20261006_194515_560102\\spsn\\spike\\seed_57",
+      "experiment_id": "aca293bcd3a68735bf6d82700643409f4986ffacb7f1df9eb6b0fb41d8f0884c"
+    }
+  ],
+  "excluded": [],
+  "note": "Latest completed copy per experiment_id; FLOPs-incomplete training is included, never zero-filled."
+}

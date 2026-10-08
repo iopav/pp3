@@ -46,6 +46,37 @@ def formula(name,args,kwargs,out):
     floating=any(t.is_floating_point() or t.is_complex() for t in ts+os)
     if name.startswith('_record_function_'):
         return 0,0,'profiler_metadata'
+    if name in {'native_batch_norm','cudnn_batch_norm'} and not a.is_complex():
+        # Arithmetic equivalent of torch._decomp.decompositions.native_batch_norm_helper.
+        # Two-pass var/mean; do not count dispatched decomposition ops a second time.
+        size, channels = a.numel(), a.shape[1]
+        training=args[5]
+        f=(6*size+2*channels if training else 2*size+3*channels)
+        f += size*(int(args[1] is not None)+int(args[2] is not None))
+        if training and args[3] is not None:
+            f += 3*channels+1
+        if training and args[4] is not None:
+            f += 4*channels+4
+        return f,0,'batchnorm_reference_decomposition_estimate'
+    if name in {'native_batch_norm_backward','cudnn_batch_norm_backward'}:
+        x=args[1] if name=='native_batch_norm_backward' else args[0]
+        if x.is_complex():
+            return None,0,'complex_batchnorm_not_audited'
+        training=args[7] if name=='native_batch_norm_backward' else True
+        weight_grad=args[9][1] if name=='native_batch_norm_backward' else True
+        size,channels=x.numel(),x.shape[1]
+        f=(9*size+3*channels+2 if training else 5*size+5*channels+2)
+        f += channels*int(weight_grad)
+        return f,0,'batchnorm_backward_reference_decomposition_estimate'
+    if name in {'_linalg_solve_ex','linalg_solve_ex'}:
+        matrix,rhs=args[:2]
+        if not kwargs.get('left',args[2] if len(args)>2 else True):
+            return None,0,'right_solve_not_audited'
+        if matrix.ndim==2 and matrix.shape[0]==matrix.shape[1] and rhs.ndim in (1,2) and not matrix.is_complex():
+            width=matrix.shape[0]
+            columns=1 if rhs.ndim==1 else rhs.shape[-1]
+            return int(round(2*width**3/3+2*width**2*columns)),0,'dense_lu_factor_and_triangular_solve_leading_term_estimate'
+        return None,0,'batched_or_complex_solve_not_audited'
     if name.startswith('_foreach_'):
         operation = name[len('_foreach_'):].rstrip('_')
         # In-place foreach operators return (); count the destination list.

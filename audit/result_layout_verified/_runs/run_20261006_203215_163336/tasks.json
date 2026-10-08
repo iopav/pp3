@@ -1,0 +1,62 @@
+[
+  {
+    "method": "spsn",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "previous",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\spike\\spsn\\seed_57",
+    "skipped": true,
+    "experiment_id": "c4b85b403818bab5fdcab15261ca694190825eebefd07093d870c47da9f79863"
+  },
+  {
+    "method": "spsn",
+    "dataset": "shd",
+    "seed": 57,
+    "device": "previous",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\shd\\spsn\\seed_57",
+    "skipped": true,
+    "experiment_id": "8cabeed85884fe03bb395358e69005cb2644bc4fd2aac4bdf31f0cf7ba001633"
+  },
+  {
+    "method": "gatezo",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "previous",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\spike\\gatezo\\seed_57",
+    "skipped": true,
+    "experiment_id": "233738148f2fbb9f2af21c37eafa84b081f9c7cca20d2e155cd7acd4febd03a0"
+  },
+  {
+    "method": "gatezo",
+    "dataset": "shd",
+    "seed": 57,
+    "device": "previous",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\shd\\gatezo\\seed_57",
+    "skipped": true,
+    "experiment_id": "65375eb9c1cfc07b480ecca50d508796cd4852de72e936078f11e9df8de24b69"
+  },
+  {
+    "method": "efficienttrain",
+    "dataset": "spike",
+    "seed": 57,
+    "device": "previous",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\spike\\efficienttrain\\seed_57",
+    "skipped": true,
+    "experiment_id": "a82d948eead7262a1492f12737faeeccea489823bdae1608a80ee153bcc91ba3"
+  },
+  {
+    "method": "efficienttrain",
+    "dataset": "shd",
+    "seed": 57,
+    "device": "previous",
+    "exit_code": 2,
+    "output": "D:\\workspace\\pp3\\audit\\result_layout_verified\\shd\\efficienttrain\\seed_57",
+    "skipped": true,
+    "experiment_id": "f55081df902a6c4f2a31d85bc184d1797ee9efe8708af790ee68f93cbb336f3f"
+  }
+]

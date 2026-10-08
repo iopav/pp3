@@ -127,6 +127,13 @@ def build_speaker_loaders(args):
     train_indices, val_indices, held_out = speaker_disjoint_split(
         train_dataset.speakers, args.validation_speakers, args.seed
     )
+    import os
+    if os.environ.get('PP3_CONFIG'):
+        import json
+        from pp3.splits import outer_split
+        shared_config = json.loads(Path(os.environ['PP3_CONFIG']).read_text(encoding='utf-8'))
+        train_indices, val_indices = outer_split(train_dataset.labels, shared_config, train_dataset.speakers)
+        held_out = sorted(np.unique(train_dataset.speakers[val_indices]).tolist())
     smoke_limit = getattr(args, 'pp3_smoke_samples', None)
     if smoke_limit:
         train_indices, val_indices = train_indices[:smoke_limit], val_indices[:smoke_limit]

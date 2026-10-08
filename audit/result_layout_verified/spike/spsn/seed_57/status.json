@@ -1,0 +1,8 @@
+{
+  "status": "flops_incomplete",
+  "training_completed": true,
+  "flops_complete": false,
+  "model_bytes": 5129,
+  "epochs": 1,
+  "actual_device": "cpu"
+}

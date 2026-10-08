@@ -1,0 +1,25 @@
+{
+  "unit_tests_passed": 21,
+  "default_tasks": 105,
+  "espp_regression": [
+    {
+      "dataset": "spike",
+      "model_and_accuracy_unchanged": true,
+      "sha256": "45f7ebd430d483af507474624105879b608dd8667143c155fadd8c36597114ff"
+    },
+    {
+      "dataset": "texture",
+      "model_and_accuracy_unchanged": true,
+      "sha256": "67ffa51dd21f46cd53870a6464e1b92bdc53a4213b2d7255b01b9ef4ff0556be"
+    },
+    {
+      "dataset": "shd",
+      "model_and_accuracy_unchanged": true,
+      "sha256": "4020a79979759f1aca489fea155da29d98d5cc7e6665bba26b2d0df2daebac59"
+    }
+  ],
+  "document_links_checked": 41,
+  "document_diff_blocks": 20,
+  "deleted_named_files": 19,
+  "stale_bytecode_removed": 4
+}

@@ -1,0 +1,8 @@
+{
+  "python": "3.10.20",
+  "torch": "2.11.0+cu128",
+  "numpy": "2.2.5",
+  "requested_device": "cpu",
+  "entrypoint": "D:\\workspace\\pp3\\BDNNversion1-main\\main_exp1.py",
+  "cuda_visible_devices": ""
+}

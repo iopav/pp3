@@ -1,0 +1,8 @@
+{
+  "python": "3.10.20",
+  "torch": "2.11.0+cu128",
+  "numpy": "2.2.5",
+  "requested_device": "cpu",
+  "entrypoint": "D:\\workspace\\pp3\\SNN_FF-main\\FF_SNN\\SNNFF_SHD.py",
+  "cuda_visible_devices": ""
+}

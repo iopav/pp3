@@ -1,18 +1,28 @@
 """Portable controller. Does not import torch or initialize CUDA in the parent."""
 import argparse
-import csv
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
 import time
-from datetime import datetime
+import shutil
 import constants
+from importlib.metadata import version, PackageNotFoundError
 
 ROOT=Path(__file__).resolve().parent
 # Cluster defaults live in the top-level entry, as requested. CLI paths override these.
 DATA_PATHS={'shd':'/data/SHD','spike':'/data/spike','texture':'/data/texture'}
+
+
+def environment_versions():
+    result={}
+    for package in ['torch','torchvision','numpy','scipy','snntorch','h5py','timm']:
+        try:
+            result[package]=version(package)
+        except PackageNotFoundError:
+            result[package]=None
+    return result
 
 
 def entrypoint(config):
@@ -43,13 +53,20 @@ def main():
     for name in constants.DATASETS:
         parser.add_argument(f'--{name}-path')
     parser.add_argument('--output',default=constants.RUNTIME['output'])
+    parser.add_argument('--split-dir', help='Shared validation index directory; default OUTPUT/_splits')
     parser.add_argument('--epochs',type=int)
     parser.add_argument('--workers',type=int,default=constants.RUNTIME['workers'])
     parser.add_argument('--threads',type=int,default=constants.RUNTIME['threads'])
     parser.add_argument('--smoke',action='store_true',help='1 epoch, tiny data/model; classwise methods retain every class; see configuration')
     parser.add_argument('--smoke-full-time',action='store_true',help='With --smoke: retain all original time steps')
     parser.add_argument('--dry-run',action='store_true',help='Print resolved tasks without creating files or running models')
+    parser.add_argument('--force', action='store_true', help='Rerun even if identical completed output exists')
+    parser.add_argument('--summarize', nargs='+', help='Legacy alias: summarize existing directories only')
     args=parser.parse_args()
+    if args.summarize:
+        from summarize_experiments import summarize
+        print(summarize(args.summarize, Path(args.output)/'summary.csv'))
+        return 0
     if args.epochs is not None and args.epochs<1 or args.workers<0 or args.threads<1:
         parser.error('epochs/threads must be positive and workers nonnegative')
     if args.cpu and args.gpus:
@@ -63,8 +80,9 @@ def main():
     # Do not escape an explicitly restricted allocation by replacing its device tokens.
     if not args.cpu and inherited is not None and args.gpus and not set(args.gpus)<=set(inherited.split(',')):
         parser.error('--gpus must use tokens present in inherited CUDA_VISIBLE_DEVICES')
-    run_dir=Path(args.output).expanduser().resolve()/datetime.now().strftime('run_%Y%m%d_%H%M%S_%f')
-    pending=[]
+    result_root=Path(args.output).expanduser().resolve()
+    from pp3.completed import identity, source_digest, data_signature, completed_index, completed_status
+    pending=[]; code_hashes={}; installed=environment_versions()
     for method in dict.fromkeys(args.methods):
         for dataset in dict.fromkeys(args.datasets):
             for seed in dict.fromkeys(args.seeds):
@@ -98,19 +116,48 @@ def main():
                         if dataset!='shd':
                             c['smoke_samples']=4*c['data']['classes']
                             c['model'].update(pool_size=16, growth_step=3, zo_sample_size=0)
-                c['output']=str(run_dir/method/dataset/f'seed_{seed}')
+                c['output']=str(result_root/dataset/method/f'seed_{seed}')
+                c['split_dir']=str(Path(args.split_dir).expanduser().resolve() if args.split_dir else result_root/'_splits')
                 c['entrypoint']=str(entrypoint(c))
+                key=(method,dataset)
+                if key not in code_hashes:
+                    code_hashes[key]=source_digest(ROOT,entrypoint(c))
+                c.update(source_sha256=code_hashes[key], data_signature=data_signature(c),
+                         execution_device='cpu' if args.cpu else 'cuda',
+                         python_runtime=dict(executable=sys.executable,version=sys.version,packages=installed))
+                c['experiment_id']=identity(c)
                 pending.append(c)
     if args.dry_run:
         print(json.dumps(dict(devices=devices,tasks=pending),indent=2)); return 0
-    run_dir.mkdir(parents=True,exist_ok=False)
+    result_root.mkdir(parents=True,exist_ok=True)
     active={}; finished=[]
+    existing={} if args.force else completed_index(Path(args.output).expanduser().resolve())
+    remaining=[]
+    for c in pending:
+        previous=existing.get(c['experiment_id'])
+        status=completed_status(previous) if previous else None
+        if status:
+            code=0 if status['status']=='success' else 2
+            finished.append(dict(method=c['method'],dataset=c['dataset'],seed=c['seed'],
+                device='previous',exit_code=code,output=str(previous),skipped=True,
+                experiment_id=c['experiment_id']))
+            print(f'skip completed {c["method"]}/{c["dataset"]}/{c["seed"]}: {previous}',flush=True)
+        else:
+            remaining.append(c)
+    pending=remaining
     try:
         while pending or active:
             for gpu in devices:
                 if pending and gpu not in active:
                     c=pending.pop(0); c['device']='cpu' if gpu=='cpu' else 'cuda:0'; c['gpu_token']=gpu
-                    out=Path(c['output']); out.mkdir(parents=True)
+                    out=Path(c['output'])
+                    if out.exists():
+                        # Only replace the exact selected seed directory, after containment checks.
+                        resolved=out.resolve()
+                        if out.is_symlink() or result_root not in resolved.parents:
+                            raise RuntimeError('Refusing to replace an output outside result root or a symlink')
+                        shutil.rmtree(resolved)
+                    out.mkdir(parents=True)
                     cfg=out/'launch.json'; cfg.write_text(json.dumps(c,indent=2),encoding='utf-8')
                     env=os.environ.copy()
                     env.update(CUDA_VISIBLE_DEVICES='' if gpu=='cpu' else gpu,
@@ -119,6 +166,7 @@ def main():
                     env['PP3_CONFIG']=str(cfg)
                     env['PYTHONPATH']=os.pathsep.join(filter(None, [str(ROOT), env.get('PYTHONPATH')]))
                     env['PYTHONHASHSEED']=str(c['seed'])
+                    env['CUBLAS_WORKSPACE_CONFIG']=':4096:8'
                     script=entrypoint(c)
                     try:
                         proc=subprocess.Popen([sys.executable,str(script)],cwd=script.parent,env=env,stdout=log,stderr=subprocess.STDOUT)
@@ -155,19 +203,7 @@ def main():
         for proc,log,c in active.values():
             proc.terminate(); proc.wait(); log.close()
         raise
-    (run_dir/'tasks.json').write_text(json.dumps(finished,indent=2),encoding='utf-8')
-    rows=[]
-    for task in finished:
-        path=Path(task['output'])/'metrics.csv'
-        if path.exists():
-            with path.open(encoding='utf-8',newline='') as f:
-                for row in csv.DictReader(f):
-                    row.update(task_exit_code=task['exit_code'],task_output=task['output'])
-                    rows.append(row)
-    with (run_dir/'metrics.csv').open('w',encoding='utf-8',newline='') as f:
-        fields=list(dict.fromkeys(k for row in rows for k in row)) or ['method','dataset','seed','epoch']
-        w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows(rows)
-    print(f'Results: {run_dir}',flush=True)
+    print(f'Results: {result_root}; run summarize_experiments.py separately for summary.csv',flush=True)
     return int(any(t['exit_code'] for t in finished))
 
 
