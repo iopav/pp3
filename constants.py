@@ -4,6 +4,10 @@ import json
 import os
 from pathlib import Path
 
+# Shared defaults for full experiment runs.
+EPOCHS = 100
+BATCH_SIZE = 128
+
 DATA_ROOT = Path(os.environ.get('PP3_DATA_ROOT', '/home/yizhil/pp3/data'))
 DATASETS = {
     'spike': dict(root=str(DATA_ROOT/'spike'), steps=400, inputs=64, classes=20,
@@ -16,17 +20,17 @@ DATASETS = {
                 dt=.0005, max_time=1., channel_group_size=1,
                 jitter_std=20., jitter_copies=1, time_scale_min=.90, time_scale_max=1.10),
 }
-SPSN = dict(epochs=100, batch_size=64, hidden_size=128, layers=3, lr=.001,
+SPSN = dict(epochs=EPOCHS, batch_size=BATCH_SIZE, hidden_size=128, layers=3, lr=.001,
             tau_mem=.02, tau_syn=.02, time_step=.001, spike_mode='SB',
             loss_mode='mean', reg_thr=0.)
-TP = dict(epochs=100, batch_size=128, hidden_size=450, layers=1, lr=.0001,
+TP = dict(epochs=EPOCHS, batch_size=BATCH_SIZE, hidden_size=450, layers=1, lr=.0001,
           layerwise=True, l_vth=1., l_leak_m=.96, l_leak_t=.97,
           l_rst_type='soft', l_out_leak_m=1., l_rec=False, norm_type='none',
           surrogate_type='1', surrogate_scale=1., train_s=False)
 METHODS = {m: {d: copy.deepcopy(p) for d in DATASETS} for m,p in [('spsn',SPSN),('tp',TP)]}
 METHODS['spsn']['shd']['time_step'] = DATASETS['shd']['dt']
 EXTRA_METHODS = {
-    'gatezo': dict(epochs=120,batch_size=64,hidden_size=0,layers=1,pool_size=512,growth_step=16,
+    'gatezo': dict(epochs=EPOCHS,batch_size=BATCH_SIZE,hidden_size=0,layers=1,pool_size=512,growth_step=16,
         zo_min_keep=8,zo_sparsity_lambda=.000025,zo_sample_size=2048,ridge=.5,
         growth_failure_patience=12,growth_min_delta=.002,diversity_strength=.7,
         readout_bins=100,readout_warmup_bins=5,temporal_windows=16,
@@ -36,11 +40,11 @@ EXTRA_METHODS = {
         dt=.0005,tau_syn=.010,tau_mem=.020,input_branches=4,
         input_delay_ms=[0.,10.,25.,50.,100.,200.],frequency_bandwidths=[32,64,128,256],
         heterogeneous_tau_fraction=.5,tau_syn_min=.005,tau_syn_max=.025,tau_mem_min=.015,tau_mem_max=.060),
-    'ffsnn': dict(epochs=601,batch_size=64,hidden_size=500,layers=2,lr=.001,beta=.9,threshold=5.,loss_alpha=4.),
-    'espp': dict(epochs=1000,batch_size=128,hidden_size=200,layers=3,lr=.0001,
+    'ffsnn': dict(epochs=EPOCHS,batch_size=BATCH_SIZE,hidden_size=500,layers=2,lr=.001,beta=.9,threshold=5.,loss_alpha=4.),
+    'espp': dict(epochs=EPOCHS,batch_size=BATCH_SIZE,hidden_size=200,layers=3,lr=.0001,
                  beta=[.94,.96,.98,1.0],online=True,recurrency_type='dense',c_y=[1.5,-1.5],inp_thr=.05,
                  readout_lr=.001,readout_epochs=1),
-    'bdnn': dict(epochs=200,batch_size=64,hidden_size=100,layers=1,pool_size=100,growth_step=3,
+    'bdnn': dict(epochs=EPOCHS,batch_size=BATCH_SIZE,hidden_size=100,layers=1,pool_size=100,growth_step=3,
                  alpha=.13,beta=1.,lambdas=[.5,1,3,5,7,9,15,25,50,100,150,200],
                  r=[.99,.999,.9999,.99999,.999999],tol=.0005),
 }
@@ -50,15 +54,16 @@ for method,settings in EXTRA_METHODS.items():
 METHODS['gatezo']['shd']['native_args'] = json.loads((Path(__file__).parent /
     'gate_zo_bdnn/configs_shd_radlif_r0_gatezo_vs_no_gatezo_5seeds.json').read_text(encoding='utf-8'))[0]
 for dataset in ('spike', 'texture'):
-    METHODS['gatezo'][dataset] = dict(epochs=200, batch_size=128, hidden_size=200, layers=1,
+    METHODS['gatezo'][dataset] = dict(epochs=EPOCHS, batch_size=BATCH_SIZE, hidden_size=200, layers=1,
         pool_size=100, growth_step=3, zo_min_keep=1, zo_sparsity_lambda=1e-4,
         zo_sample_size=0, ridge=0., validation_ratio=.2, calibration_ratio=.5,
         growth_failure_patience=10, growth_min_delta=1e-4)
-METHODS['efficienttrain'] = {d: dict(epochs=200, batch_size=64, hidden_size=0, layers=0,
+METHODS['efficienttrain'] = {d: dict(epochs=EPOCHS, batch_size=BATCH_SIZE, hidden_size=0, layers=0,
     lr=.004, input_size=224, warmup_epochs=20, mixup=0., cutmix=0.,
     smoothing=.1, weight_decay=.05, model='resnet50') for d in DATASETS}
 SEEDS = [57, 58, 59, 60, 61]
 RUNTIME = dict(workers=0, threads=2, seed=57, output='/home/yizhil/pp3/result', power_sample_seconds=.1)
+# Smoke runs intentionally keep their small execution budget.
 SMOKE = dict(samples=4, steps=16, hidden_size=8, layers=1, batch_size=3, epochs=1)
 VALIDATION = dict(ratio=.2, speakers=2)
 
