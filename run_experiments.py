@@ -153,7 +153,7 @@ def main():
                         # Only replace the exact selected seed directory, after containment checks.
                         resolved=out.resolve()
                         if out.is_symlink() or result_root not in resolved.parents:
-                            raise RuntimeError('Refusing to replace an output outside result root or a symlink')
+                            raise RuntimeError('Refusing to replace an output outside result root or a symlink') 
                         shutil.rmtree(resolved)
                     out.mkdir(parents=True)
                     env=os.environ.copy()
