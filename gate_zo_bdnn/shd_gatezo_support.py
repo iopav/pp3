@@ -100,6 +100,12 @@ def stratified_fit_calibration_split(labels, ratio: float, seed: int):
 
 def balanced_sample(pool, labels, count: int, rng: np.random.RandomState):
     pool = np.asarray(pool)
+    if pool.size == 0 or count == 0:
+        return []
+    if pool.ndim != 1 or not np.issubdtype(pool.dtype, np.integer):
+        raise ValueError('Sampling pool must be a one-dimensional integer index array')
+    if count < 0:
+        raise ValueError('Sample count must be nonnegative')
     labels = np.asarray(labels)
     classes = np.unique(labels[pool])
     base, extra = divmod(min(int(count), len(pool)), len(classes))
@@ -114,6 +120,23 @@ def balanced_sample(pool, labels, count: int, rng: np.random.RandomState):
         chosen.extend(rng.choice(remaining, size=take, replace=False).tolist())
     rng.shuffle(chosen)
     return chosen
+
+
+def smoke_training_indices(labels, indices, limit):
+    """Keep four originals per class for disjoint proposal/fit/calibration."""
+    labels = np.asarray(labels)
+    indices = np.asarray(indices, dtype=np.int64)
+    pools = [indices[labels[indices] == label] for label in np.unique(labels[indices])]
+    if not pools or any(len(pool) < 4 for pool in pools):
+        raise ValueError('GateZO SHD smoke requires at least four training originals per class after speaker splitting')
+    count = min(len(indices), max(int(limit), 4 * len(pools)))
+    chosen = []
+    for offset in range(max(map(len, pools))):
+        for pool in pools:
+            if offset < len(pool):
+                chosen.append(int(pool[offset]))
+                if len(chosen) == count:
+                    return np.asarray(chosen, dtype=np.int64)
 
 
 def temporal_window_features(

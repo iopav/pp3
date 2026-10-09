@@ -352,6 +352,10 @@ def choose_coordinate_zo_mask(full, ablations, sparsity_lambda, min_keep):
 
 
 def internal_positions(labels, fit_pool, cal_pool, sample_size, rng):
+    if not len(fit_pool) or not len(cal_pool):
+        raise ValueError('GateZO requires nonempty, disjoint fit and calibration pools; increase smoke training samples')
+    if int(sample_size) < 2:
+        raise ValueError('GateZO sample size must be at least two for fit/calibration')
     fit_count = (int(sample_size) + 1) // 2
     cal_count = int(sample_size) // 2
     return (

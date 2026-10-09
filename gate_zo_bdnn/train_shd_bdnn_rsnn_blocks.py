@@ -136,7 +136,12 @@ def build_speaker_loaders(args):
         held_out = sorted(np.unique(train_dataset.speakers[val_indices]).tolist())
     smoke_limit = getattr(args, 'pp3_smoke_samples', None)
     if smoke_limit:
-        train_indices, val_indices = train_indices[:smoke_limit], val_indices[:smoke_limit]
+        try:
+            from .shd_gatezo_support import smoke_training_indices
+        except ImportError:
+            from shd_gatezo_support import smoke_training_indices
+        train_indices = smoke_training_indices(train_dataset.labels, train_indices, smoke_limit)
+        val_indices = val_indices[:smoke_limit]
         test_dataset = Subset(test_dataset, list(range(min(smoke_limit, len(test_dataset)))))
     channel_group_size = int(getattr(args, "input_channel_group_size", 1))
     jitter_std = float(getattr(args, "train_channel_jitter_std", 0.0))
