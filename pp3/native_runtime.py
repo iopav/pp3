@@ -7,7 +7,6 @@ import atexit
 import csv
 import json
 import os
-import platform
 from pathlib import Path
 import random
 import sys
@@ -82,7 +81,8 @@ class MeasuredLoader:
 
 class Runtime:
     def __init__(self):
-        self.config = json.loads(Path(os.environ['PP3_CONFIG']).read_text(encoding='utf-8'))
+        self.config = (json.loads(os.environ['PP3_CONFIG_JSON']) if os.environ.get('PP3_CONFIG_JSON')
+                       else json.loads(Path(os.environ['PP3_CONFIG']).read_text(encoding='utf-8')))
         os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
         torch.use_deterministic_algorithms(True, warn_only=False)
         torch.backends.cudnn.deterministic = True
@@ -103,15 +103,6 @@ class Runtime:
         self.complete = True
         self.finished = False
         self.error = None
-        write_json(self.output/'config.json', self.config)
-        write_json(self.output/'environment.json', dict(python=platform.python_version(),
-            torch=torch.__version__, numpy=np.__version__, requested_device=str(self.device),
-            entrypoint=sys.argv[0], cuda_visible_devices=os.environ.get('CUDA_VISIBLE_DEVICES'),
-            deterministic_algorithms=torch.are_deterministic_algorithms_enabled(),
-            deterministic_warn_only=torch.is_deterministic_algorithms_warn_only_enabled(),
-            cudnn_deterministic=torch.backends.cudnn.deterministic,
-            cudnn_benchmark=torch.backends.cudnn.benchmark,
-            cublas_workspace_config=os.environ.get('CUBLAS_WORKSPACE_CONFIG')))
         previous_hook = sys.excepthook
         def hook(kind, value, tb):
             self.error = ''.join(traceback.format_exception(kind, value, tb))
@@ -121,8 +112,6 @@ class Runtime:
 
     def loaders(self, device=False):
         train, test, seconds = build_loaders(self.config)
-        write_json(self.output/'data.json', dict(setup_seconds=seconds,
-                   train_samples=len(train.dataset), test_samples=len(test.dataset)))
         destination = self.device if device else None
         return MeasuredLoader(train, self, destination), MeasuredLoader(test, self, destination)
 
@@ -142,8 +131,6 @@ class Runtime:
             pairs = [dataset[i] for i in range(len(dataset))]
             values.extend((torch.stack([p[0] for p in pairs]),
                            torch.tensor([p[1] for p in pairs], dtype=torch.long)))
-        write_json(self.output/'array_preparation.json', dict(seconds=time.perf_counter()-tick,
-                   note='Native full-array input interface; no disk cache'))
         return tuple(values)
 
     def ordered_loader(self, dataset, device=False):
@@ -198,7 +185,6 @@ class Runtime:
                 raise FloatingPointError('Non-finite '+key)
         self.complete &= result['complete']
         self.results[(self.epoch, self.phase)] = result
-        write_json(self.output/f'epoch_{self.epoch:04d}_{self.phase}_operations.json', result)
         return result
 
     def epoch_row(self, epoch, unit='epoch'):
@@ -245,7 +231,17 @@ class Runtime:
                     row[phase+'_flops'] = result['flops']
         self._csv()
         self.finished = True
+        # Retain aggregate one-time costs and missing-rule reasons, not operator traces.
+        one_time = [dict(epoch=number, phase=phase, **{k: result.get(k) for k in
+                    ('gpu_energy_j','seconds','flops','known_flops','energy_reason','energy_method','accuracy')})
+                    for (number, phase), result in self.results.items()
+                    if phase == 'prepare' or phase.startswith('final_')]
+        missing = sorted({str(item.get('operator')) + ': ' + str(item.get('rule', ''))
+                          for result in self.results.values() for item in result.get('unknown', [])})
         write_json(self.output/'status.json', dict(
+            artifact_version=2, experiment_id=self.config.get('experiment_id'),
+            method=self.config['method'], dataset=self.config['dataset'], seed=self.config['seed'],
+            one_time_metrics=one_time, flops_missing=missing,
             status='success' if self.complete else 'flops_incomplete',
             training_completed=True, flops_complete=self.complete,
             model_bytes=path.stat().st_size, epochs=len(self.rows), actual_device=str(self.device)))

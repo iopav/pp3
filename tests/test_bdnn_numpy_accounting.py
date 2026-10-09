@@ -213,12 +213,26 @@ class BDNNNumpyAccountingTests(unittest.TestCase):
                 launch.write_text(json.dumps(config), encoding='utf-8')
                 env = os.environ.copy()
                 env.update(PP3_CONFIG=str(launch), PYTHONPATH=str(root))
-                proc = subprocess.run([sys.executable, str(root/'BDNNversion1-main/main_exp1.py')],
+                if enabled:
+                    env.update(PP3_CONFIG='environment', PP3_CONFIG_JSON=json.dumps(config))
+                probe = (
+                    "import runpy,sys,json,os; from pathlib import Path; "
+                    "from pp3.native_runtime import Runtime; phases={}; original=Runtime.end; "
+                    "exec('def capture(self,*a,**kw):\\n r=original(self,*a,**kw)\\n phases[f\"epoch_{self.epoch:04d}_{self.phase}_operations.json\"]=r\\n return r'); "
+                    "Runtime.end=capture; sys.path.insert(0,str(Path(sys.argv[1]).parent)); "
+                    "runpy.run_path(sys.argv[1],run_name='__main__'); "
+                    "out=Path(json.loads(os.environ.get('PP3_CONFIG_JSON') or Path(os.environ['PP3_CONFIG']).read_text())['output']); "
+                    "(out/'test_phases.json').write_text(json.dumps(phases))"
+                )
+                proc = subprocess.run([sys.executable, '-c', probe, str(root/'BDNNversion1-main/main_exp1.py')],
                                       env=env, capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=60)
                 self.assertEqual(proc.returncode, 0, proc.stderr[-5000:])
                 status = json.loads((output/'status.json').read_text())
                 self.assertTrue(status['training_completed'])
-                phases = {p.name: json.loads(p.read_text()) for p in output.glob('*_operations.json')}
+                self.assertFalse(list(output.glob('*_operations.json')))
+                for name in ('config.json','environment.json','data.json','launch.json','array_preparation.json'):
+                    self.assertFalse((output/name).exists(), name)
+                phases = json.loads((output/'test_phases.json').read_text())
                 for phase in phases.values():
                     self.assertEqual(sum(r['flops'] for r in phase['operations']), phase['known_flops'])
                     self.assertEqual(sum(phase['known_flops_by_stage'].values()), phase['known_flops'])

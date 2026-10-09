@@ -22,6 +22,26 @@ def fixture(out, **changes):
 
 
 class CompletedTests(unittest.TestCase):
+    def test_compact_artifacts_skip_and_preserve_one_time_summary(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder); out=root/'task'
+            config=fixture(out)
+            (out/'launch.json').unlink()
+            (out/'epoch_0001_train_operations.json').unlink()
+            (out/'metrics.csv').write_text('epoch,epoch_known_flops,epoch_flops_complete,final_model_bytes\n1,12,False,4\n')
+            status=dict(artifact_version=2, experiment_id=config['experiment_id'],
+                        method='spsn',dataset='spike',seed=57,status='flops_incomplete',
+                        training_completed=True,model_bytes=4,epochs=1,
+                        one_time_metrics=[dict(phase='final_refit',known_flops=7)])
+            (out/'status.json').write_text(json.dumps(status))
+            self.assertIn(config['experiment_id'], completed_index(root))
+            destination=summarize([root],root/'summary.csv')
+            with destination.open(encoding='utf-8-sig') as stream:
+                rows=list(csv.DictReader(stream))
+            self.assertEqual([(r['record_type'],r['flops']) for r in rows], [('epoch','12'),('final_refit','7')])
+            (out/'model.pt').write_bytes(b'broken')
+            self.assertFalse(completed_index(root))
+
     def test_shared_numpy_accounting_changes_source_identity(self):
         with tempfile.TemporaryDirectory() as folder:
             root = Path(folder)

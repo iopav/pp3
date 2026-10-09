@@ -262,7 +262,7 @@ def parse_args():
     )
     parser.add_argument("--resume", action="store_true")
     if os.environ.get('PP3_CONFIG'):
-        config = json.loads(Path(os.environ['PP3_CONFIG']).read_text(encoding='utf-8'))
+        config = json.loads(os.environ.get('PP3_CONFIG_JSON') or Path(os.environ['PP3_CONFIG']).read_text(encoding='utf-8'))
         model, data = config['model'], config['data']
         values = dict(model.get('native_args', {}))
         values.update({key: value for key, value in model.items()

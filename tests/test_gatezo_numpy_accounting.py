@@ -97,9 +97,13 @@ class GateZONumpyAccountingTests(unittest.TestCase):
                     probe = (
                         "import runpy,sys,json,os; from pathlib import Path; "
                         "import numpy as np; import torch; "
+                        "from pp3.native_runtime import Runtime; phases=[]; original=Runtime.end; "
+                        "exec('def capture(self,*a,**kw):\\n r=original(self,*a,**kw)\\n phases.append(r)\\n return r'); "
+                        "Runtime.end=capture; "
                         "runpy.run_path(sys.argv[1],run_name='__main__'); "
                         "out=Path(json.loads(Path(os.environ['PP3_CONFIG']).read_text())['output']); "
-                        "torch.save((np.random.get_state(),torch.random.get_rng_state()),out/'rng.pt')"
+                        "torch.save((np.random.get_state(),torch.random.get_rng_state()),out/'rng.pt'); "
+                        "(out/'test_phases.json').write_text(json.dumps(phases))"
                     )
                     proc = subprocess.run([sys.executable, '-c', probe, str(script)], cwd=script.parent, env=env,
                                           capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=60)
@@ -109,7 +113,8 @@ class GateZONumpyAccountingTests(unittest.TestCase):
                     # Native history contains timing, so compare the scientific outputs.
                     rng = torch.load(output/'rng.pt', weights_only=False)
                     runs.append((state, {k: summary[k] for k in ('training','test','hidden_size','checkpoint_accuracy')}, rng))
-                    phases = [json.loads(p.read_text()) for p in output.glob('*_operations.json')]
+                    self.assertFalse(list(output.glob('*_operations.json')))
+                    phases = json.loads((output/'test_phases.json').read_text())
                     if enabled:
                         rows = [r for phase in phases for r in phase['operations']]
                         solver_name = 'manual::numpy::solve' if config['model']['ridge'] else 'manual::numpy::pinv'

@@ -53,6 +53,20 @@ def completed_status(directory):
             rows=list(csv.DictReader(stream))
         if not rows or len(rows)!=status['epochs']:
             return None
+        if status.get('artifact_version') == 2:
+            if not status.get('experiment_id'):
+                return None
+            epochs = [int(row['epoch']) for row in rows]
+            if len(set(epochs)) != len(epochs):
+                return None
+            for row in rows:
+                if row.get('epoch_flops_complete') not in {'True', 'False'}:
+                    return None
+                if float(row['epoch_known_flops']) < 0:
+                    return None
+                if int(row['final_model_bytes']) != status['model_bytes']:
+                    return None
+            return status
         for row in rows:
             epoch=int(row['epoch'])
             phase=json.loads((directory/f'epoch_{epoch:04d}_train_operations.json').read_text(encoding='utf-8'))
@@ -74,6 +88,12 @@ def completed_status(directory):
 
 def completed_index(root):
     result={}
+    for path in sorted(Path(root).rglob('status.json')):
+        if '_history' in path.relative_to(root).parts:
+            continue
+        status = completed_status(path.parent)
+        if status and status.get('artifact_version') == 2 and status.get('experiment_id'):
+            result[status['experiment_id']] = path.parent
     for path in sorted(Path(root).rglob('launch.json')):
         if '_history' in path.relative_to(root).parts:
             continue

@@ -156,12 +156,12 @@ def main():
                             raise RuntimeError('Refusing to replace an output outside result root or a symlink')
                         shutil.rmtree(resolved)
                     out.mkdir(parents=True)
-                    cfg=out/'launch.json'; cfg.write_text(json.dumps(c,indent=2),encoding='utf-8')
                     env=os.environ.copy()
                     env.update(CUDA_VISIBLE_DEVICES='' if gpu=='cpu' else gpu,
                                OMP_NUM_THREADS=str(args.threads),MKL_NUM_THREADS=str(args.threads),PYTHONUNBUFFERED='1')
                     log=(out/'run.log').open('w',encoding='utf-8')
-                    env['PP3_CONFIG']=str(cfg)
+                    env['PP3_CONFIG']='environment'
+                    env['PP3_CONFIG_JSON']=json.dumps(c)
                     env['PYTHONPATH']=os.pathsep.join(filter(None, [str(ROOT), env.get('PYTHONPATH')]))
                     env['PYTHONHASHSEED']=str(c['seed'])
                     env['CUBLAS_WORKSPACE_CONFIG']=':4096:8'
@@ -195,6 +195,15 @@ def main():
                     log.close(); finished.append(dict(method=c['method'],dataset=c['dataset'],seed=c['seed'],device=gpu,exit_code=code,output=c['output']))
                     del active[gpu]
                     print(f'finish {c["method"]}/{c["dataset"]}/{c["seed"]} exit={code}',flush=True)
+                    if code:
+                        print(f'  status={status.get("status", "failed")} training_completed={status.get("training_completed", False)}', flush=True)
+                        if status.get('reason'):
+                            print(status['reason'], flush=True)
+                        for reason in status.get('flops_missing', []):
+                            print(f'  FLOPs: {reason}', flush=True)
+                        print(f'  log: {Path(c["output"])/"run.log"}', flush=True)
+                        if not status.get('training_completed'):
+                            print('\n'.join((Path(c['output'])/'run.log').read_text(encoding='utf-8', errors='replace').splitlines()[-30:]), flush=True)
             if active:
                 time.sleep(.2)
     except BaseException:

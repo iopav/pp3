@@ -18,7 +18,7 @@ class ControllerTests(unittest.TestCase):
             def __init__(self, command, cwd, env, stdout, stderr):
                 self.gpu = env['CUDA_VISIBLE_DEVICES']
                 self_test.assertEqual(env['CUBLAS_WORKSPACE_CONFIG'], ':4096:8')
-                self.config = json.loads(Path(env['PP3_CONFIG']).read_text(encoding='utf-8'))
+                self.config = json.loads(env['PP3_CONFIG_JSON'])
                 self.output = Path(self.config['output'])
                 self.code = 1 if not launched else 0
                 self.polls, self.finished = 0, False
@@ -62,6 +62,7 @@ class ControllerTests(unittest.TestCase):
             self.assertEqual(sum(s['status']=='success' for s in statuses),3)
             self.assertFalse((Path(directory)/'_runs').exists())
             self.assertFalse((Path(directory)/'_history').exists())
+            self.assertFalse(list(Path(directory).rglob('launch.json')))
 
 
 if __name__ == '__main__':

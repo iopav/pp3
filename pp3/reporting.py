@@ -50,11 +50,15 @@ def export_summary(run_directory, tasks=None, destination=None):
                 if value and key.endswith(('_energy_method', '_energy_reason')))
             rows.append(row)
         # Preparation and final refit are not charged repeatedly to each epoch.
-        for path in sorted(out.glob('epoch_*_operations.json')):
-            phase = path.stem.split('_', 2)[2].removesuffix('_operations')
+        one_time = status.get('one_time_metrics', [])
+        if status.get('artifact_version') != 2:
+            one_time = [dict(json.loads(path.read_text(encoding='utf-8')),
+                        phase=path.stem.split('_', 2)[2].removesuffix('_operations'))
+                        for path in sorted(out.glob('epoch_*_operations.json'))]
+        for record in one_time:
+            phase = record['phase']
             if phase != 'prepare' and not phase.startswith('final_'):
                 continue
-            record = json.loads(path.read_text(encoding='utf-8'))
             row = dict(base, record_type=phase, epoch=None, source_unit='one_time',
                        energy_j=record.get('gpu_energy_j'), seconds=record.get('seconds'),
                        flops=record.get('flops') if record.get('flops') is not None else record.get('known_flops'),
