@@ -30,4 +30,4 @@ conda activate avalanche
 
 # Respect Slurm device allocation. Do not pass host GPU numbers manually.
 : "${CUDA_VISIBLE_DEVICES:?Slurm did not expose a GPU allocation}"
-python -u run_experiments.py --output result --workers 2 --threads 2 "$@"
+python -u run_experiments.py --workers 2 --threads 2 "$@"

@@ -58,7 +58,7 @@ METHODS['efficienttrain'] = {d: dict(epochs=200, batch_size=64, hidden_size=0, l
     lr=.004, input_size=224, warmup_epochs=20, mixup=0., cutmix=0.,
     smoothing=.1, weight_decay=.05, model='resnet50') for d in DATASETS}
 SEEDS = [57, 58, 59, 60, 61]
-RUNTIME = dict(workers=0, threads=2, seed=57, output='result', power_sample_seconds=.1)
+RUNTIME = dict(workers=0, threads=2, seed=57, output='/home/yizhil/pp3/result', power_sample_seconds=.1)
 SMOKE = dict(samples=4, steps=16, hidden_size=8, layers=1, batch_size=3, epochs=1)
 VALIDATION = dict(ratio=.2, speakers=2)
 
