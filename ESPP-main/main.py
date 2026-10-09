@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     # train model
     if runtime:
-        runtime.begin('prepare', unknown='Native initialization Python arithmetic not audited')
+        runtime.begin('prepare')
     SNN = EchoSpike(args.n_inputs, args.n_hidden, c_y= args.c_y, beta=args.beta,
                      device=args.device, recurrency_type=args.recurrency_type,
                      n_time_steps=args.n_time_bins, online=args.online, inp_thr=args.inp_thr).to(args.device)

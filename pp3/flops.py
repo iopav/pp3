@@ -161,8 +161,17 @@ def formula(name,args,kwargs,out):
         return 3*a.numel(),0,'sampling_exponential_race_estimate'
     if name=='uniform_':
         return 2*n,0,'uniform_affine_scale_and_shift_rng_engine_excluded'
-    if name in {'normal_','randn'}:
-        return None,0,'normal_rng_transform_not_audited'
+    if name in {'normal_','randn','randn_like'}:
+        if any(t.is_complex() for t in os):
+            return None,0,'complex_normal_rng_transform_not_audited'
+        # Reference: PyTorch v2.11.0 native/cpu/DistributionTemplates.h,
+        # normal_fill_16. Per pair: 1-u, log, *-2, sqrt, *2pi,
+        # sin, cos, two radius products = 9 arithmetic equivalents;
+        # scale and shift each retained output = 2N (including defaults).
+        # This is a portable reference estimate, NOT kernel instruction cost:
+        # exclude uniform RNG engine/conversion, cache, vector tail redraws,
+        # and backend-specific algorithms. Count special functions as one.
+        return 9*((n+1)//2)+2*n,0,'normal_box_muller_reference_estimate_rng_engine_excluded'
     if name=='abs' and a.is_complex():
         return 4*n,0,'complex_magnitude_mul_mul_add_sqrt'
     if name in {'scatter','scatter_'} and (kwargs.get('reduce') is not None or len(args)>4):
@@ -303,6 +312,9 @@ class FlopCounter(TorchDispatchMode):
         outs=[dict(shape=list(t.shape),dtype=str(t.dtype)) for t in tensors(out)]
         # Include formula/count to distinguish alpha/beta/reduction options at same shape.
         key=(self.stage,str(func),str(ins),str(outs),rule,f,fft)
+        if f is None:
+            # Preserve distinct scalar options for later rule-based backfilling.
+            key += (str(argument_metadata(args)), str(argument_metadata(kwargs)))
         if key not in self.records:
             self.records[key]=dict(stage=self.stage,operator=str(func),inputs=ins,outputs=outs,rule=rule,
                 scalar_arguments=[argument_metadata(v) for v in args if not isinstance(v,torch.Tensor)],

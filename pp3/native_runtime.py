@@ -101,6 +101,7 @@ class Runtime:
         self.counter = self.energy = None
         self.data_wait = 0.
         self.complete = True
+        self.unknown_records = []
         self.finished = False
         self.error = None
         previous_hook = sys.excepthook
@@ -153,18 +154,14 @@ class Runtime:
             if counter:
                 counter.paused = paused
 
-    def begin(self, phase, epoch=0, unknown=None, excluded=None):
+    def begin(self, phase, epoch=0, excluded=None):
         if self.counter is not None:
             raise RuntimeError('Nested measurement phases are not permitted')
         self.phase, self.epoch, self.data_wait = phase, epoch, 0.
         self.counter = FlopCounter(enabled=self.config.get('count_flops', True))
         self.counter.stage = phase
-        if unknown:
-            self.counter.mark_unknown('native::uncovered', unknown)
         if excluded:
             self.counter.mark_excluded('python_scalar_bookkeeping', excluded)
-        if not self.config.get('count_flops', True):
-            self.counter.mark_unknown('native::disabled', 'Counting disabled for transparency test')
         self.energy = Energy(self.device, self.config['power_sample_seconds'])
         self.energy.__enter__()
         self.counter.__enter__()
@@ -177,13 +174,24 @@ class Runtime:
         self.counter = None
         energy.__exit__(None, None, None)
         result = counter.summary()
+        self.unknown_records.extend(dict(epoch=self.epoch, phase=self.phase, **item)
+                                    for item in result['unknown'])
+        calls = {}
+        for item in self.unknown_records:
+            calls[item['operator']] = calls.get(item['operator'], 0) + item['calls']
+        # Atomic snapshot after each phase; only missing-rule details are retained.
+        temporary = self.output/'flops_unknown.json.tmp'
+        write_json(temporary, dict(calls_by_operator=calls, records=self.unknown_records))
+        temporary.replace(self.output/'flops_unknown.json')
+        self.complete = not self.unknown_records
+        if not counter.enabled:
+            result.update(complete=None, flops=None)
         result.update(energy.result(), data_wait_seconds=self.data_wait,
                       accuracy=None if accuracy is None else float(accuracy),
                       loss=None if loss is None else float(loss))
         for key in ('accuracy', 'loss'):
             if result[key] is not None and not np.isfinite(result[key]):
                 raise FloatingPointError('Non-finite '+key)
-        self.complete &= result['complete']
         self.results[(self.epoch, self.phase)] = result
         return result
 
@@ -231,19 +239,17 @@ class Runtime:
                     row[phase+'_flops'] = result['flops']
         self._csv()
         self.finished = True
-        # Retain aggregate one-time costs and missing-rule reasons, not operator traces.
+        # Full missing-rule records are persisted by end() in flops_unknown.json.
         one_time = [dict(epoch=number, phase=phase, **{k: result.get(k) for k in
                     ('gpu_energy_j','seconds','flops','known_flops','energy_reason','energy_method','accuracy')})
                     for (number, phase), result in self.results.items()
                     if phase == 'prepare' or phase.startswith('final_')]
-        missing = sorted({str(item.get('operator')) + ': ' + str(item.get('rule', ''))
-                          for result in self.results.values() for item in result.get('unknown', [])})
         write_json(self.output/'status.json', dict(
             artifact_version=2, experiment_id=self.config.get('experiment_id'),
             method=self.config['method'], dataset=self.config['dataset'], seed=self.config['seed'],
-            one_time_metrics=one_time, flops_missing=missing,
+            one_time_metrics=one_time, flops_unknown_file='flops_unknown.json',
             status='success' if self.complete else 'flops_incomplete',
-            training_completed=True, flops_complete=self.complete,
+            training_completed=True, flops_complete=self.complete if self.config.get('count_flops', True) else None,
             model_bytes=path.stat().st_size, epochs=len(self.rows), actual_device=str(self.device)))
 
     def _exit(self):

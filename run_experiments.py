@@ -7,10 +7,55 @@ import subprocess
 import sys
 import time
 import shutil
+import signal
+import traceback
 import constants
 from importlib.metadata import version, PackageNotFoundError
 
 ROOT=Path(__file__).resolve().parent
+
+
+def record_exit(config, log, process_code, interruption=None):
+    """Persist controller diagnostics after the child has stopped writing."""
+    path = Path(config['output'])/'status.json'
+    try:
+        status = json.loads(path.read_text(encoding='utf-8')) if path.exists() else {}
+        if not isinstance(status, dict):
+            raise ValueError('expected a JSON object')
+    except (OSError, ValueError) as error:
+        status = dict(status='failed', training_completed=False,
+                      reason='Invalid status report: '+str(error))
+    if interruption or process_code != 0 or not status:
+        reason = interruption or status.get('reason')
+        if not reason:
+            if process_code < 0 and os.name != 'nt':
+                try:
+                    name = signal.Signals(-process_code).name
+                except ValueError:
+                    name = str(-process_code)
+                reason = f'Child terminated by signal {name}; external cause unavailable to controller'
+            else:
+                reason = f'Child exited with code {process_code}; no successful completion report; see preceding output'
+        status.update(status='failed', training_completed=False, reason=reason)
+    code = process_code or (0 if status.get('status') == 'success' else 2)
+    status.update(process_exit_code=process_code, exit_code=code)
+    lines = [f'finish {config["method"]}/{config["dataset"]}/{config["seed"]} exit={code}',
+             f'  status={status.get("status", "failed")} training_completed={status.get("training_completed", False)}',
+             f'  process_exit_code={process_code}']
+    if status.get('reason'):
+        lines.append(str(status['reason']))
+    if status.get('status') == 'flops_incomplete':
+        lines.append('  FLOPs coverage check failed; see flops_unknown.json')
+    # Seek explicitly: the child may have advanced the shared file descriptor.
+    log.seek(0, os.SEEK_END)
+    log.write('\n[controller]\n'+'\n'.join(lines)+'\n')
+    log.flush()
+    path.write_text(json.dumps(status, indent=2), encoding='utf-8')
+    return code, lines
+
+
+def controller_signal(signum, frame):
+    raise SystemExit(f'Controller received signal {signal.Signals(signum).name}')
 
 
 def environment_versions():
@@ -143,6 +188,7 @@ def main():
         else:
             remaining.append(c)
     pending=remaining
+    previous_signals = {s: signal.signal(s, controller_signal) for s in (signal.SIGTERM, signal.SIGINT)}
     try:
         while pending or active:
             for gpu in devices:
@@ -169,9 +215,9 @@ def main():
                     try:
                         proc=subprocess.Popen([sys.executable,str(script)],cwd=script.parent,env=env,stdout=log,stderr=subprocess.STDOUT)
                     except OSError as error:
-                        log.write(str(error)); log.close()
-                        (out/'status.json').write_text(json.dumps(dict(status='failed',
-                            training_completed=False,reason=str(error)),indent=2),encoding='utf-8')
+                        _, lines = record_exit(c, log, 1, traceback.format_exc())
+                        log.close()
+                        print('\n'.join(lines), flush=True)
                         finished.append(dict(method=c['method'],dataset=c['dataset'],seed=c['seed'],
                             device=gpu,exit_code=1,output=c['output']))
                         continue
@@ -180,36 +226,32 @@ def main():
             for gpu,(proc,log,c) in list(active.items()):
                 code=proc.poll()
                 if code is not None:
-                    status_path=Path(c['output'])/'status.json'
-                    try:
-                        status=json.loads(status_path.read_text(encoding='utf-8')) if status_path.exists() else {}
-                    except (OSError, ValueError) as error:
-                        status=dict(status='failed',training_completed=False,reason='Invalid status report: '+str(error))
-                    if not status:
-                        status=dict(status='failed', training_completed=False,
-                                    reason='Entry failed before reporting status; see run.log', process_exit_code=code)
-                        status_path.write_text(json.dumps(status,indent=2),encoding='utf-8')
-                    # A script exit of zero does not certify a complete measurement.
-                    if code==0 and status.get('status')!='success':
-                        code=2
+                    code, lines = record_exit(c, log, code)
                     log.close(); finished.append(dict(method=c['method'],dataset=c['dataset'],seed=c['seed'],device=gpu,exit_code=code,output=c['output']))
                     del active[gpu]
-                    print(f'finish {c["method"]}/{c["dataset"]}/{c["seed"]} exit={code}',flush=True)
+                    print('\n'.join(lines), flush=True)
                     if code:
-                        print(f'  status={status.get("status", "failed")} training_completed={status.get("training_completed", False)}', flush=True)
-                        if status.get('reason'):
-                            print(status['reason'], flush=True)
-                        for reason in status.get('flops_missing', []):
-                            print(f'  FLOPs: {reason}', flush=True)
                         print(f'  log: {Path(c["output"])/"run.log"}', flush=True)
-                        if not status.get('training_completed'):
-                            print('\n'.join((Path(c['output'])/'run.log').read_text(encoding='utf-8', errors='replace').splitlines()[-30:]), flush=True)
             if active:
                 time.sleep(.2)
     except BaseException:
+        reason = 'Controller interrupted:\n'+traceback.format_exc()
         for proc,log,c in active.values():
-            proc.terminate(); proc.wait(); log.close()
+            try:
+                if proc.poll() is None:
+                    proc.terminate()
+                try:
+                    code = proc.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    proc.kill()
+                    code = proc.wait()
+                record_exit(c, log, code, reason)
+            finally:
+                log.close()
         raise
+    finally:
+        for signum, handler in previous_signals.items():
+            signal.signal(signum, handler)
     print(f'Results: {result_root}; run summarize_experiments.py separately for summary.csv',flush=True)
     return int(any(t['exit_code'] for t in finished))
 

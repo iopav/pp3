@@ -66,7 +66,7 @@ def run(args):
 
         # Initialize the model 
         if runtime:
-            runtime.begin('prepare', unknown='Native initialization Python/NumPy arithmetic not audited')
+            runtime.begin('prepare')
         model = model_init(algorithm=args.algorithm,
                            dataset=args.dataset,
                            model_params=model_params,

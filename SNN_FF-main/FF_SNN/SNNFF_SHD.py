@@ -252,7 +252,7 @@ if not runtime:
 
 n_units = settings['hidden_size'] if runtime else 500
 if runtime:
-    runtime.begin('prepare', unknown='Native Python initialization arithmetic not audited') 
+    runtime.begin('prepare')
 
 model = nn.Sequential(
     nn.Sequential(LeakyLayer(input_size, n_units)),

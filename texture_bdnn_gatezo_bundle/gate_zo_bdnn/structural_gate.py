@@ -422,7 +422,7 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
         start = time.time()
         attempts += 1
         if runtime:
-            runtime.begin('train', attempts, unknown='NumPy candidate scoring and non-matrix arithmetic not fully counted; readout linear algebra counted')
+            runtime.begin('train', attempts)
         old_count = 0 if isinstance(model.W, list) else int(np.asarray(model.W).shape[1])
         w_new, u_new, flag = model.sc_Search(growth_X, growth_T)
         if flag == 1:
@@ -471,7 +471,7 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
         selector.history.append(record)
         if runtime:
             runtime.end(train_metrics['accuracy'], train_metrics['mse'])
-            runtime.begin('test', attempts, unknown='NumPy non-matrix metric arithmetic not fully counted')
+            runtime.begin('test', attempts)
             test_h, _ = model.getH(X_test)
             observed = classification_metrics(np.asarray(test_h), T_test, model.Beta, _counter(model))
             runtime.end(observed['accuracy'], observed['mse'])
@@ -491,7 +491,7 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
     if best_state is None:
         raise RuntimeError("BDNN could not produce a checkpoint")
     if runtime:
-        runtime.begin('final_refit_and_test', unknown='NumPy non-matrix evaluation arithmetic not fully counted')
+        runtime.begin('final_refit_and_test')
     selector.restore(model, best_state)
     train_metrics, test_metrics = refit_and_measure(
         model, X, T, X_test, T_test, selector.config.ridge

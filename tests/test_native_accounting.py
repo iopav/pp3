@@ -1,9 +1,113 @@
 import unittest
+import contextlib
+import io
+import json
+import tempfile
+from pathlib import Path
+from unittest.mock import MagicMock
 import torch
 from pp3.flops import FlopCounter
 
 
 class NativeAccountingTests(unittest.TestCase):
+    def test_status_depends_only_on_detected_missing_rules(self):
+        from pp3.native_runtime import Runtime
+        for enabled, missing in ((True, False), (True, True), (False, False)):
+            with self.subTest(enabled=enabled, missing=missing), tempfile.TemporaryDirectory() as directory:
+                runtime = Runtime.__new__(Runtime)
+                runtime.output = Path(directory)
+                runtime.config = dict(method='tp', dataset='spike', seed=57, count_flops=enabled)
+                runtime.device = torch.device('cpu')
+                runtime.rows, runtime.results, runtime.unknown_records = [], {}, []
+                runtime.phase, runtime.epoch, runtime.data_wait = 'train', 1, 0.
+                runtime.energy = MagicMock()
+                runtime.energy.result.return_value = {}
+                runtime.counter = FlopCounter(enabled=enabled)
+                value = torch.ones(3)
+                runtime.counter.__enter__()
+                if missing:
+                    torch.lgamma(value)
+                else:
+                    value + value
+                runtime.end()
+                runtime.finish({})
+                status = json.loads((runtime.output/'status.json').read_text())
+                self.assertEqual(status['status'], 'flops_incomplete' if missing else 'success')
+                self.assertNotIn('flops_missing_calls', status)
+                self.assertEqual(status['flops_complete'], (not missing) if enabled else None)
+
+    def test_missing_calls_persist_per_shape_and_phase(self):
+        from pp3.native_runtime import Runtime
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = Runtime.__new__(Runtime)
+            runtime.output = Path(directory)
+            runtime.phase, runtime.epoch = 'train', 2
+            runtime.data_wait, runtime.complete, runtime.results = 0., True, {}
+            runtime.unknown_records = []
+            runtime.energy = MagicMock()
+            runtime.energy.result.return_value = {}
+            runtime.counter = FlopCounter()
+            small, large = torch.ones(3), torch.ones(5)
+            runtime.counter.__enter__()
+            torch.lgamma(small)
+            torch.lgamma(small)
+            torch.lgamma(large)
+            log = io.StringIO()
+            with contextlib.redirect_stdout(log):
+                runtime.end()
+            report = json.loads((Path(directory)/'flops_unknown.json').read_text())
+            records = report['records']
+            self.assertEqual(report['calls_by_operator'], {'aten.lgamma.default': 3})
+            self.assertEqual(sorted(r['calls'] for r in records), [1, 2])
+            self.assertEqual({tuple(r['inputs'][0]['shape']) for r in records}, {(3,), (5,)})
+            self.assertTrue(all(r['epoch'] == 2 and r['phase'] == 'train' for r in records))
+            self.assertEqual(log.getvalue(), '')
+            self.assertFalse(runtime.complete)
+
+    def test_normal_sampling_estimate_and_rng_transparency(self):
+        devices = ['cpu'] + (['cuda'] if torch.cuda.is_available() else [])
+        for device in devices:
+            for size in (0, 1, 3, 16, 17):
+                for kind in ('normal_', 'randn', 'randn_like'):
+                    with self.subTest(device=device, size=size, kind=kind):
+                        states = []
+                        for enabled in (False, True):
+                            value = torch.empty(size, device=device)
+                            torch.manual_seed(57)
+                            counter = FlopCounter(enabled=enabled)
+                            with counter:
+                                if kind == 'normal_':
+                                    result = value.normal_(2., 3.)
+                                elif kind == 'randn':
+                                    result = torch.randn(size, device=device)
+                                else:
+                                    result = torch.randn_like(value)
+                            rng = (torch.cuda.get_rng_state() if device == 'cuda'
+                                   else torch.random.get_rng_state())
+                            states.append((result, rng))
+                        self.assertTrue(torch.equal(states[0][0], states[1][0]))
+                        self.assertTrue(torch.equal(states[0][1], states[1][1]))
+                        summary = counter.summary()
+                        self.assertTrue(summary['complete'], summary['unknown'])
+                        self.assertEqual(summary['flops'], 9*((size+1)//2)+2*size)
+                        self.assertEqual(summary['other_flops_estimated'], summary['flops'])
+
+    def test_complex_normal_remains_uncovered(self):
+        value = torch.empty(3, dtype=torch.complex64)
+        with FlopCounter() as counter:
+            value.normal_()
+        self.assertFalse(counter.summary()['complete'])
+
+    def test_unknown_dispatched_operator_still_fails_coverage(self):
+        value = torch.ones(3)
+        counter = FlopCounter()
+        with counter:
+            torch.lgamma(value)
+        result = counter.summary()
+        self.assertFalse(result['complete'])
+        self.assertIsNone(result['flops'])
+        self.assertTrue(any('lgamma' in item['operator'] for item in result['unknown']))
+
     def test_matrix_vector_and_fused_scaling(self):
         matrix, vector, bias = torch.ones(2,3), torch.ones(3), torch.ones(2)
         for operation, expected in (

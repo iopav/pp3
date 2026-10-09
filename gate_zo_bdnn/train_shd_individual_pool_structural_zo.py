@@ -519,7 +519,7 @@ def main():
     if runtime:
         train_loader, val_loader, test_loader = [MeasuredLoader(loader, runtime)
             for loader in (train_loader, val_loader, test_loader)]
-        runtime.begin('prepare', unknown='NumPy proposal/partition and host scalar arithmetic not fully counted')
+        runtime.begin('prepare')
     labels_by_position = dataset_labels(train_loader.dataset)
     proposal_pool = ()
     structural_partitions = None
@@ -629,7 +629,7 @@ def main():
         if args.max_hidden > 0 and capacity <= 0:
             break
         if runtime:
-            runtime.begin('train', round_index, unknown='NumPy proposals and host scalar arithmetic not counted; solve operators audited individually')
+            runtime.begin('train', round_index)
         old_hidden = state.hidden_size
         candidate_rng = np.random.RandomState(args.seed + round_index * 1009)
         round_pool_size = (
@@ -764,7 +764,7 @@ def main():
             )
         if runtime:
             runtime.end(current_train['accuracy'])
-            runtime.begin('test', round_index, unknown='Native host scalar metrics not fully audited')
+            runtime.begin('test', round_index)
             observed_traces, observed_labels, _ = core.extract_readout_traces(
                 test_loader, state, device, args.readout_bins)
             observed_features = sequence_features(observed_traces, args)
@@ -787,7 +787,7 @@ def main():
             break
 
     if runtime:
-        runtime.begin('final_refit_and_test', unknown='Host scalar arithmetic and native solve coverage incomplete')
+        runtime.begin('final_refit_and_test')
     if args.skip_test:
         full_metrics = None
         test_metrics = None

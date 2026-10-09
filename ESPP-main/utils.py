@@ -43,7 +43,7 @@ def train(net, trainloader, epochs, device, model_name, batch_size=1, freeze=[],
     spks = torch.zeros(len(net.layers)+1, device=device)
     measured_epoch = 0
     if runtime:
-        runtime.begin('train', 1, unknown='Native host scalar arithmetic and readout fit not fully audited')
+        runtime.begin('train', 1)
     while True:
         # Train loop
         if runtime:
@@ -95,8 +95,7 @@ def train(net, trainloader, epochs, device, model_name, batch_size=1, freeze=[],
                 numpy_state = np.random.get_state()
                 try:
                     monitored = copy.deepcopy(net)
-                    runtime.begin('readout_fit', measured_epoch+1,
-                                  unknown='Native readout NumPy/Python arithmetic not fully counted')
+                    runtime.begin('readout_fit', measured_epoch+1)
                     samples, labels = get_samples(monitored, trainloader, args.n_hidden, device)
                     runtime.readouts, _, _ = train_out_proj_fast(monitored, args,
                         runtime.config['model'].get('readout_epochs', 1), batch_size,

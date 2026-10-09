@@ -150,7 +150,7 @@ def main():
         classes = runtime.config['data']['classes']
         targets = torch.nn.functional.one_hot(y, classes).float()
         test_targets = torch.nn.functional.one_hot(y_test, classes).float()
-        runtime.begin('prepare', unknown='Native Python/NumPy initialization not fully counted')
+        runtime.begin('prepare')
         model = BDNN1GateZO(**config)
         model._pp3_runtime = runtime
         runtime.end()

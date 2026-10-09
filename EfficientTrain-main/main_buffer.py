@@ -313,7 +313,7 @@ def main(args):
     if runtime:
         data_loader_train = MeasuredLoader(data_loader_train, runtime)
         data_loader_val = MeasuredLoader(data_loader_val, runtime)
-        runtime.begin('prepare', unknown='NumPy learning rate schedule and native initialization arithmetic not fully counted')
+        runtime.begin('prepare')
     mixup_fn = None
     mixup_active = args.mixup > 0 or args.cutmix > 0. or args.cutmix_minmax is not None
     if mixup_active:
@@ -482,7 +482,7 @@ def main(args):
     for epoch in range(args.start_epoch, args.end_epoch):
         if runtime:
             sampler_train.set_epoch(epoch)
-            runtime.begin('train', epoch+1, unknown='Native optimizer host arithmetic and fused convolution/batch-normalization coverage incomplete')
+            runtime.begin('train', epoch+1)
         if args.distributed:
             data_loader_train.sampler.set_epoch(epoch)
         if log_writer is not None:
