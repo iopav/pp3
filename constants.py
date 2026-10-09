@@ -4,7 +4,7 @@ import json
 import os
 from pathlib import Path
 
-DATA_ROOT = Path(os.environ.get('PP3_DATA_ROOT', '/data'))
+DATA_ROOT = Path(os.environ.get('PP3_DATA_ROOT', '/home/yizhil/pp3/data'))
 DATASETS = {
     'spike': dict(root=str(DATA_ROOT/'spike'), steps=400, inputs=64, classes=20,
                   train_x='X_train_20_cla_400steps.npy', train_y='Y_train_20_cla_400steps.npy',
