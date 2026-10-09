@@ -166,7 +166,7 @@ class Runtime:
             if counter:
                 counter.paused = paused
 
-    def begin(self, phase, epoch=0, unknown=None):
+    def begin(self, phase, epoch=0, unknown=None, excluded=None):
         if self.counter is not None:
             raise RuntimeError('Nested measurement phases are not permitted')
         self.phase, self.epoch, self.data_wait = phase, epoch, 0.
@@ -174,6 +174,8 @@ class Runtime:
         self.counter.stage = phase
         if unknown:
             self.counter.mark_unknown('native::uncovered', unknown)
+        if excluded:
+            self.counter.mark_excluded('python_scalar_bookkeeping', excluded)
         if not self.config.get('count_flops', True):
             self.counter.mark_unknown('native::disabled', 'Counting disabled for transparency test')
         self.energy = Energy(self.device, self.config['power_sample_seconds'])

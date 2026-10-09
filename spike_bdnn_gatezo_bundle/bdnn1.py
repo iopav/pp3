@@ -118,13 +118,21 @@ class bdnn1(torch.nn.Module):
 
         # inequality equation return the ksi
 
+    def _numpy_matmul(self, left, right):
+        runtime = getattr(self, '_pp3_runtime', None)
+        counter = runtime.counter if runtime is not None else None
+        if counter is None:
+            return left @ right
+        from pp3.numpy_linalg import matmul
+        return matmul(counter, left, right)
+
     def inequalityEq(self, eq, gk, r_L):
         a = (((1 - r_L)) * eq.conj().T)
-        denominator = gk.conj().T @ gk
+        denominator = self._numpy_matmul(gk.conj().T, gk)
         if np.asarray(denominator).item() <= 1e-12:
             return -np.inf
-        ksi = ((eq.conj().T @ gk) ** 2) / denominator - \
-              np.array(a) @ eq
+        ksi = (self._numpy_matmul(eq.conj().T, gk) ** 2) / denominator - \
+              self._numpy_matmul(np.array(a), eq)
 
         return ksi
 

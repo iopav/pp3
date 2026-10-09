@@ -114,7 +114,7 @@ def train(net, trainloader, epochs, device, model_name, batch_size=1, freeze=[],
                     np.random.set_state(numpy_state)
             measured_epoch += 1
             if epoch < epochs:
-                runtime.begin('train', measured_epoch+1, unknown='Native host scalar arithmetic not fully audited')
+                runtime.begin('train', measured_epoch+1, excluded='Native host scalar arithmetic')
         if step % print_interval < batch_size and len(loss_hist) > 1:
             # print loss and accuracy
             print(f"Epoch {epoch}, Step {step} \nEchoSpike Loss: {torch.stack(loss_hist[-print_interval//batch_size:]).mean(axis=0)}")

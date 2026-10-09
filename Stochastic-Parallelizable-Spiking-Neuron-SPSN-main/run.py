@@ -111,7 +111,7 @@ def main():
                       tau_syn=settings['tau_syn'], time_step=settings['time_step'])
         train_loader, test_loader = runtime.loaders(device=True)
         steps = config.get('smoke_steps') or config['data']['steps']
-        runtime.begin('prepare', unknown='Python scalar neuron initialization has not been audited')
+        runtime.begin('prepare', excluded='Python scalar neuron initialization')
         model = create_network(params, runtime.device, steps)
         runtime.end()
         train(model, train_loader, nb_epochs=settings['epochs'], loss_mode=settings['loss_mode'],
@@ -160,7 +160,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-
 
 
 

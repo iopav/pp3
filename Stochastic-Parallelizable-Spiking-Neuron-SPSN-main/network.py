@@ -70,7 +70,7 @@ def train(model, data_loader, nb_epochs=100, loss_mode='mean', reg_thr=0., runti
     # Loop over the number of epochs
     for i_epoch in progress_bar:
         if runtime:
-            runtime.begin('train', i_epoch+1, unknown='Adamax Python scalar bias correction not yet counted')
+            runtime.begin('train', i_epoch+1, excluded='Adamax Python scalar bias correction')
         local_loss = 0
         local_acc = 0
         total = 0
@@ -146,7 +146,6 @@ def test(model, data_loader, loss_mode='mean'):
     test_duration = (time.time()-start_time)
     
     return {'acc':acc/total, 'spk':np.mean(spk_per_layer,axis=0).tolist(), 'dur':test_duration}
-
 
 
 

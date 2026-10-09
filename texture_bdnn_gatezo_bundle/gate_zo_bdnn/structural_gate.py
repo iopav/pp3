@@ -49,22 +49,48 @@ def probabilities(logits: np.ndarray) -> np.ndarray:
     return values / (values.sum(axis=1, keepdims=True) + 1e-12)
 
 
-def fit_readout(features: np.ndarray, targets: np.ndarray, ridge: float) -> np.ndarray:
+def _counter(model):
+    runtime = getattr(model, '_pp3_runtime', None)
+    return runtime.counter if runtime is not None else None
+
+
+def _matmul(counter, left, right):
+    if counter is None:
+        return left @ right
+    from pp3.numpy_linalg import matmul
+    return matmul(counter, left, right)
+
+
+def _pinv(counter, matrix):
+    if counter is None:
+        return np.linalg.pinv(matrix)
+    from pp3.numpy_linalg import pinv
+    return pinv(counter, matrix)
+
+
+def _solve(counter, matrix, rhs):
+    if counter is None:
+        return np.linalg.solve(matrix, rhs)
+    from pp3.numpy_linalg import solve
+    return solve(counter, matrix, rhs)
+
+
+def fit_readout(features: np.ndarray, targets: np.ndarray, ridge: float, counter=None) -> np.ndarray:
     feature_count = features.shape[1]
     if feature_count == 0:
         return np.zeros((0, targets.shape[1]), dtype=np.float64)
     if ridge <= 0:
-        return np.linalg.pinv(features) @ targets
-    gram = features.T @ features
-    rhs = features.T @ targets
+        return _matmul(counter, _pinv(counter, features), targets)
+    gram = _matmul(counter, features.T, features)
+    rhs = _matmul(counter, features.T, targets)
     try:
-        return np.linalg.solve(gram + ridge * np.eye(feature_count), rhs)
+        return _solve(counter, gram + ridge * np.eye(feature_count), rhs)
     except np.linalg.LinAlgError:
-        return np.linalg.pinv(gram + ridge * np.eye(feature_count)) @ rhs
+        return _matmul(counter, _pinv(counter, gram + ridge * np.eye(feature_count)), rhs)
 
 
-def classification_metrics(features: np.ndarray, targets: np.ndarray, beta: np.ndarray):
-    logits = features @ beta
+def classification_metrics(features: np.ndarray, targets: np.ndarray, beta: np.ndarray, counter=None):
+    logits = _matmul(counter, features, beta)
     probs = probabilities(logits)
     return {
         "loss": cross_entropy(logits, targets),
@@ -196,8 +222,8 @@ class StructuralGateZO:
         self._set_mask(model, full_w, full_u, old_count, keep)
         fit_h, _ = model.getH(X[fit_indices])
         cal_h, _ = model.getH(X[cal_indices])
-        beta = fit_readout(np.asarray(fit_h), T[fit_indices], self.config.ridge)
-        metrics = classification_metrics(np.asarray(cal_h), T[cal_indices], beta)
+        beta = fit_readout(np.asarray(fit_h), T[fit_indices], self.config.ridge, _counter(model))
+        metrics = classification_metrics(np.asarray(cal_h), T[cal_indices], beta, _counter(model))
         return {
             "keep": [int(index) for index in keep],
             "loss": metrics["loss"],
@@ -335,17 +361,17 @@ class StructuralGateZO:
 def evaluate_structure(model, X, T, fit_indices, validation_indices, ridge):
     fit_h, _ = model.getH(X[fit_indices])
     validation_h, _ = model.getH(X[validation_indices])
-    beta = fit_readout(np.asarray(fit_h), T[fit_indices], ridge)
-    return classification_metrics(np.asarray(validation_h), T[validation_indices], beta)
+    beta = fit_readout(np.asarray(fit_h), T[fit_indices], ridge, _counter(model))
+    return classification_metrics(np.asarray(validation_h), T[validation_indices], beta, _counter(model))
 
 
 def refit_and_measure(model, X, T, X_test, T_test, ridge):
     train_h, _ = model.getH(X)
-    beta = fit_readout(np.asarray(train_h), T, ridge)
+    beta = fit_readout(np.asarray(train_h), T, ridge, _counter(model))
     model.Beta = beta
-    train_metrics = classification_metrics(np.asarray(train_h), T, beta)
+    train_metrics = classification_metrics(np.asarray(train_h), T, beta, _counter(model))
     test_h, _ = model.getH(X_test)
-    test_metrics = classification_metrics(np.asarray(test_h), T_test, beta)
+    test_metrics = classification_metrics(np.asarray(test_h), T_test, beta, _counter(model))
     return train_metrics, test_metrics
 
 
@@ -396,7 +422,7 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
         start = time.time()
         attempts += 1
         if runtime:
-            runtime.begin('train', attempts, unknown='NumPy candidate search, ridge, mask score and scalar arithmetic not fully counted')
+            runtime.begin('train', attempts, unknown='NumPy candidate scoring and non-matrix arithmetic not fully counted; readout linear algebra counted')
         old_count = 0 if isinstance(model.W, list) else int(np.asarray(model.W).shape[1])
         w_new, u_new, flag = model.sc_Search(growth_X, growth_T)
         if flag == 1:
@@ -411,14 +437,14 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
         )
 
         growth_h, _ = model.getH(growth_X)
-        beta = fit_readout(np.asarray(growth_h), growth_T, selector.config.ridge)
+        beta = fit_readout(np.asarray(growth_h), growth_T, selector.config.ridge, _counter(model))
         model.Beta = beta
         train_metrics = classification_metrics(
-            np.asarray(growth_h), growth_T, beta
+            np.asarray(growth_h), growth_T, beta, _counter(model)
         )
         checkpoint_h, _ = model.getH(checkpoint_X)
         checkpoint_metrics = classification_metrics(
-            np.asarray(checkpoint_h), checkpoint_T, beta
+            np.asarray(checkpoint_h), checkpoint_T, beta, _counter(model)
         )
         error = train_metrics["mse"]
         rate_window.append(train_metrics["accuracy"])
@@ -445,9 +471,9 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
         selector.history.append(record)
         if runtime:
             runtime.end(train_metrics['accuracy'], train_metrics['mse'])
-            runtime.begin('test', attempts, unknown='NumPy readout matrix multiply and metric arithmetic not counted')
+            runtime.begin('test', attempts, unknown='NumPy non-matrix metric arithmetic not fully counted')
             test_h, _ = model.getH(X_test)
-            observed = classification_metrics(np.asarray(test_h), T_test, model.Beta)
+            observed = classification_metrics(np.asarray(test_h), T_test, model.Beta, _counter(model))
             runtime.end(observed['accuracy'], observed['mse'])
             runtime.epoch_row(attempts, unit='growth_round')
             runtime.rows[-1]['validation_accuracy'] = checkpoint_metrics['accuracy']
@@ -465,7 +491,7 @@ def run_gatezo_growth(model, X, T, X_test, T_test, selector: StructuralGateZO):
     if best_state is None:
         raise RuntimeError("BDNN could not produce a checkpoint")
     if runtime:
-        runtime.begin('final_refit_and_test', unknown='NumPy readout fit and evaluation arithmetic not fully counted')
+        runtime.begin('final_refit_and_test', unknown='NumPy non-matrix evaluation arithmetic not fully counted')
     selector.restore(model, best_state)
     train_metrics, test_metrics = refit_and_measure(
         model, X, T, X_test, T_test, selector.config.ridge

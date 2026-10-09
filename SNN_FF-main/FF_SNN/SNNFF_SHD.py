@@ -324,7 +324,7 @@ if not runtime:
     print_evaluation()
 for epoch in range(num_epochs):
     if runtime:
-        runtime.begin('train', epoch+1, unknown='Native Adam Python scalar bias correction not counted')
+        runtime.begin('train', epoch+1, excluded='Native Adam Python scalar bias correction')
 
     # Mini-batch training
     for x, y in (train_loader if runtime else zip(split(x_tr, batch_size), split(y_tr, batch_size))):

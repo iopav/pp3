@@ -16,7 +16,7 @@ def source_digest(root, script):
     directory = Path(script).relative_to(root).parts[0]
     files = list((root/directory).rglob('*.py')) + list((root/directory).rglob('*.json'))
     files += [root/'pp3'/name for name in
-              ['data.py','splits.py','native_runtime.py','flops.py','energy.py']]
+              ['data.py','splits.py','native_runtime.py','flops.py','numpy_linalg.py','energy.py']]
     if directory != 'gate_zo_bdnn':
         files += list((root/'gate_zo_bdnn').glob('*.py'))
     h = hashlib.sha256()

@@ -92,7 +92,7 @@ def run(args):
 
         for epoch in tqdm(range(args.epochs), desc=f"Seed {seed}", dynamic_ncols=True):
             if runtime:
-                runtime.begin('train', epoch+1, unknown='Native optimizer/scheduler Python scalar arithmetic not counted')
+                runtime.begin('train', epoch+1, excluded='Native optimizer/scheduler Python scalar arithmetic')
             train_loss, train_loss_t, train_accuracy = train(
                 model=model,
                 train_loader=train_loader,

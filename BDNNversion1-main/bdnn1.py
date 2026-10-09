@@ -10,6 +10,7 @@ from updatelist import *
 from sklearn.metrics import mean_squared_error
 from snnandfunction import spike_fn
 from standardmatrxi import softmax_standardization
+import numpy_flops
 # make output of SCN6 is limitted in (0,1) with softmax
 #plot  neurons
 import time
@@ -79,10 +80,26 @@ class bdnn1(torch.nn.Module):
 
         # inequality equation return the ksi
 
+    def _flops_counter(self):
+        runtime = getattr(self, '_pp3_runtime', None)
+        return runtime.counter if runtime is not None else None
+
+    def _accuracy(self, target, output):
+        return numpy_flops.metric(self._flops_counter(), 'accuracy_score',
+                                  metrics.accuracy_score, target, output)
+
     def inequalityEq(self, eq, gk, r_L):
-        a = (((1 - r_L)) * eq.conj().T)
-        ksi = ((eq.conj().T @ gk) ** 2) / (gk.conj().T @ gk) - \
-              np.array(a) @ eq
+        counter = self._flops_counter()
+        a = numpy_flops.multiply(counter, (1 - r_L), eq.conj().T)
+        # The scalar subtraction is dispatched for a Torch r_L. Mixed
+        # Tensor/ndarray multiplication checks actual dispatch ownership.
+        if not isinstance(r_L, torch.Tensor) and numpy_flops.real_arrays(counter, 'inequality_scale', eq):
+            numpy_flops.record(counter, 'inequality_scale', 1)
+        ksi = (numpy_flops.matmul(counter, eq.conj().T, gk) ** 2) / \
+              numpy_flops.matmul(counter, gk.conj().T, gk) - \
+              numpy_flops.matmul(counter, np.array(a), eq)
+        if numpy_flops.real_arrays(counter, 'inequality_elementwise', eq, gk):
+            numpy_flops.record(counter, 'inequality_elementwise', 3 * ksi.size)
 
         return ksi
 
@@ -113,13 +130,19 @@ class bdnn1(torch.nn.Module):
             #
             # beta = 1
             # WW is d-by-T_max
-            WT = Lambda * (2 * np.random.rand(d, self.T_max) - 1)
+            WT = numpy_flops.multiply(self._flops_counter(), Lambda, (2 * np.random.rand(d, self.T_max) - 1))
+            # Only NumPy 2*x-1 here; multiply() accounts for Lambda separately.
+            numpy_flops.record(self._flops_counter(), 'candidate_uniform_affine',
+                               2 * d * self.T_max)
 
             # bb is 1-by-T_max
             #bT = Lambda * (2 * np.random.rand(1, self.T_max) - 1)
 
             # UT is Tmax, Tmax
-            UT = Lambda * (2 * np.random.randn(self.T_max, self.T_max) - 1)
+            UT = numpy_flops.multiply(self._flops_counter(), Lambda,
+                                     (2 * numpy_flops.randn(self._flops_counter(), self.T_max, self.T_max) - 1))
+            numpy_flops.record(self._flops_counter(), 'candidate_normal_affine',
+                               2 * self.T_max**2)
 
 
             HT = np.zeros((X.shape[0], self.T_max))
@@ -153,6 +176,7 @@ class bdnn1(torch.nn.Module):
 
             # Now HT contains the outputs for all time steps
             HT = HT / l
+            numpy_flops.record(self._flops_counter(), 'candidate_time_average', HT.size)
             #HT = expit(HT)
 
             for r_L in self.r:
@@ -172,6 +196,7 @@ class bdnn1(torch.nn.Module):
 
 
                     Ksi_t = np.sum(ksi_m, 0).reshape(-1, 1)  # values of ksi_m is equail to Ksi_t
+                    numpy_flops.record(self._flops_counter(), 'candidate_score_sum', ksi_m.size - Ksi_t.size)
 
                     # in sc_research function, ksi_m is(1, 10) and in sc_research function, Ksi_t is(10, 1)
                     # print('for t in T_max, the Ksi_t is: ' + str(Ksi_t))
@@ -266,7 +291,8 @@ class bdnn1(torch.nn.Module):
     def computeBeta(self, H, T):
         #print('the size of H is: ' + str(torch.Tensor(H).size()) + 'the size of T is: ' + str(torch.Tensor(T).size()))
 
-        Beta = np.linalg.pinv(H) @ T
+        counter = self._flops_counter()
+        Beta = numpy_flops.matmul(counter, numpy_flops.pinv(counter, H), T)
         #print(Beta)
         self.Beta = Beta
 
@@ -314,6 +340,7 @@ class bdnn1(torch.nn.Module):
         H = HT.numpy()
         # HT = np.add(HT, HT_i)
         H = H / l
+        numpy_flops.record(self._flops_counter(), 'hidden_time_average', H.size)
         # the size of H is: torch.Size([1610, 10]))
         return H,spk_rec
 
@@ -343,9 +370,10 @@ class bdnn1(torch.nn.Module):
         out_rec = torch.stack(out_rec, dim=1)
         O = torch.sum(out_rec, 1)
         O = O.numpy()
-        O = softmax_standardization(O)
+        O = numpy_flops.softmax(self._flops_counter(), softmax_standardization, O)
 
-        Error = mean_squared_error(T, O)
+        Error = numpy_flops.metric(self._flops_counter(), 'mean_squared_error',
+                                   mean_squared_error, T, O)
 
         self.COST = Error
         return (O, Error)
@@ -371,7 +399,7 @@ class bdnn1(torch.nn.Module):
         #O = torch.sum(out_rec, 1)
 
         O = O.numpy()
-        O = softmax_standardization(O)
+        O = numpy_flops.softmax(self._flops_counter(), softmax_standardization, O)
 
 
         #print('in function getOutput, the size of O is: ' + str(O.shape))
@@ -402,6 +430,8 @@ class bdnn1(torch.nn.Module):
 
         # Convert the confusion matrix values to percentages
         conf_matrix_percent = conf_matrix / np.sum(conf_matrix) * 100
+        # Integer confusion-matrix sum is excluded; division and scaling float.
+        numpy_flops.record(self._flops_counter(), 'confusion_percent', 2*conf_matrix.size)
         #rate = metrics.confusion_matrix(T.argmax(axis=1), O.argmax(axis=1))
         return (O, conf_matrix_percent)
 
@@ -432,7 +462,7 @@ class bdnn1(torch.nn.Module):
         while (self.L < self.L_max) and (Error > self.tol) and ((Rate_new - Rate) >= 0.001) :
             measured_round += 1
             if runtime:
-                runtime.begin('train', measured_round, unknown='NumPy candidate search, pinv, normalization and Python scalar arithmetic not counted')
+                runtime.begin('train', measured_round, excluded='Python scalar loop/control arithmetic')
              #  and (torch.abs(torch.tensor(Rate_new) - torch.tensor(Rate)) >= 0.00)):
             #print(self.verbose)
 
@@ -462,13 +492,13 @@ class bdnn1(torch.nn.Module):
             (otemp, Error) = self.upgradeSCN(X, T)
             O = self.getLabel(X)
             if runtime:
-                runtime.end(metrics.accuracy_score(T, O), Error)
-                runtime.begin('test', measured_round, unknown='NumPy normalization and metrics not counted')
+                runtime.end(self._accuracy(T, O), Error)
+                runtime.begin('test', measured_round)
             O2 = self.getLabel(X2)
 
-            rate = metrics.accuracy_score(T, O) # print(rate)
+            rate = self._accuracy(T, O) # print(rate)
             rate_r0.append(rate)
-            rate2 = metrics.accuracy_score(T2, O2)
+            rate2 = self._accuracy(T2, O2)
             if runtime:
                 runtime.end(rate2)
                 runtime.epoch_row(measured_round, unit='growth_round')
@@ -485,7 +515,7 @@ class bdnn1(torch.nn.Module):
         # Find the maximum value and its index using PyTorch functions
         Ratetest = torch.tensor(RateList2)
         if runtime:
-            runtime.begin('final_refit', unknown='Native NumPy pseudoinverse and final model selection not fully counted')
+            runtime.begin('final_refit')
         max_value = torch.max(Ratetest)
         index_of_max_value = torch.argmax(Ratetest)
         print('highest testing accuracy is: '+ str(max_value))
@@ -506,7 +536,7 @@ class bdnn1(torch.nn.Module):
         self.printProperties()
         O2 = self.getLabel(X2)
         conf_matrix = metrics.confusion_matrix(np.argmax(T2, axis=1), np.argmax(O2, axis=1))
-        rate2 = metrics.accuracy_score(T2, O2)
+        rate2 = self._accuracy(T2, O2)
         print('测试阶段准确率', rate2,'测试混淆矩阵是', conf_matrix)
 
         if runtime:
@@ -519,6 +549,6 @@ class bdnn1(torch.nn.Module):
         self.W, self.U, self.Beta = suitW, suitU, suitB
         O2 = self.getLabel(X2)
         conf_matrix = metrics.confusion_matrix(np.argmax(T2, axis=1), np.argmax(O2, axis=1))
-        rate2 = metrics.accuracy_score(T2, O2)
+        rate2 = self._accuracy(T2, O2)
         return conf_matrix, rate2
 

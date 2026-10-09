@@ -4,6 +4,28 @@ from pp3.flops import FlopCounter
 
 
 class NativeAccountingTests(unittest.TestCase):
+    def test_matrix_vector_and_fused_scaling(self):
+        matrix, vector, bias = torch.ones(2,3), torch.ones(3), torch.ones(2)
+        for operation, expected in (
+                (lambda: matrix @ vector, 12),
+                (lambda: torch.addmv(bias, matrix, vector), 14),
+                (lambda: torch.addmv(bias, matrix, vector, alpha=2, beta=3), 18),
+                (lambda: torch.addmv(bias, matrix, vector, beta=0), 12)):
+            counter = FlopCounter()
+            with counter:
+                operation()
+            self.assertTrue(counter.summary()['complete'])
+            self.assertEqual(counter.summary()['flops'], expected)
+
+    def test_excluding_scalar_bookkeeping_does_not_hide_missing_major_work(self):
+        counter = FlopCounter()
+        counter.mark_excluded('python_scalar_bookkeeping', 'loop arithmetic')
+        self.assertTrue(counter.summary()['complete'])
+        self.assertEqual(len(counter.summary()['excluded']), 1)
+        counter.mark_unknown('numpy::pinv', 'uncovered major solver')
+        self.assertFalse(counter.summary()['complete'])
+        self.assertIsNone(counter.summary()['flops'])
+
     def test_batchnorm_reference_estimate(self):
         x=torch.ones(2,3,2,2); w=torch.ones(3); b=torch.zeros(3)
         mean=torch.zeros(3); var=torch.ones(3)

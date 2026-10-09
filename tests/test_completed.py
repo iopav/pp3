@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
-from pp3.completed import identity, completed_index, completed_status
+from pp3.completed import identity, completed_index, completed_status, source_digest
 from summarize_experiments import summarize
 
 
@@ -22,6 +22,18 @@ def fixture(out, **changes):
 
 
 class CompletedTests(unittest.TestCase):
+    def test_shared_numpy_accounting_changes_source_identity(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder)
+            (root/'method').mkdir()
+            (root/'method/main.py').write_text('# entry')
+            (root/'pp3').mkdir()
+            for name in ('data','splits','native_runtime','flops','numpy_linalg','energy'):
+                (root/'pp3'/f'{name}.py').write_text('# initial')
+            before = source_digest(root, root/'method/main.py')
+            (root/'pp3/numpy_linalg.py').write_text('# revised accounting')
+            self.assertNotEqual(before, source_digest(root, root/'method/main.py'))
+
     def test_complete_incomplete_flops_skip_but_changed_config_does_not(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder);config=fixture(root/'run1'/'task')

@@ -121,6 +121,19 @@ def formula(name,args,kwargs,out):
         return args[3].numel()*cost,0,'indexed_accumulation'
     if name == 'matmul':
         return (8 if a.is_complex() else 2)*n*a.shape[-1],0,'broadcast_dense_matmul_mac_2'
+    if name in {'mv', 'addmv'}:
+        if not floating:
+            return 0,0,'integer_arithmetic'
+        matrix = args[1] if name == 'addmv' else args[0]
+        if matrix.is_complex() and name == 'addmv':
+            return None,0,'complex_addmv_not_audited'
+        f = (8 if matrix.is_complex() else 2)*n*matrix.shape[-1]
+        if name == 'addmv':
+            f += n*int(kwargs.get('alpha',1) != 1)
+            beta = kwargs.get('beta',1)
+            if beta != 0:
+                f += n*(1+int(beta != 1))
+        return f,0,'dense_matrix_vector_mac_2'
     if name == 'std' and not a.is_complex():
         return 4*a.numel()+n,0,'two_pass_mean_center_square_reduce_divide_sqrt_equivalent'
     if name == 'convolution' and not args[6] and not a.is_complex():
@@ -259,7 +272,7 @@ class FlopCounter(TorchDispatchMode):
 
     def add_manual(self,name,flops,calls=1,rule='host_scalar_arithmetic'):
         """Only arithmetic absent from ATen dispatch, never tensor arithmetic."""
-        if not calls:
+        if not self.enabled or self.paused or not calls:
             return
         key=('manual',self.stage,name,flops,rule)
         if key not in self.records:
@@ -274,6 +287,10 @@ class FlopCounter(TorchDispatchMode):
             self.records[key]=dict(stage=self.stage,operator=name,inputs=inputs,outputs=[],rule=reason,
                 calls=0,flops_per_call=None,flops=0,fft_flops_estimated=0)
         self.records[key]['calls']+=1
+
+    def mark_excluded(self, name, reason):
+        """Explicit scope decision, not a claim of zero computational work."""
+        self.add_manual('excluded::'+name, 0, rule='scope_excluded: '+reason)
 
     def __torch_dispatch__(self,func,types,args=(),kwargs=None):
         kwargs=kwargs or {}
@@ -309,4 +326,5 @@ class FlopCounter(TorchDispatchMode):
             known_flops=known,fft_flops_estimated=sum(r['fft_flops_estimated'] for r in rows),
             other_flops_estimated=sum(r['flops'] for r in rows if 'estimate' in r['rule'] and 'fft_' not in r['rule']),
             unknown=unknown,operations=rows,
-            convention='Arithmetic equivalents; FFT formula estimates; special scalar functions=1; MAC=2')
+            excluded=[r for r in rows if r['rule'].startswith('scope_excluded:')],
+            convention='Arithmetic equivalents; FFT formula estimates; special scalar functions=1; MAC=2; explicitly declared Python scalar bookkeeping excluded')
