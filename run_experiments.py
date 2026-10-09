@@ -11,8 +11,6 @@ import constants
 from importlib.metadata import version, PackageNotFoundError
 
 ROOT=Path(__file__).resolve().parent
-# Cluster defaults live in the top-level entry, as requested. CLI paths override these.
-DATA_PATHS={'shd':'/data/SHD','spike':'/data/spike','texture':'/data/texture'}
 
 
 def environment_versions():
@@ -49,7 +47,7 @@ def main():
     parser.add_argument('--seeds',nargs='+',type=int,default=constants.SEEDS)
     parser.add_argument('--gpus',nargs='+',default=None,help='GPU ordinal/UUID tokens; default inherited CUDA_VISIBLE_DEVICES or 0')
     parser.add_argument('--cpu',action='store_true')
-    parser.add_argument('--data-root',help='Parent containing spike/, texture/, shd/')
+    parser.add_argument('--data-root',help='Parent containing spike/, texture/, SHD/; defaults to constants.DATASETS roots')
     for name in constants.DATASETS:
         parser.add_argument(f'--{name}-path')
     parser.add_argument('--output',default=constants.RUNTIME['output'])
@@ -94,7 +92,7 @@ def main():
                 elif args.data_root:
                     c['data']['root']=str((Path(args.data_root)/('SHD' if dataset=='shd' else dataset)).expanduser().resolve())
                 else:
-                    c['data']['root']=str(Path(DATA_PATHS[dataset]).expanduser().resolve())
+                    c['data']['root']=str(Path(c['data']['root']).expanduser().resolve())
                 if args.epochs:
                     c['model']['epochs']=args.epochs
                 if args.smoke:
