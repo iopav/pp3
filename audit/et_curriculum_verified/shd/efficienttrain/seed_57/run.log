@@ -1,0 +1,501 @@
+Namespace(batch_size=2, epochs=1, update_freq=1, replay_buffer_size=128, replay_buffer_split_factor=32, replay_times=1, end_epoch=10, base_input_size=64, head_dropout=0.0, model='resnet50', drop_path=0, input_size=64, layer_scale_init_value=1e-06, model_ema=False, model_ema_decay=0.9999, model_ema_force_cpu=False, model_ema_eval=False, opt='adamw', opt_eps=1e-08, opt_betas=None, clip_grad=None, momentum=0.9, weight_decay=0.05, weight_decay_end=None, lr=0.004, layer_decay=1.0, min_lr=1e-06, warmup_epochs=0, warmup_steps=-1, color_jitter=0.4, aa='rand-m9-mstd0.5-inc1', smoothing=0.1, train_interpolation='bicubic', crop_pct=None, reprob=0.25, remode='pixel', recount=1, resplit=False, mixup=0.0, cutmix=0.0, cutmix_minmax=None, mixup_prob=1.0, mixup_switch_prob=0.5, mixup_mode='batch', finetune='', head_init_scale=1.0, model_key='model|module', model_prefix='', data_path='/datasets01/imagenet_full_size/061417/', eval_data_path=None, nb_classes=1000, imagenet_default_mean_and_std=True, data_set='IMNET', output_dir='D:\\workspace\\pp3\\audit\\et_curriculum_verified\\shd\\efficienttrain\\seed_57', log_dir=None, device='cuda:0', seed=57, resume='', auto_resume=False, save_ckpt=False, save_ckpt_freq=1, save_ckpt_num=3, start_epoch=0, eval=False, dist_eval=False, disable_eval=False, num_workers=0, pin_mem=True, world_size=1, local_rank=-1, dist_on_itp=False, dist_url='env://', use_amp=False, enable_wandb=False, project='convnext', wandb_ckpt=False, pp3_et_stages=[{'stage': 0, 'input_size': 32, 'aa': 'rand-m0-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 0, 'end_epoch': 1, 'epochs': 1}, {'stage': 1, 'input_size': 32, 'aa': 'rand-m1-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 1, 'end_epoch': 2, 'epochs': 1}, {'stage': 2, 'input_size': 46, 'aa': 'rand-m2-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 2, 'end_epoch': 3, 'epochs': 1}, {'stage': 3, 'input_size': 46, 'aa': 'rand-m3-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 3, 'end_epoch': 4, 'epochs': 1}, {'stage': 4, 'input_size': 46, 'aa': 'rand-m4-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 4, 'end_epoch': 5, 'epochs': 1}, {'stage': 5, 'input_size': 46, 'aa': 'rand-m5-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 5, 'end_epoch': 6, 'epochs': 1}, {'stage': 6, 'input_size': 64, 'aa': 'rand-m6-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 6, 'end_epoch': 7, 'epochs': 1}, {'stage': 7, 'input_size': 64, 'aa': 'rand-m7-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 7, 'end_epoch': 8, 'epochs': 1}, {'stage': 8, 'input_size': 64, 'aa': 'rand-m8-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 8, 'end_epoch': 9, 'epochs': 1}, {'stage': 9, 'input_size': 64, 'aa': 'rand-m9-mstd0.5-inc1', 'schedule_epochs': 10, 'start_epoch': 9, 'end_epoch': 10, 'epochs': 1}], pp3_et_protocol='efficienttrain_pp_resnet50_v1', pp3_single_process=True, distributed=False, rank=0)
+Sampler_train = <torch.utils.data.distributed.DistributedSampler object at 0x0000016E60AE8940>
+Model = ResNet(
+  (conv1): Conv2d(3, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False)
+  (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+  (relu): ReLU(inplace=True)
+  (maxpool): MaxPool2d(kernel_size=3, stride=2, padding=1, dilation=1, ceil_mode=False)
+  (layer1): Sequential(
+    (0): Bottleneck(
+      (conv1): Conv2d(64, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+        (1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): Conv2d(256, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): Conv2d(256, 64, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(64, 64, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(64, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(64, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (layer2): Sequential(
+    (0): Bottleneck(
+      (conv1): Conv2d(256, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(256, 512, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (3): Bottleneck(
+      (conv1): Conv2d(512, 128, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(128, 128, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(128, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(128, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (layer3): Sequential(
+    (0): Bottleneck(
+      (conv1): Conv2d(512, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(512, 1024, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (1): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (3): Bottleneck(
+      (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (4): Bottleneck(
+      (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (5): Bottleneck(
+      (conv1): Conv2d(1024, 256, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(256, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(256, 1024, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(1024, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (layer4): Sequential(
+    (0): Bottleneck(
+      (conv1): Conv2d(1024, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(2, 2), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+      (downsample): Sequential(
+        (0): Conv2d(1024, 2048, kernel_size=(1, 1), stride=(2, 2), bias=False)
+        (1): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      )
+    )
+    (1): Bottleneck(
+      (conv1): Conv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+    (2): Bottleneck(
+      (conv1): Conv2d(2048, 512, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn1): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv2): Conv2d(512, 512, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1), bias=False)
+      (bn2): BatchNorm2d(512, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (conv3): Conv2d(512, 2048, kernel_size=(1, 1), stride=(1, 1), bias=False)
+      (bn3): BatchNorm2d(2048, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
+      (relu): ReLU(inplace=True)
+    )
+  )
+  (avgpool): AdaptiveAvgPool2d(output_size=(1, 1))
+  (fc): Linear(in_features=2048, out_features=20, bias=True)
+)
+number of params: 23549012
+LR = 0.00400000
+Batch size = 2
+Update frequent = 1
+Number of training examples = 8
+Number of training iter per epoch = 4
+Param groups = {
+  "decay": {
+    "weight_decay": 0.05,
+    "params": [
+      "conv1.weight",
+      "layer1.0.conv1.weight",
+      "layer1.0.conv2.weight",
+      "layer1.0.conv3.weight",
+      "layer1.0.downsample.0.weight",
+      "layer1.1.conv1.weight",
+      "layer1.1.conv2.weight",
+      "layer1.1.conv3.weight",
+      "layer1.2.conv1.weight",
+      "layer1.2.conv2.weight",
+      "layer1.2.conv3.weight",
+      "layer2.0.conv1.weight",
+      "layer2.0.conv2.weight",
+      "layer2.0.conv3.weight",
+      "layer2.0.downsample.0.weight",
+      "layer2.1.conv1.weight",
+      "layer2.1.conv2.weight",
+      "layer2.1.conv3.weight",
+      "layer2.2.conv1.weight",
+      "layer2.2.conv2.weight",
+      "layer2.2.conv3.weight",
+      "layer2.3.conv1.weight",
+      "layer2.3.conv2.weight",
+      "layer2.3.conv3.weight",
+      "layer3.0.conv1.weight",
+      "layer3.0.conv2.weight",
+      "layer3.0.conv3.weight",
+      "layer3.0.downsample.0.weight",
+      "layer3.1.conv1.weight",
+      "layer3.1.conv2.weight",
+      "layer3.1.conv3.weight",
+      "layer3.2.conv1.weight",
+      "layer3.2.conv2.weight",
+      "layer3.2.conv3.weight",
+      "layer3.3.conv1.weight",
+      "layer3.3.conv2.weight",
+      "layer3.3.conv3.weight",
+      "layer3.4.conv1.weight",
+      "layer3.4.conv2.weight",
+      "layer3.4.conv3.weight",
+      "layer3.5.conv1.weight",
+      "layer3.5.conv2.weight",
+      "layer3.5.conv3.weight",
+      "layer4.0.conv1.weight",
+      "layer4.0.conv2.weight",
+      "layer4.0.conv3.weight",
+      "layer4.0.downsample.0.weight",
+      "layer4.1.conv1.weight",
+      "layer4.1.conv2.weight",
+      "layer4.1.conv3.weight",
+      "layer4.2.conv1.weight",
+      "layer4.2.conv2.weight",
+      "layer4.2.conv3.weight",
+      "fc.weight"
+    ],
+    "lr_scale": 1.0
+  },
+  "no_decay": {
+    "weight_decay": 0.0,
+    "params": [
+      "bn1.weight",
+      "bn1.bias",
+      "layer1.0.bn1.weight",
+      "layer1.0.bn1.bias",
+      "layer1.0.bn2.weight",
+      "layer1.0.bn2.bias",
+      "layer1.0.bn3.weight",
+      "layer1.0.bn3.bias",
+      "layer1.0.downsample.1.weight",
+      "layer1.0.downsample.1.bias",
+      "layer1.1.bn1.weight",
+      "layer1.1.bn1.bias",
+      "layer1.1.bn2.weight",
+      "layer1.1.bn2.bias",
+      "layer1.1.bn3.weight",
+      "layer1.1.bn3.bias",
+      "layer1.2.bn1.weight",
+      "layer1.2.bn1.bias",
+      "layer1.2.bn2.weight",
+      "layer1.2.bn2.bias",
+      "layer1.2.bn3.weight",
+      "layer1.2.bn3.bias",
+      "layer2.0.bn1.weight",
+      "layer2.0.bn1.bias",
+      "layer2.0.bn2.weight",
+      "layer2.0.bn2.bias",
+      "layer2.0.bn3.weight",
+      "layer2.0.bn3.bias",
+      "layer2.0.downsample.1.weight",
+      "layer2.0.downsample.1.bias",
+      "layer2.1.bn1.weight",
+      "layer2.1.bn1.bias",
+      "layer2.1.bn2.weight",
+      "layer2.1.bn2.bias",
+      "layer2.1.bn3.weight",
+      "layer2.1.bn3.bias",
+      "layer2.2.bn1.weight",
+      "layer2.2.bn1.bias",
+      "layer2.2.bn2.weight",
+      "layer2.2.bn2.bias",
+      "layer2.2.bn3.weight",
+      "layer2.2.bn3.bias",
+      "layer2.3.bn1.weight",
+      "layer2.3.bn1.bias",
+      "layer2.3.bn2.weight",
+      "layer2.3.bn2.bias",
+      "layer2.3.bn3.weight",
+      "layer2.3.bn3.bias",
+      "layer3.0.bn1.weight",
+      "layer3.0.bn1.bias",
+      "layer3.0.bn2.weight",
+      "layer3.0.bn2.bias",
+      "layer3.0.bn3.weight",
+      "layer3.0.bn3.bias",
+      "layer3.0.downsample.1.weight",
+      "layer3.0.downsample.1.bias",
+      "layer3.1.bn1.weight",
+      "layer3.1.bn1.bias",
+      "layer3.1.bn2.weight",
+      "layer3.1.bn2.bias",
+      "layer3.1.bn3.weight",
+      "layer3.1.bn3.bias",
+      "layer3.2.bn1.weight",
+      "layer3.2.bn1.bias",
+      "layer3.2.bn2.weight",
+      "layer3.2.bn2.bias",
+      "layer3.2.bn3.weight",
+      "layer3.2.bn3.bias",
+      "layer3.3.bn1.weight",
+      "layer3.3.bn1.bias",
+      "layer3.3.bn2.weight",
+      "layer3.3.bn2.bias",
+      "layer3.3.bn3.weight",
+      "layer3.3.bn3.bias",
+      "layer3.4.bn1.weight",
+      "layer3.4.bn1.bias",
+      "layer3.4.bn2.weight",
+      "layer3.4.bn2.bias",
+      "layer3.4.bn3.weight",
+      "layer3.4.bn3.bias",
+      "layer3.5.bn1.weight",
+      "layer3.5.bn1.bias",
+      "layer3.5.bn2.weight",
+      "layer3.5.bn2.bias",
+      "layer3.5.bn3.weight",
+      "layer3.5.bn3.bias",
+      "layer4.0.bn1.weight",
+      "layer4.0.bn1.bias",
+      "layer4.0.bn2.weight",
+      "layer4.0.bn2.bias",
+      "layer4.0.bn3.weight",
+      "layer4.0.bn3.bias",
+      "layer4.0.downsample.1.weight",
+      "layer4.0.downsample.1.bias",
+      "layer4.1.bn1.weight",
+      "layer4.1.bn1.bias",
+      "layer4.1.bn2.weight",
+      "layer4.1.bn2.bias",
+      "layer4.1.bn3.weight",
+      "layer4.1.bn3.bias",
+      "layer4.2.bn1.weight",
+      "layer4.2.bn1.bias",
+      "layer4.2.bn2.weight",
+      "layer4.2.bn2.bias",
+      "layer4.2.bn3.weight",
+      "layer4.2.bn3.bias",
+      "fc.bias"
+    ],
+    "lr_scale": 1.0
+  }
+}
+D:\workspace\pp3\EfficientTrain-main\utils_buffer.py:392: FutureWarning: `torch.cuda.amp.GradScaler(args...)` is deprecated. Please use `torch.amp.GradScaler('cuda', args...)` instead.
+  self._scaler = torch.cuda.amp.GradScaler()
+Use Cosine LR scheduler
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Set warmup steps = 0
+Max WD = 0.0500000, Min WD = 0.0500000
+criterion = LabelSmoothingCrossEntropy()
+Start training for 10 actual epochs
+ET stage=0 size=32 aa=rand-m0-mstd0.5-inc1 optimizer_step=0
+Epoch: [0]  [0/4]  eta: 0:00:06  lr: 0.004000  min_lr: 0.004000  loss: 4.1574 (4.1574)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 1.5782  data: 0.0415  max mem: 519
+Epoch: [0]  [3/4]  eta: 0:00:00  lr: 0.003945  min_lr: 0.003945  loss: 5.8246 (8.5723)  class_acc: 0.0000 (0.1250)  weight_decay: 0.0500 (0.0500)  time: 0.4664  data: 0.0169  max mem: 521
+Epoch: [0] Total time: 0:00:01 (0.4685 s / it)
+Averaged stats: lr: 0.003945  min_lr: 0.003945  loss: 5.8246 (8.5723)  class_acc: 0.0000 (0.1250)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 34.9918 (34.9918)  acc1: 33.3333 (33.3333)  acc5: 100.0000 (100.0000)  time: 0.1689  data: 0.0070  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 33.3623 (34.1770)  acc1: 0.0000 (25.0000)  acc5: 100.0000 (100.0000)  time: 0.1141  data: 0.0050  max mem: 521
+Test: Total time: 0:00:00 (0.1153 s / it)
+* Acc@1 25.000 Acc@5 100.000 loss 34.177
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=1 size=32 aa=rand-m1-mstd0.5-inc1 optimizer_step=4.0
+Epoch: [1]  [0/4]  eta: 0:00:00  lr: 0.003902  min_lr: 0.003902  loss: 3.5721 (3.5721)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.0987  data: 0.0060  max mem: 521
+Epoch: [1]  [3/4]  eta: 0:00:00  lr: 0.003705  min_lr: 0.003705  loss: 3.5721 (4.9400)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)  time: 0.0958  data: 0.0050  max mem: 521
+Epoch: [1] Total time: 0:00:00 (0.0965 s / it)
+Averaged stats: lr: 0.003705  min_lr: 0.003705  loss: 3.5721 (4.9400)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 383.1744 (383.1744)  acc1: 33.3333 (33.3333)  acc5: 66.6667 (66.6667)  time: 0.0305  data: 0.0065  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 383.1744 (681.5423)  acc1: 0.0000 (25.0000)  acc5: 0.0000 (50.0000)  time: 0.0294  data: 0.0042  max mem: 521
+Test: Total time: 0:00:00 (0.0304 s / it)
+* Acc@1 25.000 Acc@5 50.000 loss 681.542
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=2 size=46 aa=rand-m2-mstd0.5-inc1 optimizer_step=8.0
+Epoch: [2]  [0/4]  eta: 0:00:00  lr: 0.003618  min_lr: 0.003618  loss: 8.0373 (8.0373)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.1915  data: 0.0040  max mem: 521
+Epoch: [2]  [3/4]  eta: 0:00:00  lr: 0.003299  min_lr: 0.003299  loss: 6.3033 (6.7623)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.1173  data: 0.0049  max mem: 521
+Epoch: [2] Total time: 0:00:00 (0.1183 s / it)
+Averaged stats: lr: 0.003299  min_lr: 0.003299  loss: 6.3033 (6.7623)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 5456.7886 (5456.7886)  acc1: 0.0000 (0.0000)  acc5: 33.3333 (33.3333)  time: 0.0340  data: 0.0060  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 0.0000 (2728.3943)  acc1: 0.0000 (25.0000)  acc5: 33.3333 (50.0000)  time: 0.0292  data: 0.0045  max mem: 521
+Test: Total time: 0:00:00 (0.0302 s / it)
+* Acc@1 25.000 Acc@5 50.000 loss 2728.394
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=3 size=46 aa=rand-m3-mstd0.5-inc1 optimizer_step=12.0
+Epoch: [3]  [0/4]  eta: 0:00:00  lr: 0.003176  min_lr: 0.003176  loss: 6.0328 (6.0328)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.0985  data: 0.0053  max mem: 521
+Epoch: [3]  [3/4]  eta: 0:00:00  lr: 0.002766  min_lr: 0.002766  loss: 5.6257 (5.1236)  class_acc: 0.0000 (0.1250)  weight_decay: 0.0500 (0.0500)  time: 0.0945  data: 0.0053  max mem: 521
+Epoch: [3] Total time: 0:00:00 (0.0955 s / it)
+Averaged stats: lr: 0.002766  min_lr: 0.002766  loss: 5.6257 (5.1236)  class_acc: 0.0000 (0.1250)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 255.7958 (255.7958)  acc1: 0.0000 (0.0000)  acc5: 66.6667 (66.6667)  time: 0.0325  data: 0.0060  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 0.0000 (127.8979)  acc1: 0.0000 (25.0000)  acc5: 66.6667 (75.0000)  time: 0.0294  data: 0.0045  max mem: 521
+Test: Total time: 0:00:00 (0.0304 s / it)
+* Acc@1 25.000 Acc@5 75.000 loss 127.898
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=4 size=46 aa=rand-m4-mstd0.5-inc1 optimizer_step=16.0
+Epoch: [4]  [0/4]  eta: 0:00:00  lr: 0.002618  min_lr: 0.002618  loss: 2.5893 (2.5893)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.1788  data: 0.0050  max mem: 521
+Epoch: [4]  [3/4]  eta: 0:00:00  lr: 0.002157  min_lr: 0.002157  loss: 2.5893 (3.4023)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)  time: 0.1114  data: 0.0051  max mem: 521
+Epoch: [4] Total time: 0:00:00 (0.1124 s / it)
+Averaged stats: lr: 0.002157  min_lr: 0.002157  loss: 2.5893 (3.4023)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 2.4337 (2.4337)  acc1: 0.0000 (0.0000)  acc5: 100.0000 (100.0000)  time: 0.0330  data: 0.0050  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 0.8176 (1.6257)  acc1: 0.0000 (25.0000)  acc5: 100.0000 (100.0000)  time: 0.0305  data: 0.0040  max mem: 521
+Test: Total time: 0:00:00 (0.0320 s / it)
+* Acc@1 25.000 Acc@5 100.000 loss 1.626
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=5 size=46 aa=rand-m5-mstd0.5-inc1 optimizer_step=20.0
+Epoch: [5]  [0/4]  eta: 0:00:00  lr: 0.002001  min_lr: 0.002001  loss: 4.4834 (4.4834)  class_acc: 0.5000 (0.5000)  weight_decay: 0.0500 (0.0500)  time: 0.1010  data: 0.0060  max mem: 521
+Epoch: [5]  [3/4]  eta: 0:00:00  lr: 0.001534  min_lr: 0.001534  loss: 3.0678 (3.9030)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)  time: 0.1014  data: 0.0075  max mem: 521
+Epoch: [5] Total time: 0:00:00 (0.1022 s / it)
+Averaged stats: lr: 0.001534  min_lr: 0.001534  loss: 3.0678 (3.9030)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 1.7369 (1.7369)  acc1: 33.3333 (33.3333)  acc5: 100.0000 (100.0000)  time: 0.0332  data: 0.0066  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 1.7369 (1.8238)  acc1: 0.0000 (25.0000)  acc5: 100.0000 (100.0000)  time: 0.0322  data: 0.0048  max mem: 521
+Test: Total time: 0:00:00 (0.0337 s / it)
+* Acc@1 25.000 Acc@5 100.000 loss 1.824
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=6 size=64 aa=rand-m6-mstd0.5-inc1 optimizer_step=24.0
+Epoch: [6]  [0/4]  eta: 0:00:00  lr: 0.001383  min_lr: 0.001383  loss: 3.8984 (3.8984)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.1626  data: 0.0078  max mem: 521
+Epoch: [6]  [3/4]  eta: 0:00:00  lr: 0.000956  min_lr: 0.000956  loss: 2.1094 (2.4375)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)  time: 0.1095  data: 0.0058  max mem: 521
+Epoch: [6] Total time: 0:00:00 (0.1105 s / it)
+Averaged stats: lr: 0.000956  min_lr: 0.000956  loss: 2.1094 (2.4375)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 1.7037 (1.7037)  acc1: 33.3333 (33.3333)  acc5: 100.0000 (100.0000)  time: 0.0270  data: 0.0050  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 1.7037 (1.7616)  acc1: 0.0000 (25.0000)  acc5: 100.0000 (100.0000)  time: 0.0265  data: 0.0040  max mem: 521
+Test: Total time: 0:00:00 (0.0280 s / it)
+* Acc@1 25.000 Acc@5 100.000 loss 1.762
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=7 size=64 aa=rand-m7-mstd0.5-inc1 optimizer_step=28.0
+Epoch: [7]  [0/4]  eta: 0:00:00  lr: 0.000825  min_lr: 0.000825  loss: 1.9014 (1.9014)  class_acc: 0.5000 (0.5000)  weight_decay: 0.0500 (0.0500)  time: 0.1026  data: 0.0070  max mem: 521
+Epoch: [7]  [3/4]  eta: 0:00:00  lr: 0.000480  min_lr: 0.000480  loss: 1.9014 (2.4360)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)  time: 0.0938  data: 0.0052  max mem: 521
+Epoch: [7] Total time: 0:00:00 (0.0943 s / it)
+Averaged stats: lr: 0.000480  min_lr: 0.000480  loss: 1.9014 (2.4360)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 1.5889 (1.5889)  acc1: 33.3333 (33.3333)  acc5: 100.0000 (100.0000)  time: 0.0311  data: 0.0071  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 1.5714 (1.5802)  acc1: 0.0000 (25.0000)  acc5: 100.0000 (100.0000)  time: 0.0282  data: 0.0051  max mem: 521
+Test: Total time: 0:00:00 (0.0292 s / it)
+* Acc@1 25.000 Acc@5 100.000 loss 1.580
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=8 size=64 aa=rand-m8-mstd0.5-inc1 optimizer_step=32.0
+Epoch: [8]  [0/4]  eta: 0:00:00  lr: 0.000383  min_lr: 0.000383  loss: 3.4584 (3.4584)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.0925  data: 0.0050  max mem: 521
+Epoch: [8]  [3/4]  eta: 0:00:00  lr: 0.000153  min_lr: 0.000153  loss: 1.9897 (2.3990)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)  time: 0.0951  data: 0.0047  max mem: 521
+Epoch: [8] Total time: 0:00:00 (0.0962 s / it)
+Averaged stats: lr: 0.000153  min_lr: 0.000153  loss: 1.9897 (2.3990)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 1.7851 (1.7851)  acc1: 33.3333 (33.3333)  acc5: 100.0000 (100.0000)  time: 0.0320  data: 0.0050  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 1.4923 (1.6387)  acc1: 0.0000 (25.0000)  acc5: 100.0000 (100.0000)  time: 0.0301  data: 0.0040  max mem: 521
+Test: Total time: 0:00:00 (0.0317 s / it)
+* Acc@1 25.000 Acc@5 100.000 loss 1.639
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+ET stage=9 size=64 aa=rand-m9-mstd0.5-inc1 optimizer_step=36.0
+Epoch: [9]  [0/4]  eta: 0:00:00  lr: 0.000099  min_lr: 0.000099  loss: 1.8161 (1.8161)  class_acc: 0.0000 (0.0000)  weight_decay: 0.0500 (0.0500)  time: 0.0932  data: 0.0050  max mem: 521
+Epoch: [9]  [3/4]  eta: 0:00:00  lr: 0.000007  min_lr: 0.000007  loss: 1.6471 (1.8116)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)  time: 0.0905  data: 0.0053  max mem: 521
+Epoch: [9] Total time: 0:00:00 (0.0916 s / it)
+Averaged stats: lr: 0.000007  min_lr: 0.000007  loss: 1.6471 (1.8116)  class_acc: 0.0000 (0.2500)  weight_decay: 0.0500 (0.0500)
+Test:  [0/2]  eta: 0:00:00  loss: 1.9009 (1.9009)  acc1: 33.3333 (33.3333)  acc5: 100.0000 (100.0000)  time: 0.0289  data: 0.0050  max mem: 521
+Test:  [1/2]  eta: 0:00:00  loss: 1.3548 (1.6278)  acc1: 0.0000 (25.0000)  acc5: 100.0000 (100.0000)  time: 0.0274  data: 0.0035  max mem: 521
+Test: Total time: 0:00:00 (0.0294 s / it)
+* Acc@1 25.000 Acc@5 100.000 loss 1.628
+Accuracy of the model on the 4 test images: 25.0%
+Max accuracy: 25.00%
+Training time 0:00:06
+
+[controller]
+finish efficienttrain/shd/57 exit=0
+  status=success training_completed=True
+  process_exit_code=0

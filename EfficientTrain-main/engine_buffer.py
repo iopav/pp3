@@ -96,6 +96,12 @@ def train_one_epoch(model: torch.nn.Module, criterion: torch.nn.Module,
             samples = samples.to(device, non_blocking=True)
             targets = targets.to(device, non_blocking=True)
 
+        if getattr(args, 'pp3_et_protocol', None):
+            expected = (3, args.input_size, args.input_size)
+            if tuple(samples.shape[1:]) != expected:
+                raise RuntimeError(f'ET stage input mismatch: expected {expected}, got {tuple(samples.shape[1:])}')
+            args.pp3_observed_size = int(samples.shape[-1])
+
 
         step = data_iter_step // update_freq
         if step >= num_training_steps_per_epoch:

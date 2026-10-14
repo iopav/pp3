@@ -4,6 +4,7 @@
 *.sif
 *.img
 *.md
+!ET_INTEGRATION_AUDIT.md
 
 # =========================
 # Archives / compressed files

@@ -1,0 +1,7 @@
+{
+  "status": "failed",
+  "training_completed": false,
+  "reason": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\EfficientTrain-main\\_ET_pp_main_res50.py\", line 10, in <module>\n    launch(res_list)\n  File \"D:\\workspace\\pp3\\EfficientTrain-main\\pp3_et.py\", line 109, in launch\n    main(args)\n  File \"D:\\workspace\\pp3\\EfficientTrain-main\\main_buffer.py\", line 260, in main\n    common_train, common_test = runtime.loaders()\n  File \"D:\\workspace\\pp3\\pp3\\native_runtime.py\", line 115, in loaders\n    train, test, seconds = build_loaders(self.config)\n  File \"D:\\workspace\\pp3\\pp3\\data.py\", line 147, in build_loaders\n    ds=ArrayDataset(spec['root'],spec[prefix+'_x'],spec[prefix+'_y'],spec,limit,steps,indices)\n  File \"D:\\workspace\\pp3\\pp3\\data.py\", line 28, in __init__\n    self.open()\n  File \"D:\\workspace\\pp3\\pp3\\data.py\", line 47, in open\n    self.x = np.load(self.x_path, mmap_mode='r', allow_pickle=False)\n  File \"D:\\anaconda3\\envs\\py310\\lib\\site-packages\\numpy\\lib\\_npyio_impl.py\", line 451, in load\n    fid = stack.enter_context(open(os.fspath(file), \"rb\"))\nFileNotFoundError: [Errno 2] No such file or directory: 'D:\\\\workspace\\\\pp3\\\\audit\\\\fixtures\\\\spike\\\\X_train_20_cla_400steps.npy'\n",
+  "process_exit_code": 1,
+  "exit_code": 1
+}

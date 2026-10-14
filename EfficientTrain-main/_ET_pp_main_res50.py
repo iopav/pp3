@@ -1,6 +1,15 @@
 import os
 import argparse
 
+# The unified experiment controller enters the same ResNet50 curriculum here.
+# Its single-process runner retains model/optimizer state in memory instead of
+# serializing and reloading it between ten distributed subprocess launches.
+res_list = [96,] * 2 + [160,] * 4 + [224,] * 4
+if os.environ.get('PP3_CONFIG'):
+    from pp3_et import launch
+    launch(res_list)
+    raise SystemExit(0)
+
 
 parser = argparse.ArgumentParser(description='EfficientTrain')
 parser.add_argument('--tag', default='', type=str)
@@ -10,7 +19,6 @@ parser.add_argument('--epoch', default=200, type=int)
 
 args = parser.parse_args()
 
-res_list = [96,] * 2 + [160,] * 4 + [224,] * 4
 print('res_list:', res_list)
 
 bs_list = [512,] * 2 + [512,] * 4 + [512,] * 4

@@ -53,6 +53,22 @@ def completed_status(directory):
             rows=list(csv.DictReader(stream))
         if not rows or len(rows)!=status['epochs']:
             return None
+        if status.get('method') == 'efficienttrain' or rows[0].get('method') == 'efficienttrain':
+            # Old fixed-size ResNet runs must not be reused or summarized as ET.
+            curriculum=json.loads((directory/'et_curriculum.json').read_text(encoding='utf-8'))
+            protocol='efficienttrain_pp_resnet50_v1'
+            if curriculum.get('protocol') != protocol or curriculum.get('actual_epochs') != len(rows):
+                return None
+            stages=curriculum.get('stages', [])
+            expected=[stage for stage in stages for _ in range(stage['epochs'])]
+            if len(stages)!=10 or len(expected)!=len(rows):
+                return None
+            for row, stage in zip(rows, expected):
+                if (row.get('et_protocol') != protocol or int(row['et_stage']) != stage['stage']
+                    or int(row['et_input_size']) != stage['input_size']
+                    or int(row['et_observed_input_size']) != stage['input_size']
+                    or row['et_aa'] != stage['aa']):
+                    return None
         if status.get('artifact_version') == 2:
             if not status.get('experiment_id'):
                 return None

@@ -77,7 +77,7 @@ def entrypoint(config):
         'ffsnn': 'SNN_FF-main/FF_SNN/SNNFF_SHD.py',
         'espp': 'ESPP-main/main.py',
         'bdnn': 'BDNNversion1-main/main_exp1.py',
-        'efficienttrain': 'EfficientTrain-main/main_buffer.py',
+        'efficienttrain': 'EfficientTrain-main/_ET_pp_main_res50.py',
     }
     if method == 'gatezo':
         return ROOT / ('gate_zo_bdnn/train_shd_radlif_residual_proposal.py' if dataset == 'shd'

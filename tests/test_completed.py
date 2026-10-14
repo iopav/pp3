@@ -22,6 +22,16 @@ def fixture(out, **changes):
 
 
 class CompletedTests(unittest.TestCase):
+    def test_old_resnet_baseline_is_not_accepted_as_efficienttrain(self):
+        with tempfile.TemporaryDirectory() as folder:
+            out=Path(folder)/'old_et'
+            fixture(out, method='efficienttrain')
+            status=json.loads((out/'status.json').read_text())
+            status['method']='efficienttrain'
+            (out/'status.json').write_text(json.dumps(status))
+            self.assertIsNone(completed_status(out))
+            self.assertFalse(completed_index(Path(folder)))
+
     def test_compact_artifacts_skip_and_preserve_one_time_summary(self):
         with tempfile.TemporaryDirectory() as folder:
             root=Path(folder); out=root/'task'

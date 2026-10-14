@@ -1,0 +1,106 @@
+[
+  {
+    "path": "audit/et_curriculum_verified/shd/efficienttrain/seed_57",
+    "epochs": 10,
+    "sizes": [
+      32,
+      46,
+      64
+    ],
+    "optimizer_steps_before_stages": [
+      0,
+      4.0,
+      8.0,
+      12.0,
+      16.0,
+      20.0,
+      24.0,
+      28.0,
+      32.0,
+      36.0
+    ],
+    "first_epoch_flops_per_size": {
+      "32": 5319804867.0,
+      "46": 11516512707.0,
+      "64": 17313568707.0
+    }
+  },
+  {
+    "path": "audit/et_curriculum_all_data/spike/efficienttrain/seed_57",
+    "epochs": 10,
+    "sizes": [
+      32,
+      46,
+      64
+    ],
+    "optimizer_steps_before_stages": [
+      0,
+      2.0,
+      4.0,
+      6.0,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0
+    ],
+    "first_epoch_flops_per_size": {
+      "32": 2659902439.0,
+      "46": 5758256359.0,
+      "64": 8656784359.0
+    }
+  },
+  {
+    "path": "audit/et_curriculum_all_data/texture/efficienttrain/seed_57",
+    "epochs": 10,
+    "sizes": [
+      32,
+      46,
+      64
+    ],
+    "optimizer_steps_before_stages": [
+      0,
+      2.0,
+      4.0,
+      6.0,
+      8.0,
+      10.0,
+      12.0,
+      14.0,
+      16.0,
+      18.0
+    ],
+    "first_epoch_flops_per_size": {
+      "32": 2659049863.0,
+      "46": 5757403783.0,
+      "64": 8655931783.0
+    }
+  },
+  {
+    "path": "audit/et_curriculum_full_sizes/spike/efficienttrain/seed_57",
+    "epochs": 21,
+    "sizes": [
+      96,
+      160,
+      224
+    ],
+    "optimizer_steps_before_stages": [
+      0,
+      5.0,
+      10.0,
+      11.0,
+      13.0,
+      15.0,
+      17.0,
+      18.0,
+      19.0,
+      20.0
+    ],
+    "first_epoch_flops_per_size": {
+      "96": 18321608722.0,
+      "160": 50304978962.0,
+      "224": 98280034322.0
+    }
+  }
+]

@@ -60,7 +60,8 @@ for dataset in ('spike', 'texture'):
         growth_failure_patience=10, growth_min_delta=1e-4)
 METHODS['efficienttrain'] = {d: dict(epochs=EPOCHS, batch_size=BATCH_SIZE, hidden_size=0, layers=0,
     lr=.004, input_size=224, warmup_epochs=20, mixup=0., cutmix=0.,
-    smoothing=.1, weight_decay=.05, model='resnet50') for d in DATASETS}
+    smoothing=.1, weight_decay=.05, model='resnet50',
+    protocol='efficienttrain_pp_resnet50_v1', image_encoding='train_range_uint8') for d in DATASETS}
 SEEDS = [57, 58, 59, 60, 61]
 RUNTIME = dict(workers=0, threads=2, seed=57, output='/home/yizhil/pp3/result', power_sample_seconds=.1)
 # Smoke runs intentionally keep their small execution budget.

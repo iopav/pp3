@@ -1,0 +1,53 @@
+{
+  "input_directories": [
+    "audit/et_curriculum_all_data",
+    "audit/et_curriculum_full_sizes",
+    "audit/et_curriculum_verified",
+    "audit/native_transparency_20261004/efficienttrain"
+  ],
+  "selected_tasks": [
+    {
+      "method": "efficienttrain",
+      "dataset": "spike",
+      "seed": 57,
+      "output": "D:\\workspace\\pp3\\audit\\et_curriculum_full_sizes\\spike\\efficienttrain\\seed_57",
+      "experiment_id": "397db2695bb5410a8a2ea7d66412e55b2a2d6366853f6f9d0ec1aff27dfe31d3"
+    },
+    {
+      "method": "efficienttrain",
+      "dataset": "texture",
+      "seed": 57,
+      "output": "D:\\workspace\\pp3\\audit\\et_curriculum_all_data\\texture\\efficienttrain\\seed_57",
+      "experiment_id": "8bf8730ef8e41c661a54a5bde421323dadb3d2386f7d59e7fd581259de51170e"
+    },
+    {
+      "method": "efficienttrain",
+      "dataset": "shd",
+      "seed": 57,
+      "output": "D:\\workspace\\pp3\\audit\\et_curriculum_verified\\shd\\efficienttrain\\seed_57",
+      "experiment_id": "d870d1acd46c2b354d4e0cf85fb82ddd6562accfce231bcd91a9e257a9b3d8bb"
+    },
+    {
+      "method": "efficienttrain",
+      "dataset": "spike",
+      "seed": 57,
+      "output": "D:\\workspace\\pp3\\audit\\et_curriculum_all_data\\spike\\efficienttrain\\seed_57",
+      "experiment_id": "df10d37c98b8d17f3e7612b25ce7d93d6dcb76287844bb901163843e3d64ce7d"
+    }
+  ],
+  "excluded": [
+    {
+      "path": "D:\\workspace\\pp3\\audit\\et_curriculum_verified\\spike\\efficienttrain\\seed_57",
+      "reason": "Not completed or required artifacts invalid"
+    },
+    {
+      "path": "D:\\workspace\\pp3\\audit\\native_transparency_20261004\\efficienttrain\\counted",
+      "reason": "Not completed or required artifacts invalid"
+    },
+    {
+      "path": "D:\\workspace\\pp3\\audit\\native_transparency_20261004\\efficienttrain\\uncounted",
+      "reason": "Not completed or required artifacts invalid"
+    }
+  ],
+  "note": "FLOPs column uses counted operations even when incomplete. Missing rules are in status.json; values are not certified full totals."
+}

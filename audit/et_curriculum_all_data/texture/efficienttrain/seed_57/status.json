@@ -1,0 +1,29 @@
+{
+  "artifact_version": 2,
+  "experiment_id": "8bf8730ef8e41c661a54a5bde421323dadb3d2386f7d59e7fd581259de51170e",
+  "method": "efficienttrain",
+  "dataset": "texture",
+  "seed": 57,
+  "one_time_metrics": [
+    {
+      "epoch": 0,
+      "phase": "prepare",
+      "gpu_energy_j": 7.769,
+      "seconds": 0.31090270000277087,
+      "flops": 199415928,
+      "known_flops": 199415928,
+      "energy_reason": "",
+      "energy_method": "nvml_total",
+      "accuracy": null
+    }
+  ],
+  "flops_unknown_file": "flops_unknown.json",
+  "status": "success",
+  "training_completed": true,
+  "flops_complete": true,
+  "model_bytes": 94430771,
+  "epochs": 10,
+  "actual_device": "cuda:0",
+  "process_exit_code": 0,
+  "exit_code": 0
+}

@@ -1,0 +1,109 @@
+{
+  "protocol": "efficienttrain_pp_resnet50_v1",
+  "backbone": "resnet50",
+  "budget_epochs": 10,
+  "actual_epochs": 21,
+  "smoke": false,
+  "stages": [
+    {
+      "stage": 0,
+      "input_size": 96,
+      "aa": "rand-m0-mstd0.5-inc1",
+      "schedule_epochs": 54,
+      "start_epoch": 0,
+      "end_epoch": 5,
+      "epochs": 5
+    },
+    {
+      "stage": 1,
+      "input_size": 96,
+      "aa": "rand-m1-mstd0.5-inc1",
+      "schedule_epochs": 54,
+      "start_epoch": 5,
+      "end_epoch": 10,
+      "epochs": 5
+    },
+    {
+      "stage": 2,
+      "input_size": 160,
+      "aa": "rand-m2-mstd0.5-inc1",
+      "schedule_epochs": 19,
+      "start_epoch": 4,
+      "end_epoch": 5,
+      "epochs": 1
+    },
+    {
+      "stage": 3,
+      "input_size": 160,
+      "aa": "rand-m3-mstd0.5-inc1",
+      "schedule_epochs": 19,
+      "start_epoch": 5,
+      "end_epoch": 7,
+      "epochs": 2
+    },
+    {
+      "stage": 4,
+      "input_size": 160,
+      "aa": "rand-m4-mstd0.5-inc1",
+      "schedule_epochs": 19,
+      "start_epoch": 7,
+      "end_epoch": 9,
+      "epochs": 2
+    },
+    {
+      "stage": 5,
+      "input_size": 160,
+      "aa": "rand-m5-mstd0.5-inc1",
+      "schedule_epochs": 19,
+      "start_epoch": 9,
+      "end_epoch": 11,
+      "epochs": 2
+    },
+    {
+      "stage": 6,
+      "input_size": 224,
+      "aa": "rand-m6-mstd0.5-inc1",
+      "schedule_epochs": 10,
+      "start_epoch": 6,
+      "end_epoch": 7,
+      "epochs": 1
+    },
+    {
+      "stage": 7,
+      "input_size": 224,
+      "aa": "rand-m7-mstd0.5-inc1",
+      "schedule_epochs": 10,
+      "start_epoch": 7,
+      "end_epoch": 8,
+      "epochs": 1
+    },
+    {
+      "stage": 8,
+      "input_size": 224,
+      "aa": "rand-m8-mstd0.5-inc1",
+      "schedule_epochs": 10,
+      "start_epoch": 8,
+      "end_epoch": 9,
+      "epochs": 1
+    },
+    {
+      "stage": 9,
+      "input_size": 224,
+      "aa": "rand-m9-mstd0.5-inc1",
+      "schedule_epochs": 10,
+      "start_epoch": 9,
+      "end_epoch": 10,
+      "epochs": 1
+    }
+  ],
+  "evaluation_size": 224,
+  "encoding": "train_range_uint8",
+  "training_range": [
+    0.0,
+    1.0
+  ],
+  "state_transfer": "same model and optimizer objects across stages",
+  "preprocessing_flops": "excluded; elapsed time and energy included",
+  "train_transform": "Compose(\n    RandomResizedCropAndInterpolation(size=(224, 224), scale=(0.08, 1.0), ratio=(0.75, 1.3333), interpolation=bicubic)\n    RandomHorizontalFlip(p=0.5)\n    RandAugment(n=2, ops=\n\tAugmentOp(name=AutoContrast, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=Equalize, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=Invert, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=Rotate, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=PosterizeIncreasing, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=SolarizeIncreasing, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=SolarizeAdd, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=ColorIncreasing, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=ContrastIncreasing, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=BrightnessIncreasing, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=SharpnessIncreasing, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=ShearX, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=ShearY, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=TranslateXRel, p=0.5, m=0, mstd=0.5)\n\tAugmentOp(name=TranslateYRel, p=0.5, m=0, mstd=0.5))\n    Resize(size=96, interpolation=lanczos, max_size=None, antialias=True)\n    ToTensor()\n    Normalize(mean=tensor([0.4850, 0.4560, 0.4060]), std=tensor([0.2290, 0.2240, 0.2250]))\n    RandomErasing(p=0.25, mode=pixel, count=(1, 1))\n)",
+  "eval_transform": "Compose(\n    Resize(size=256, interpolation=bicubic, max_size=None, antialias=True)\n    CenterCrop(size=(224, 224))\n    ToTensor()\n    Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))\n)"
+}

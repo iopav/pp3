@@ -222,7 +222,11 @@ def main(args):
     runtime = None
     if os.environ.get('PP3_CONFIG'):
         from pp3.native_runtime import from_environment, MeasuredLoader, write_json
-        from pp3.data import FloatImageDataset
+        from pp3_et import CurriculumImages, training_range, epoch_plan, schedules, PROTOCOL
+        from datasets_buffer import build_transform
+        import copy
+        if not getattr(args, 'pp3_et_stages', None):
+            raise ValueError('PP3 EfficientTrain must launch through _ET_pp_main_res50.py; fixed-size baseline execution is disabled')
         runtime = from_environment()
         config, settings = runtime.config, runtime.config['model']
         for key in ('epochs', 'batch_size', 'lr', 'input_size', 'warmup_epochs', 'mixup',
@@ -235,6 +239,9 @@ def main(args):
         args.resume, args.finetune = '', ''
         args.use_amp, args.disable_eval, args.dist_eval = False, False, False
         args.enable_wandb, args.log_dir = False, None
+        args.base_input_size = args.input_size
+        curriculum = epoch_plan(args.pp3_et_stages)
+        args.end_epoch = len(curriculum)
         # Each controller task owns one device, even inside a multi-task Slurm allocation.
         args.pp3_single_process = True
         write_json(runtime.output/'native_args.json', vars(args))
@@ -249,9 +256,24 @@ def main(args):
     cudnn.benchmark = runtime is None
 
     if runtime:
+        runtime.begin('prepare')
         common_train, common_test = runtime.loaders()
-        dataset_train = FloatImageDataset(common_train.dataset, args.input_size)
-        dataset_val = FloatImageDataset(common_test.dataset, args.input_size)
+        with runtime.preprocessing():
+            bounds = training_range(common_train.dataset)
+        eval_args = copy.copy(args)
+        dataset_val = CurriculumImages(common_test.dataset, args.base_input_size, bounds,
+                                       build_transform(False, eval_args))
+        args.input_size, args.aa = curriculum[0]['input_size'], curriculum[0]['aa']
+        dataset_train = CurriculumImages(common_train.dataset, args.base_input_size, bounds,
+                                         build_transform(True, args))
+        write_json(runtime.output/'et_curriculum.json', dict(
+            protocol=PROTOCOL, backbone='resnet50', budget_epochs=args.epochs,
+            actual_epochs=len(curriculum), smoke=config.get('smoke', False),
+            stages=args.pp3_et_stages, evaluation_size=args.base_input_size,
+            encoding='train_range_uint8', training_range=bounds,
+            state_transfer='same model and optimizer objects across stages',
+            preprocessing_flops='excluded; elapsed time and energy included',
+            train_transform=str(dataset_train.transform), eval_transform=str(dataset_val.transform)))
         args.nb_classes = config['data']['classes']
     else:
         dataset_train, args.nb_classes = build_dataset(is_train=True, args=args)
@@ -295,7 +317,8 @@ def main(args):
         num_workers=args.num_workers,
         pin_memory=args.pin_mem,
         drop_last=not bool(runtime),
-        persistent_workers=args.num_workers > 0,
+        # Workers must see the new transform at every curriculum stage.
+        persistent_workers=args.num_workers > 0 and not bool(runtime),
     )
 
     if dataset_val is not None:
@@ -313,7 +336,6 @@ def main(args):
     if runtime:
         data_loader_train = MeasuredLoader(data_loader_train, runtime)
         data_loader_val = MeasuredLoader(data_loader_val, runtime)
-        runtime.begin('prepare')
     mixup_fn = None
     mixup_active = args.mixup > 0 or args.cutmix > 0. or args.cutmix_minmax is not None
     if mixup_active:
@@ -432,15 +454,17 @@ def main(args):
     loss_scaler = NativeScaler() # if args.use_amp is False, this won't be used
 
     print("Use Cosine LR scheduler")
-    lr_schedule_values = utils.cosine_scheduler(
-        args.lr, args.min_lr, args.epochs, num_training_steps_per_epoch,
-        warmup_epochs=args.warmup_epochs, warmup_steps=args.warmup_steps,
-    )
-
     if args.weight_decay_end is None:
         args.weight_decay_end = args.weight_decay
-    wd_schedule_values = utils.cosine_scheduler(
-        args.weight_decay, args.weight_decay_end, args.epochs, num_training_steps_per_epoch)
+    if runtime:
+        lr_schedule_values, wd_schedule_values = schedules(
+            args.pp3_et_stages, num_training_steps_per_epoch, args, utils.cosine_scheduler)
+    else:
+        lr_schedule_values = utils.cosine_scheduler(
+            args.lr, args.min_lr, args.epochs, num_training_steps_per_epoch,
+            warmup_epochs=args.warmup_epochs, warmup_steps=args.warmup_steps)
+        wd_schedule_values = utils.cosine_scheduler(
+            args.weight_decay, args.weight_decay_end, args.epochs, num_training_steps_per_epoch)
     print("Max WD = %.7f, Min WD = %.7f" % (max(wd_schedule_values), min(wd_schedule_values)))
 
     if mixup_fn is not None:
@@ -475,12 +499,21 @@ def main(args):
     if args.model_ema and args.model_ema_eval:
         max_accuracy_ema = 0.0
 
-    print("Start training for %d epochs" % args.epochs)
+    print("Start training for %d actual epochs" % args.end_epoch)
     start_time = time.time()
     if runtime:
         runtime.end()
     for epoch in range(args.start_epoch, args.end_epoch):
         if runtime:
+            stage = curriculum[epoch]
+            if epoch == 0 or stage['stage'] != curriculum[epoch-1]['stage']:
+                args.input_size, args.aa = stage['input_size'], stage['aa']
+                dataset_train.transform = build_transform(True, args)
+                optimizer_step = max((float(state.get('step', 0)) for state in optimizer.state.values()), default=0)
+                with (runtime.output/'et_stages.jsonl').open('a', encoding='utf-8') as stream:
+                    stream.write(json.dumps(dict(stage, actual_epoch=epoch+1,
+                        optimizer_step_before=optimizer_step, transform=str(dataset_train.transform)))+'\n')
+                print(f"ET stage={stage['stage']} size={args.input_size} aa={args.aa} optimizer_step={optimizer_step}")
             sampler_train.set_epoch(epoch)
             runtime.begin('train', epoch+1)
         if args.distributed:
@@ -511,6 +544,12 @@ def main(args):
             if runtime:
                 runtime.end(test_stats['acc1']/100, test_stats['loss'])
                 runtime.epoch_row(epoch+1)
+                runtime.rows[-1].update(et_protocol=PROTOCOL, et_stage=stage['stage'],
+                    et_input_size=stage['input_size'], et_aa=stage['aa'],
+                    et_observed_input_size=args.pp3_observed_size,
+                    et_schedule_epoch=stage['schedule_epoch'], et_budget_epochs=args.epochs,
+                    et_actual_epochs=len(curriculum), et_eval_size=args.base_input_size)
+                runtime._csv()
             print(f"Accuracy of the model on the {len(dataset_val)} test images: {test_stats['acc1']:.1f}%")
             if max_accuracy < test_stats["acc1"]:
                 max_accuracy = test_stats["acc1"]

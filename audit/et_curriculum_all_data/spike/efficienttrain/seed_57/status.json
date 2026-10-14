@@ -1,0 +1,29 @@
+{
+  "artifact_version": 2,
+  "experiment_id": "df10d37c98b8d17f3e7612b25ce7d93d6dcb76287844bb901163843e3d64ce7d",
+  "method": "efficienttrain",
+  "dataset": "spike",
+  "seed": 57,
+  "one_time_metrics": [
+    {
+      "epoch": 0,
+      "phase": "prepare",
+      "gpu_energy_j": 11.843,
+      "seconds": 0.31365939999886905,
+      "flops": 199448712,
+      "known_flops": 199448712,
+      "energy_reason": "",
+      "energy_method": "nvml_total",
+      "accuracy": null
+    }
+  ],
+  "flops_unknown_file": "flops_unknown.json",
+  "status": "success",
+  "training_completed": true,
+  "flops_complete": true,
+  "model_bytes": 94496371,
+  "epochs": 10,
+  "actual_device": "cuda:0",
+  "process_exit_code": 0,
+  "exit_code": 0
+}
