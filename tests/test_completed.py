@@ -48,7 +48,10 @@ class CompletedTests(unittest.TestCase):
             destination=summarize([root],root/'summary.csv')
             with destination.open(encoding='utf-8-sig') as stream:
                 rows=list(csv.DictReader(stream))
-            self.assertEqual([(r['record_type'],r['flops']) for r in rows], [('epoch','12'),('final_refit','7')])
+            self.assertEqual([r['flops'] for r in rows], ['12','7'])
+            metadata=json.loads(destination.with_suffix('.metadata.json').read_text(encoding='utf-8'))
+            self.assertEqual([r['record_type'] for r in metadata['rows']], ['epoch','final_refit'])
+            self.assertTrue(all(r['experiment_id']==config['experiment_id'] for r in metadata['rows']))
             (out/'model.pt').write_bytes(b'broken')
             self.assertFalse(completed_index(root))
 

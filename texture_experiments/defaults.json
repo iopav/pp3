@@ -1,0 +1,17 @@
+{
+  "epochs": 100,
+  "batch_size": 128,
+  "hidden_size": 49,
+  "layers": 1,
+  "seed": 57,
+  "optimizer": "SGD",
+  "lr": 0.01,
+  "loss": "cross_entropy",
+  "rnn_nonlinearity": "tanh",
+  "ann_activation": "relu",
+  "spike_beta": 0.9,
+  "spike_threshold": 1.0,
+  "surrogate_slope": 25.0,
+  "readout": "temporal_mean",
+  "power_sample_seconds": 0.1
+}

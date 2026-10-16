@@ -4,15 +4,20 @@ import json
 from pathlib import Path
 
 
-FIELDS = ['method', 'dataset', 'seed', 'experiment_id', 'record_type', 'epoch', 'source_unit',
+METADATA_FIELDS = ['experiment_id', 'record_type', 'source_unit', 'energy_note', 'output']
+FIELDS = ['method', 'dataset', 'seed', 'epoch',
           'energy_j', 'mem_bytes', 'mem_mib', 'train_acc', 'test_acc', 'flops',
           'seconds', 'train_energy_j',
           'train_flops', 'test_energy_j', 'test_flops', 'readout_fit_energy_j',
-          'readout_fit_flops', 'energy_note', 'status', 'output']
+          'readout_fit_flops', 'status']
 
 
 def export_summary(run_directory, tasks=None, destination=None):
-    """An epoch includes its train/readout/evaluation phases; final costs once."""
+    """Export metrics plus row metadata; include final costs exactly once.
+
+    CSV data rows are numbered from 1 in the adjacent .metadata.json file.
+    Keep identity and phase information there without adding metric columns.
+    """
     root = Path(run_directory)
     if tasks is None:
         tasks = json.loads((root/'tasks.json').read_text(encoding='utf-8'))
@@ -74,5 +79,17 @@ def export_summary(run_directory, tasks=None, destination=None):
     with destination.open('w', newline='', encoding='utf-8-sig') as stream:
         writer = csv.DictWriter(stream, fieldnames=FIELDS)
         writer.writeheader()
-        writer.writerows(rows)
+        writer.writerows({key: row.get(key) for key in FIELDS} for row in rows)
+    destination.with_suffix('.metadata.json').write_text(json.dumps(dict(
+        schema_version=1,
+        csv_file=destination.name,
+        row_numbering='1-based data rows, excluding the CSV header',
+        notes=dict(
+            energy_j='Includes measured train/readout/evaluation phases; one-time costs have separate rows.',
+            mem_bytes='Serialized final model.pt file size, repeated per row; not parameter or peak runtime memory.',
+            flops='Falls back to known counted operations when coverage is incomplete; not always a full total.',
+            aggregation='Sum costs within an experiment_id; do not sum memory or average epoch accuracies to obtain final accuracy.'),
+        rows=[dict(csv_data_row=index, **{key: row.get(key) for key in METADATA_FIELDS})
+              for index, row in enumerate(rows, 1)]
+    ), indent=2, ensure_ascii=False), encoding='utf-8')
     return destination

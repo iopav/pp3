@@ -1,4 +1,9 @@
-"""Aggregate completed experiments across jobs. Does not import torch or train."""
+"""Aggregate completed experiments across jobs. Does not import torch or train.
+
+Writes metric CSV, .metadata.json (per-row identity/phase/diagnostics), and
+.selection.json (selected/excluded experiments). Keep the JSON files alongside
+the CSV when combining configurations or selecting final-result rows.
+"""
 import argparse
 import json
 from pathlib import Path
