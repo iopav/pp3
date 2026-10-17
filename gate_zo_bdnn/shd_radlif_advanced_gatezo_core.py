@@ -424,6 +424,11 @@ def extract_readout_traces(
     adapt_decay = torch.exp(-state.config.dt / tau_adapt) if hidden else tau_adapt
 
     all_features, all_labels = [], []
+    # PP3 uses a full, ordered map-style dataset here. Allocate the final
+    # CPU output once instead of retaining every batch plus a torch.cat copy.
+    preallocate = hasattr(loader, 'runtime') and hasattr(loader, 'dataset')
+    feature_output = label_output = None
+    output_position = 0
     spike_total = torch.zeros(hidden, dtype=torch.float64)
     example_steps = 0
     for inputs, labels in loader:
@@ -467,9 +472,23 @@ def extract_readout_traces(
                 batch_spike_total += spike.sum(dim=0)
             spike_total += batch_spike_total.double().cpu()
             example_steps += batch_size * total_steps
-        all_features.append(traces.cpu())
-        all_labels.append(labels.clone())
+        if preallocate:
+            if feature_output is None:
+                count = len(loader.dataset)
+                feature_output = torch.empty(count, readout_bins, hidden, dtype=traces.dtype)
+                label_output = torch.empty(count, dtype=labels.dtype)
+            end = output_position + batch_size
+            if end > len(feature_output):
+                raise RuntimeError('Trace loader yielded more samples than its dataset')
+            feature_output[output_position:end].copy_(traces)
+            label_output[output_position:end].copy_(labels)
+            output_position = end
+        else:
+            all_features.append(traces.cpu())
+            all_labels.append(labels.clone())
     rates = spike_total / float(max(1, example_steps))
+    if preallocate and feature_output is not None:
+        return feature_output[:output_position], label_output[:output_position], rates
     return torch.cat(all_features), torch.cat(all_labels), rates
 
 

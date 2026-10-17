@@ -98,6 +98,7 @@ def main():
     parser.add_argument('--output',default=constants.RUNTIME['output'])
     parser.add_argument('--split-dir', help='Shared validation index directory; default OUTPUT/_splits')
     parser.add_argument('--epochs',type=int)
+    parser.add_argument('--batch-size',type=int,help='Override batch size for selected experiments')
     parser.add_argument('--workers',type=int,default=constants.RUNTIME['workers'])
     parser.add_argument('--threads',type=int,default=constants.RUNTIME['threads'])
     parser.add_argument('--smoke',action='store_true',help='1 epoch, tiny data/model; classwise methods retain every class; see configuration')
@@ -106,6 +107,8 @@ def main():
     parser.add_argument('--force', action='store_true', help='Rerun even if identical completed output exists')
     parser.add_argument('--summarize', nargs='+', help='Legacy alias: summarize existing directories only')
     args=parser.parse_args()
+    if args.batch_size is not None and args.batch_size < 1:
+        parser.error('batch-size must be positive')
     if args.summarize:
         from summarize_experiments import summarize
         print(summarize(args.summarize, Path(args.output)/'summary.csv'))
@@ -140,6 +143,8 @@ def main():
                     c['data']['root']=str(Path(c['data']['root']).expanduser().resolve())
                 if args.epochs:
                     c['model']['epochs']=args.epochs
+                if args.batch_size is not None:
+                    c['model']['batch_size']=args.batch_size
                 if args.smoke:
                     c['smoke_samples']=constants.SMOKE['samples']
                     c['smoke_steps']=None if args.smoke_full_time else constants.SMOKE['steps']

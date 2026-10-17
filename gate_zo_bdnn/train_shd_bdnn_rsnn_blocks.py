@@ -161,6 +161,12 @@ def build_speaker_loaders(args):
         "pin_memory": torch.cuda.is_available(),
         "collate_fn": collate,
     }
+    if os.environ.get('PP3_CONFIG'):
+        # Large dense SHD batches: avoid a second pinned host copy and
+        # limit queued batches when multiprocessing is explicitly requested.
+        common['pin_memory'] = False
+        if args.num_workers > 0:
+            common['prefetch_factor'] = 1
     augmentation_active = (
         jitter_std > 0.0 or time_scale_min != 1.0 or time_scale_max != 1.0
     )
