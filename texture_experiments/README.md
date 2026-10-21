@@ -1,8 +1,10 @@
 # 独立 Texture 实验
 
-五个入口：rnn.py、rsnn.py、snnsurrogate.py、ann.py、gatezo.py。总入口 run_all.py 默认以阻塞方式依次运行五个独立进程，同一时间只有一个实验，失败立即停止。五种方法统一默认 seed=57。默认数据集为 texture-mini，本地目录 D:/workspace/Avalanche/avalanche-master/dataset/texture-mini，超算目录 /home/yizhil/pp3/data/texture-mini，读取 texture_spikesT450_T77.npz。训练/测试输入形状为 (960,77,9)/(240,77,9)，为二值脉冲；12 类 one-hot 标签转换为整数标签，不改变原始 train/test 划分，不再次归一化或脉冲编码。输出保存在 outputs/<数据集>/full/<实验>/seed_<seed>/，重复目录拒绝覆盖，可用 --output 指定新目录。旧结果不迁移、不覆盖；显式使用 --dataset texture 可读取旧 NPY 及 old6classes/new6classes 布局。
+五个入口：rnn.py、rsnn.py、snnsurrogate.py、ann.py、gatezo.py。总入口 run_all.py 默认以阻塞方式依次运行五个独立进程，同一时间只有一个实验，失败立即停止。五种方法统一默认 seed=57。默认数据集为 texture-mini，本地目录 D:/workspace/Avalanche/avalanche-master/dataset/texture-mini，超算目录 /home/yizhil/pp3/data/texture-mini，读取 texture_spikesT450_T77.npz。训练/测试输入形状为 (960,77,9)/(240,77,9)，为二值脉冲；12 类 one-hot 标签转换为整数标签，不改变原始 train/test 划分，不再次归一化或脉冲编码。输出保存在 outputs/<数据集>/full/<实验>/seed_<seed>/，已成功且配置一致的实验自动跳过，其余已有目录拒绝覆盖，可用 --output 指定新目录。旧结果不迁移、不覆盖；显式使用 --dataset texture 可读取旧 NPY 及 old6classes/new6classes 布局。
 
 ## 数据集适配
+
+重复执行相同命令时，五个入口默认自动跳过配置一致且 status.json 标记 success 的已完成实验，输出 `[skip]` 后，总入口继续下一个方法。也检查 model.pt、metrics.csv 非空；GateZO 还要求 summary.json 和 final_metrics.json，完成轮数或隐藏神经元数须匹配。新目录正常训练，已有失败、不完整或配置不同的目录会明确报错并保留，需用新的 --output 重新运行；不自动覆盖、不从中间 epoch 恢复。无需额外开关，单独运行 ann.py 等入口同样生效。配置比较忽略 PyTorch 版本、GPU 名称和 GateZO 实现所在目录，其余已记录字段参与比较；不会对数据文件或模型文件做内容哈希，原路径下更换数据后应使用新的 --output。检查跳过前仍会加载数据及构建当前配置，--dry-run 仅打印命令，不检查完成状态。
 
 五个入口共享 data.py，支持 --dataset texture-mini（默认）、shd、texture，以及 --data-root 覆盖目录。texture-mini 也允许 --data-root 直接指定 NPZ 文件。时间长度、输入维度、输出类别数、MSE 分母和 GateZO one-hot 宽度由数据适配器提供，config.json 记录 dataset、data_root、steps、inputs、classes。完整 Texture-mini 运行使用 77 步，冒烟运行使用前 16 步。
 

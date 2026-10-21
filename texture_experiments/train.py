@@ -18,6 +18,7 @@ from torch.utils.data import DataLoader
 from energy import AuxiliaryMemory, Energy
 from models import Classifier
 from data import add_data_arguments, load_data, data_metadata
+from completion import skip_completed
 
 
 def evaluate(model, loader, device):
@@ -76,7 +77,6 @@ def main(method):
         raise ValueError('Supported optimizers: Adam, SGD')
     optimizer = optimizers[config['optimizer']](model.parameters(), lr=config['lr'])
     destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / method / f'seed_{args.seed}'
-    destination.mkdir(parents=True, exist_ok=False)
     config.update(train_samples=len(train), test_samples=len(test), torch_version=torch.__version__,
                   optimizer_defaults=optimizer.defaults, steps=train.steps,
                   device_name=torch.cuda.get_device_name(device) if device.type == 'cuda' else 'CPU',
@@ -84,6 +84,9 @@ def main(method):
                   cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
                   measurement_window='optimization_excludes_train_and_test_reporting_evaluation')
+    if skip_completed(destination, config):
+        return
+    destination.mkdir(parents=True, exist_ok=False)
     (destination / 'config.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
     total_energy, total_seconds = 0.0, 0.0
     try:

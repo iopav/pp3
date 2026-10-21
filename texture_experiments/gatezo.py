@@ -13,6 +13,7 @@ os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 import numpy as np
 import torch
 from data import add_data_arguments, load_data, data_metadata
+from completion import skip_completed
 from energy import AuxiliaryMemory, Energy
 from growth_policy import grow_until_neurons
 
@@ -195,7 +196,6 @@ def main():
     native.update(L_max=1 if args.smoke else args.epochs, compute_batch_size=args.batch_size,
                   compute_device=args.device, growth_protocol='validation_checkpoint', gate_zo_seed=args.seed)
     destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / 'gatezo' / f'seed_{args.seed}'
-    destination.mkdir(parents=True, exist_ok=False)
     config = dict(method='gatezo', max_hidden=args.max_hidden, layers=1, native_args=native,
                   source=str(BUNDLE), data_root=str(args.data_root.resolve()), smoke=args.smoke,
                   train_samples=len(x), test_samples=len(x_test), seed=args.seed,
@@ -207,6 +207,9 @@ def main():
                   measurement_window='growth_search_gate_and_fit_excludes_reporting_evaluations')
     config.update(data_metadata(args, train))
     config['steps'] = x.shape[1]
+    if skip_completed(destination, config):
+        return
+    destination.mkdir(parents=True, exist_ok=False)
     (destination / 'config.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
     recorder = None
     try:
