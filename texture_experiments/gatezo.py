@@ -12,7 +12,7 @@ os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 
 import numpy as np
 import torch
-from data import datasets, DEFAULT_DATA_ROOT
+from data import add_data_arguments, load_data, data_metadata
 from energy import AuxiliaryMemory, Energy
 from growth_policy import grow_until_neurons
 
@@ -159,7 +159,7 @@ class Recorder:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--data-root', type=Path, default=DEFAULT_DATA_ROOT)
+    add_data_arguments(parser)
     parser.add_argument('--output', type=Path, default=Path(__file__).parent / 'outputs')
     parser.add_argument('--device', default='cuda:0')
     parser.add_argument('--epochs', type=int, default=100, help='Compatibility argument; neuron-target policy ignores the loop limit')
@@ -178,7 +178,7 @@ def main():
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     torch.use_deterministic_algorithms(True)
-    train, test = datasets(args.data_root)
+    train, test = load_data(args)
     def arrays(dataset):
         indices = range(len(dataset))
         if args.smoke:
@@ -187,14 +187,14 @@ def main():
         x, y = zip(*(dataset[i] for i in indices))
         if args.smoke:
             x = [sample[:16] for sample in x]
-        return torch.stack(x).numpy(), np.eye(12, dtype=np.float32)[list(y)]
+        return torch.stack(x).numpy(), np.eye(train.classes, dtype=np.float32)[list(y)]
     x, targets = arrays(train)
     x_test, t_test = arrays(test)
     native = dict(GATE_ZO_DEFAULTS)
     native.pop('seed', None)
     native.update(L_max=1 if args.smoke else args.epochs, compute_batch_size=args.batch_size,
                   compute_device=args.device, growth_protocol='validation_checkpoint', gate_zo_seed=args.seed)
-    destination = args.output / ('smoke' if args.smoke else 'full') / 'gatezo' / f'seed_{args.seed}'
+    destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / 'gatezo' / f'seed_{args.seed}'
     destination.mkdir(parents=True, exist_ok=False)
     config = dict(method='gatezo', max_hidden=args.max_hidden, layers=1, native_args=native,
                   source=str(BUNDLE), data_root=str(args.data_root.resolve()), smoke=args.smoke,
@@ -205,6 +205,8 @@ def main():
                   cudnn_benchmark=False, cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
                   measurement_window='growth_search_gate_and_fit_excludes_reporting_evaluations')
+    config.update(data_metadata(args, train))
+    config['steps'] = x.shape[1]
     (destination / 'config.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
     recorder = None
     try:

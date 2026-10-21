@@ -17,7 +17,7 @@ from torch.nn import functional as F
 from torch.utils.data import DataLoader
 from energy import AuxiliaryMemory, Energy
 from models import Classifier
-from data import datasets, DEFAULT_DATA_ROOT
+from data import add_data_arguments, load_data, data_metadata
 
 
 def evaluate(model, loader, device):
@@ -30,17 +30,17 @@ def evaluate(model, loader, device):
             logits = model(x)
             if not torch.isfinite(logits).all():
                 raise FloatingPointError('Nonfinite evaluation output')
-            squared += F.mse_loss(logits.softmax(-1), F.one_hot(y, 12).float(),
+            squared += F.mse_loss(logits.softmax(-1), F.one_hot(y, logits.shape[-1]).float(),
                                   reduction='sum').item()
             correct += (logits.argmax(-1) == y).sum().item()
             count += len(y)
-    return dict(acc=correct / count, mse=squared / (count * 12))
+    return dict(acc=correct / count, mse=squared / (count * logits.shape[-1]))
 
 
 def main(method):
     defaults = json.loads(Path(__file__).with_name('defaults.json').read_text())
-    parser = argparse.ArgumentParser(description=f'{method}: one hidden layer, 49 units, Texture 12 classes')
-    parser.add_argument('--data-root', type=Path, default=DEFAULT_DATA_ROOT)
+    parser = argparse.ArgumentParser(description=f'{method}: one hidden layer, 49 units, configurable sequence dataset')
+    add_data_arguments(parser)
     parser.add_argument('--output', type=Path, default=Path(__file__).parent / 'outputs')
     parser.add_argument('--device', default='cuda:0')
     parser.add_argument('--epochs', type=int, default=defaults['epochs'])
@@ -50,6 +50,7 @@ def main(method):
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1:
         parser.error('epochs and batch-size must be positive')
+    train, test = load_data(args, args.smoke)
     config = dict(defaults, epochs=1 if args.smoke else args.epochs,
                   batch_size=args.batch_size, seed=args.seed, method=method,
                   smoke=args.smoke, data_root=str(args.data_root.resolve()), device=args.device)
@@ -64,20 +65,20 @@ def main(method):
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     torch.use_deterministic_algorithms(True)
-    train, test = datasets(args.data_root, args.smoke)
+    config.update(data_metadata(args, train))
     generator = torch.Generator().manual_seed(args.seed)
     train_loader = DataLoader(train, batch_size=args.batch_size, shuffle=True, generator=generator)
     train_eval = DataLoader(train, batch_size=args.batch_size)
     test_loader = DataLoader(test, batch_size=args.batch_size)
-    model = Classifier(method, config).to(device)
+    model = Classifier(method, config, inputs=train.inputs, classes=train.classes).to(device)
     optimizers = {'Adam': torch.optim.Adam, 'SGD': torch.optim.SGD}
     if config['optimizer'] not in optimizers:
         raise ValueError('Supported optimizers: Adam, SGD')
     optimizer = optimizers[config['optimizer']](model.parameters(), lr=config['lr'])
-    destination = args.output / ('smoke' if args.smoke else 'full') / method / f'seed_{args.seed}'
+    destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / method / f'seed_{args.seed}'
     destination.mkdir(parents=True, exist_ok=False)
     config.update(train_samples=len(train), test_samples=len(test), torch_version=torch.__version__,
-                  optimizer_defaults=optimizer.defaults, steps=16 if args.smoke else 3775,
+                  optimizer_defaults=optimizer.defaults, steps=train.steps,
                   device_name=torch.cuda.get_device_name(device) if device.type == 'cuda' else 'CPU',
                   deterministic_algorithms=True, cudnn_benchmark=False,
                   cudnn_deterministic=True,

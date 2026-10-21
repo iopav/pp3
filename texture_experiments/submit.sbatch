@@ -13,4 +13,4 @@ set -euo pipefail
 cd "${SLURM_SUBMIT_DIR:?Submit with sbatch from the repository root}"
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
 export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
-python -u texture_experiments/run_all.py --data-root /home/yizhil/pp3/data/texture-mini "$@"
+python -u texture_experiments/run_all.py "$@"
