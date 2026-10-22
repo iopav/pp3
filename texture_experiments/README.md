@@ -34,10 +34,12 @@ python texture_experiments/gatezo.py --device cuda:0 --max-hidden 49
 ## Slurm
 
 ```bash
-# 在仓库根目录提交；先激活包含依赖的 Python 环境。
+# 在仓库根目录提交；作业脚本会初始化 Conda 并激活 avalanche。
 sbatch texture_experiments/submit.sbatch
 sbatch texture_experiments/submit.sbatch --experiments rsnn gatezo
 ```
+
+环境初始化与根目录 submit_experiments.sbatch 一致：优先使用 CONDA_BASE，否则通过 CONDA_EXE 或 conda 查找安装目录，再激活 avalanche。若提交环境无法找到 Conda，先执行 `export CONDA_BASE=/实际的/conda安装目录`。作业启动时记录 Python 路径及 NumPy、PyTorch 版本；依赖导入失败时立即退出。
 
 账户为 naiss2026-4-902-gpu，申请 1 张 GPU、4 个 CPU、32 GB 内存、24 小时；分区采用集群默认，可在 sbatch 命令中按实际要求指定。超算默认数据目录为 /home/yizhil/pp3/data/texture-mini，可用 --data-root 覆盖。无需传 --gpu，自动使用 Slurm 分配的设备。尚未提交正式集群任务。
 
