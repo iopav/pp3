@@ -31,3 +31,4 @@ python -u -c 'import sys; print("Python:", sys.executable, flush=True); import n
 export OMP_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
 export MKL_NUM_THREADS="${SLURM_CPUS_PER_TASK:-4}"
 python -u texture_experiments/run_all.py "$@"
+ 
