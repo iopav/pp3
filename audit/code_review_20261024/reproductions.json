@@ -1,0 +1,41 @@
+{
+  "bdnn_first_round_best": {
+    "grown_hidden": 3,
+    "saved_hidden": 0
+  },
+  "spsn_same_logits_loss_by_batch_size": {
+    "1": 0.6931471824645996,
+    "2": 0.3465735912322998,
+    "4": 0.1732867956161499
+  },
+  "et_tail_batch_accuracy": {
+    "batch_sizes": [
+      128,
+      1
+    ],
+    "correct": [
+      128,
+      0
+    ],
+    "reported": 0.5,
+    "correct_sample_accuracy": 0.9922480620155039
+  },
+  "disabled_flops_and_invalid_accuracy": {
+    "epoch_flops": 0,
+    "train_accuracy": 1.5,
+    "accepted_as_completed": true,
+    "tensor_bytes": 8,
+    "model_file_bytes": 1563
+  },
+  "final_refit_accuracy_export": {
+    "actual_accuracy": 0.75,
+    "exported_test_acc": ""
+  },
+  "nan_accuracy_artifact_accepted": true,
+  "unchanged_energy_counter": {
+    "seconds": 0.01,
+    "gpu_energy_j": 0.0,
+    "energy_method": "nvml_total",
+    "energy_reason": "Counter did not advance; interval may be shorter than hardware update period"
+  }
+}
