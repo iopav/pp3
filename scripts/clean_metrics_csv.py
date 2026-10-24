@@ -2,6 +2,7 @@
 
 Preview: python scripts/clean_metrics_csv.py ROOT --drop COLUMN [COLUMN ...]
 Apply:   append --apply; each changed file gets an exact .csv.bak backup.
+PP3 metadata/diagnostics only: replace --drop ... with --pp3-metadata.
 """
 import argparse
 import csv
@@ -11,6 +12,16 @@ import json
 import os
 from pathlib import Path
 import tempfile
+
+
+# Exact names only: keep epoch and every measured numeric metric, including
+# known/estimated FLOPs and data-wait times. Identity remains in directory paths.
+PP3_METADATA = {
+    'method', 'dataset', 'seed', 'unit', 'source_unit', 'smoke',
+    'train_energy_method', 'train_energy_reason', 'train_complete',
+    'test_energy_method', 'test_energy_reason', 'test_complete',
+    'epoch_flops_complete',
+}
 
 
 def prepare(path, columns):
@@ -41,10 +52,14 @@ def prepare(path, columns):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('root', type=Path)
-    parser.add_argument('--drop', nargs='+', required=True)
+    selection = parser.add_mutually_exclusive_group(required=True)
+    selection.add_argument('--drop', nargs='+')
+    selection.add_argument('--pp3-metadata', action='store_true',
+                           help='Remove PP3 metadata/diagnostics; preserve all numeric metrics')
     parser.add_argument('--apply', action='store_true')
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
+    args.drop = sorted(PP3_METADATA) if args.pp3_metadata else args.drop
     root = args.root.resolve(strict=True)
     if not root.is_dir():
         parser.error('root must be a directory')
