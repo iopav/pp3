@@ -15,6 +15,8 @@ def main():
     parser.add_argument('--experiments', nargs='+', choices=METHODS, default=METHODS)
     parser.add_argument('--seed', type=int, default=57)
     parser.add_argument('--dry-run', action='store_true')
+    parser.add_argument('--eval-each-epoch', action='store_true',
+                        help='Restore reporting evaluation for the four gradient baselines')
     args, extra = parser.parse_known_args()
     if args.cpu and args.gpu is not None:
         parser.error('--cpu and --gpu are mutually exclusive')
@@ -32,6 +34,8 @@ def main():
         command = [sys.executable, str(Path(__file__).with_name(method + '.py')),
                    '--device', 'cpu' if args.cpu else 'cuda:0',
                    '--seed', str(args.seed), *extra]
+        if args.eval_each_epoch and method != 'gatezo':
+            command.append('--eval-each-epoch')
         print(f'CUDA_VISIBLE_DEVICES={env["CUDA_VISIBLE_DEVICES"]} {command}', flush=True)
         if not args.dry_run:
             result = subprocess.run(command, env=env)

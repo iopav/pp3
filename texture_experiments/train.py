@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 import random
 import sys
+import time
 import traceback
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -15,11 +16,34 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from energy import AuxiliaryMemory, Energy, ENERGY_MEASUREMENT_VERSION
+from energy import AuxiliaryMemory, TotalEnergyCounter
 from models import Classifier
 from data import add_data_arguments, load_data, data_metadata
 from completion import skip_completed
 from metrics import compact_metrics
+
+
+def allocate_block_energy(rows, joules, total_energy, total_seconds):
+    """Allocate one measured block by epoch time, preserving its energy sum."""
+    duration = sum(row['epoch_seconds'] for row in rows)
+    if duration <= 0:
+        raise ValueError('Nonpositive training block duration')
+    assigned = 0.
+    for index, row in enumerate(rows):
+        seconds = row['epoch_seconds']
+        energy = None
+        if joules is not None:
+            energy = (joules - assigned if index == len(rows) - 1
+                      else joules * seconds / duration)
+            assigned += energy
+        total_seconds += seconds
+        total_energy = (total_energy + energy
+                        if total_energy is not None and energy is not None else None)
+        row.update(energy_j=energy, power_w=energy / seconds if energy is not None else None,
+                   total_energy_j=total_energy,
+                   total_power_w=total_energy / total_seconds if total_energy is not None else None,
+                   total_seconds=total_seconds)
+    return total_energy, total_seconds
 
 
 def evaluate(model, loader, device):
@@ -48,6 +72,8 @@ def main(method):
     parser.add_argument('--epochs', type=int, default=defaults['epochs'])
     parser.add_argument('--batch-size', type=int, default=defaults['batch_size'])
     parser.add_argument('--seed', type=int, default=defaults['seed'])
+    parser.add_argument('--eval-each-epoch', action='store_true',
+                        help='Restore train/test reporting evaluation; measure energy one epoch at a time')
     parser.add_argument('--smoke', action='store_true', help='One epoch; first 16 steps, <=8 samples per source split')
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1:
@@ -55,7 +81,9 @@ def main(method):
     train, test = load_data(args, args.smoke)
     config = dict(defaults, epochs=1 if args.smoke else args.epochs,
                   batch_size=args.batch_size, seed=args.seed, method=method,
-                  smoke=args.smoke, data_root=str(args.data_root.resolve()), device=args.device)
+                  smoke=args.smoke, data_root=str(args.data_root.resolve()), device=args.device,
+                  eval_each_epoch=args.eval_each_epoch,
+                  energy_window_epochs=1 if args.eval_each_epoch else 5)
     device = torch.device(args.device)
     if device.type == 'cuda' and not torch.cuda.is_available():
         raise RuntimeError('CUDA unavailable; use run_all.py --cpu for an explicit CPU run')
@@ -84,83 +112,88 @@ def main(method):
                   deterministic_algorithms=True, cudnn_benchmark=False,
                   cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
-                  energy_measurement_version=ENERGY_MEASUREMENT_VERSION,
-                  measurement_window='optimization_excludes_train_and_test_reporting_evaluation')
+                  energy_measurement_version='nvml_total_train_block_time_allocation_v1',
+                  measurement_window='consecutive_training_epochs_excludes_reporting_evaluation')
     if skip_completed(destination, config):
         return
     destination.mkdir(parents=True, exist_ok=False)
     (destination / 'config.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
     total_energy, total_seconds = 0.0, 0.0
+    counter = TotalEnergyCounter(device)
     try:
         with (destination / 'metrics.csv').open('w', newline='', encoding='utf-8') as stream:
             writer = None
-            for epoch in range(1, config['epochs'] + 1):
-                para_mem_bytes = sum(p.numel() * p.element_size() for p in model.parameters())
-                parameter_device_bytes = sum(
-                    p.numel() * p.element_size()
-                    for p in model.parameters() if p.device == device
-                )
-                with Energy(device, config['power_sample_seconds']) as meter, \
-                     AuxiliaryMemory(device, parameter_device_bytes) as memory:
-                    model.train()
-                    loss_sum = count = 0
-                    recurrent_state_mem_bytes = 0
-                    hidden_activation_mem_bytes = 0
-                    for x, y in train_loader:
-                        x, y = x.to(device), y.to(device)
-                        optimizer.zero_grad(set_to_none=True)
-                        logits = model(x)
-                        recurrent_state_mem_bytes = max(
-                            recurrent_state_mem_bytes, model.recurrent_state_bytes
-                        )
-                        hidden_activation_mem_bytes = max(
-                            hidden_activation_mem_bytes, model.hidden_activation_bytes
-                        )
-                        loss = F.cross_entropy(logits, y)
-                        if not torch.isfinite(loss):
-                            raise FloatingPointError('Nonfinite training loss')
-                        loss.backward()
-                        optimizer.step()
-                        loss_sum += loss.item() * len(y)
-                        count += len(y)
-                energy = meter.result()
-                memory_metrics = memory.result()
-                hidden_state_mem_bytes = (
-                    recurrent_state_mem_bytes + hidden_activation_mem_bytes
-                )
-                if (memory_metrics['auxiliary_mem_bytes'] is not None
-                        and memory_metrics['auxiliary_mem_bytes'] < hidden_state_mem_bytes):
-                    raise RuntimeError('Measured auxiliary memory is smaller than hidden working storage')
-                # Both reporting evaluations are outside the measurement contexts.
-                train_metrics = evaluate(model, train_eval, device)
-                test_metrics = evaluate(model, test_loader, device)
-                joules, seconds = energy['gpu_energy_j'], energy['seconds']
-                total_seconds += seconds
-                total_energy = total_energy + joules if total_energy is not None and joules is not None else None
-                row = dict(epoch=epoch,
-                    para_mem_bytes=para_mem_bytes,
-                    auxiliary_mem_bytes=memory_metrics['auxiliary_mem_bytes'],
-                    hidden_state_mem_bytes=hidden_state_mem_bytes,
-                    auxiliary_mem_method=memory_metrics['auxiliary_mem_method'],
-                    auxiliary_mem_reason=memory_metrics['auxiliary_mem_reason'],
-                    mse=train_metrics['mse'], test_mse=test_metrics['mse'],
-                    train_acc=train_metrics['acc'], test_acc=test_metrics['acc'],
-                    train_cross_entropy=loss_sum / count,
-                    energy_j=joules, power_w=joules / seconds if joules is not None else None,
-                    total_energy_j=total_energy,
-                    total_power_w=total_energy / total_seconds if total_energy is not None else None,
-                    epoch_seconds=seconds, total_seconds=total_seconds,
-                    energy_method=energy['energy_method'], energy_reason=energy['energy_reason'],
-                    gpu_uuid=energy['gpu_uuid'])
-                row = compact_metrics(row)
+            window_epochs = config['energy_window_epochs']
+            for first_epoch in range(1, config['epochs'] + 1, window_epochs):
+                last_epoch = min(first_epoch + window_epochs - 1, config['epochs'])
+                rows = []
+                # No reporting evaluation or CSV/log writes inside this block.
+                _, initial_energy = counter.read()
+                for epoch in range(first_epoch, last_epoch + 1):
+                    para_mem_bytes = sum(p.numel() * p.element_size() for p in model.parameters())
+                    parameter_device_bytes = sum(
+                        p.numel() * p.element_size()
+                        for p in model.parameters() if p.device == device
+                    )
+                    if device.type == 'cuda':
+                        torch.cuda.synchronize(device)
+                    start = time.perf_counter()
+                    with AuxiliaryMemory(device, parameter_device_bytes) as memory:
+                        model.train()
+                        loss_sum = count = 0
+                        recurrent_state_mem_bytes = 0
+                        hidden_activation_mem_bytes = 0
+                        for x, y in train_loader:
+                            x, y = x.to(device), y.to(device)
+                            optimizer.zero_grad(set_to_none=True)
+                            logits = model(x)
+                            recurrent_state_mem_bytes = max(
+                                recurrent_state_mem_bytes, model.recurrent_state_bytes)
+                            hidden_activation_mem_bytes = max(
+                                hidden_activation_mem_bytes, model.hidden_activation_bytes)
+                            loss = F.cross_entropy(logits, y)
+                            if not torch.isfinite(loss):
+                                raise FloatingPointError('Nonfinite training loss')
+                            loss.backward()
+                            optimizer.step()
+                            loss_sum += loss.item() * len(y)
+                            count += len(y)
+                    seconds = time.perf_counter() - start
+                    memory_metrics = memory.result()
+                    hidden_state_mem_bytes = recurrent_state_mem_bytes + hidden_activation_mem_bytes
+                    if (memory_metrics['auxiliary_mem_bytes'] is not None
+                            and memory_metrics['auxiliary_mem_bytes'] < hidden_state_mem_bytes):
+                        raise RuntimeError('Measured auxiliary memory is smaller than hidden working storage')
+                    rows.append(compact_metrics(dict(epoch=epoch,
+                        para_mem_bytes=para_mem_bytes,
+                        auxiliary_mem_bytes=memory_metrics['auxiliary_mem_bytes'],
+                        hidden_state_mem_bytes=hidden_state_mem_bytes,
+                        train_cross_entropy=loss_sum / count,
+                        energy_j=None, power_w=None, total_energy_j=None, total_power_w=None,
+                        epoch_seconds=seconds, total_seconds=None)))
+                _, final_energy = counter.read()
+                joules = ((final_energy - initial_energy) / 1000
+                          if initial_energy is not None and final_energy is not None else None)
+                total_energy, total_seconds = allocate_block_energy(
+                    rows, joules, total_energy, total_seconds)
+                # Disabled by default: these calls must stay outside a counter window.
+                # Enabling them uses single-epoch windows, preserving each model snapshot.
+                if args.eval_each_epoch:
+                    train_metrics = evaluate(model, train_eval, device)
+                    test_metrics = evaluate(model, test_loader, device)
+                    rows[-1].update(mse=train_metrics['mse'], test_mse=test_metrics['mse'],
+                                    train_acc=train_metrics['acc'], test_acc=test_metrics['acc'])
                 if writer is None:
-                    writer = csv.DictWriter(stream, fieldnames=list(row))
+                    writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
                     writer.writeheader()
-                writer.writerow(row)
+                writer.writerows(rows)
                 stream.flush()
-                print(json.dumps(row), flush=True)
+                for row in rows:
+                    print(json.dumps(row), flush=True)
         torch.save(dict(model=model.state_dict(), config=config), destination / 'model.pt')
         (destination / 'status.json').write_text(json.dumps(dict(status='success', epochs=config['epochs'])))
     except BaseException:
         (destination / 'status.json').write_text(json.dumps(dict(status='failed', error=traceback.format_exc())))
         raise
+    finally:
+        counter.close()
