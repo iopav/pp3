@@ -163,7 +163,7 @@ class Runtime:
 
     @contextmanager
     def preprocessing(self):
-        """显式标记预处理：仅暂停 FLOPs，耗时和能耗仍属于当前阶段。"""
+        """显式标记预处理：仅暂停 F LOPs，耗时和能耗仍属于当前阶段。"""
         counter = self.counter
         paused = counter.paused if counter else False
         if counter:
