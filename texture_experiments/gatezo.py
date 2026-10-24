@@ -7,6 +7,7 @@ from pathlib import Path
 import random
 import sys
 import traceback
+import time
 
 os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
 
@@ -14,7 +15,8 @@ import numpy as np
 import torch
 from data import add_data_arguments, load_data, data_metadata
 from completion import skip_completed
-from energy import AuxiliaryMemory, Energy, ENERGY_MEASUREMENT_VERSION
+from energy import AuxiliaryMemory, TotalEnergyCounter
+from train import allocate_block_energy
 from metrics import compact_metrics
 from growth_policy import grow_until_neurons
 
@@ -62,102 +64,117 @@ def array_bytes(value):
 
 
 class Recorder:
-    # This is an adapter to the bundle's existing hook interface, not a PP3 runtime.
-    counter = None
+    """Five growth-round counter windows; final refit is measured separately."""
+    counter = None  # Native hook: no FLOPs instrumentation.
 
     def __init__(self, model, x, targets, x_test, t_test, output):
         self.model, self.x, self.targets = model, x, targets
         self.x_test, self.t_test, self.output = x_test, t_test, output
         self.outer_array_indices = model.structural_gate.make_outer_split(targets)
-        self.rows, self.parts = [], []
+        self.rows, self.pending = [], []
         self.total_energy, self.total_seconds = 0.0, 0.0
-        self.meter = None
+        self.energy_counter = TotalEnergyCounter(model.compute_device)
+        self.initial_energy = None
+        self.window_open = False
         self.memory = None
         self.epoch = 0
+        self.final_evaluation = None
+        self.final_joules = None
 
     def begin(self, phase, epoch=None):
+        if phase == 'test':
+            raise RuntimeError('Per-round test reporting is disabled')
+        if self.memory is not None:
+            raise RuntimeError('Nested training measurement')
+        if phase == 'final_refit_and_test':
+            self.flush()
         self.phase = phase
         if epoch is not None:
             self.epoch = epoch
-        if phase != 'test' and self.meter is None:
-            self.meter = Energy(self.model.compute_device)
-            self.meter.__enter__()
-            parameter_device_bytes = sum(
-                array_bytes(value) for value in (self.model.W, self.model.U, self.model.Beta)
-                if isinstance(value, torch.Tensor)
-                and value.device == self.model.compute_device
-            )
-            self.memory = AuxiliaryMemory(
-                self.model.compute_device, parameter_device_bytes
-            )
-            self.memory.__enter__()
+        if not self.window_open:
+            _, self.initial_energy = self.energy_counter.read()
+            self.window_open = True
+        if self.model.compute_device.type == 'cuda':
+            torch.cuda.synchronize(self.model.compute_device)
+        self.started = time.perf_counter()
+        parameter_bytes = sum(array_bytes(value)
+            for value in (self.model.W, self.model.U, self.model.Beta)
+            if isinstance(value, torch.Tensor) and value.device == self.model.compute_device)
+        self.memory = AuxiliaryMemory(self.model.compute_device, parameter_bytes)
+        self.memory.__enter__()
 
     def end(self, accuracy=None, loss=None):
-        if self.phase != 'test':
-            self.finish_measurement()
+        self.finish_measurement()
         if self.phase == 'final_refit_and_test':
             self.epoch_row(self.epoch, unit='final_refit_and_test')
 
+    def close_window(self):
+        _, final = self.energy_counter.read()
+        self.window_open = False
+        return ((final - self.initial_energy) / 1000
+                if final is not None and self.initial_energy is not None else None)
+
     def finish_measurement(self):
-        """Stop the current train-side window before any test evaluation."""
-        if self.meter is None:
+        """Stop round timing; only the final refit also closes its energy window."""
+        if self.memory is None:
             return
         self.memory.__exit__(None, None, None)
-        self.meter.__exit__(None, None, None)
-        self.parts.append({**self.meter.result(), **self.memory.result()})
+        self.seconds = time.perf_counter() - self.started
+        self.memory_metrics = self.memory.result()
         self.memory = None
-        self.meter = None
+        if self.phase == 'final_refit_and_test':
+            # Called by the refit adapter before final train/test evaluation.
+            self.final_joules = self.close_window()
 
     def epoch_row(self, epoch, unit='growth_round'):
         m = self.model
-        train = test = dict(accuracy=None, mse=None)
-        if m.hidden_count and not isinstance(m.Beta, list):
-            train = classification_metrics(m.getH(self.x)[0], self.targets, m.Beta)
-            test = classification_metrics(m.getH(self.x_test)[0], self.t_test, m.Beta)
-        seconds = sum(p['seconds'] for p in self.parts)
-        joules = (sum(p['gpu_energy_j'] for p in self.parts)
-                  if all(p['gpu_energy_j'] is not None for p in self.parts) else None)
-        auxiliary = (max(p['auxiliary_mem_bytes'] for p in self.parts)
-                     if all(p['auxiliary_mem_bytes'] is not None for p in self.parts) else None)
         batch = min(m.compute_batch_size, len(self.x))
-        recurrent_state = batch * m.hidden_count * 3 * 4
-        hidden_activation = batch * self.x.shape[1] * m.hidden_count * 4
-        hidden_state = recurrent_state + hidden_activation
+        hidden_state = batch * m.hidden_count * (3 + self.x.shape[1]) * 4
+        auxiliary = self.memory_metrics['auxiliary_mem_bytes']
         if auxiliary is not None and auxiliary < hidden_state:
             raise RuntimeError('Measured auxiliary memory is smaller than hidden working storage')
-        self.total_seconds += seconds
-        self.total_energy = (self.total_energy + joules
-                             if self.total_energy is not None and joules is not None else None)
-        row = dict(epoch=epoch, unit='epoch' if unit.startswith('growth_round') else unit,
-            source_unit=unit, hidden_neurons=m.hidden_count,
+        row = compact_metrics(dict(epoch=epoch, hidden_neurons=m.hidden_count,
             para_mem_bytes=sum(array_bytes(v) for v in (m.W, m.U, m.Beta) if not isinstance(v, list)),
-            auxiliary_mem_bytes=auxiliary,
-            hidden_state_mem_bytes=hidden_state,
-            auxiliary_mem_method=';'.join(sorted(set(p['auxiliary_mem_method'] for p in self.parts))),
-            auxiliary_mem_reason=';'.join(sorted(set(
-                p['auxiliary_mem_reason'] for p in self.parts if p['auxiliary_mem_reason']))),
-            mse=train['mse'], test_mse=test['mse'], train_acc=train['accuracy'], test_acc=test['accuracy'],
-            energy_j=joules, power_w=joules / seconds if joules is not None else None,
-            total_energy_j=self.total_energy,
-            total_power_w=self.total_energy / self.total_seconds if self.total_energy is not None else None,
-            epoch_seconds=seconds, total_seconds=self.total_seconds,
-            energy_method=';'.join(sorted(set(p['energy_method'] for p in self.parts))),
-            energy_reason=';'.join(sorted(set(p['energy_reason'] for p in self.parts if p['energy_reason']))),
-            gpu_uuid=self.parts[0]['gpu_uuid'], validation_accuracy=None)
-        row = compact_metrics(row)
-        self.parts = []
+            auxiliary_mem_bytes=auxiliary, hidden_state_mem_bytes=hidden_state,
+            energy_j=None, power_w=None, total_energy_j=None, total_power_w=None,
+            epoch_seconds=self.seconds, total_seconds=None, validation_accuracy=None))
         if unit == 'final_refit_and_test':
+            self.total_energy, self.total_seconds = allocate_block_energy(
+                [row], self.final_joules, self.total_energy, self.total_seconds)
+            train, test = self.final_evaluation
+            row.update(mse=train['mse'], test_mse=test['mse'],
+                       train_acc=train['accuracy'], test_acc=test['accuracy'])
             (self.output / 'final_metrics.json').write_text(json.dumps(row, indent=2))
+            print(json.dumps(row), flush=True)
         else:
             self.rows.append(row)
-            self._csv()
-        print(json.dumps(row), flush=True)
+            self.pending.append(row)
+            if unit == 'growth_round_failed':
+                self._csv()
 
-    def _csv(self):
+    def flush(self):
+        if not self.pending:
+            return
+        if self.memory is not None:
+            raise RuntimeError('Cannot flush an unfinished round')
+        joules = self.close_window()
+        self.total_energy, self.total_seconds = allocate_block_energy(
+            self.pending, joules, self.total_energy, self.total_seconds)
         with (self.output / 'metrics.csv').open('w', newline='', encoding='utf-8') as stream:
             writer = csv.DictWriter(stream, fieldnames=list(self.rows[0]))
             writer.writeheader()
             writer.writerows(self.rows)
+        for row in self.pending:
+            print(json.dumps(row), flush=True)
+        self.pending.clear()
+
+    def _csv(self):
+        # Native code fills validation_accuracy immediately before this callback.
+        if len(self.pending) >= 5:
+            self.flush()
+
+    def close(self):
+        self.energy_counter.close()
 
 
 def main():
@@ -196,7 +213,8 @@ def main():
     native = dict(GATE_ZO_DEFAULTS)
     native.pop('seed', None)
     native.update(L_max=1 if args.smoke else args.epochs, compute_batch_size=args.batch_size,
-                  compute_device=args.device, growth_protocol='validation_checkpoint', gate_zo_seed=args.seed)
+                  compute_device=args.device, growth_protocol='validation_checkpoint', gate_zo_seed=args.seed,
+                  gate_zo_verbose=False)
     destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / 'gatezo' / f'seed_{args.seed}'
     config = dict(method='gatezo', max_hidden=args.max_hidden, layers=1, native_args=native,
                   source=str(BUNDLE), data_root=str(args.data_root.resolve()), smoke=args.smoke,
@@ -206,8 +224,9 @@ def main():
                   torch_version=torch.__version__, deterministic_algorithms=True,
                   cudnn_benchmark=False, cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
-                  energy_measurement_version=ENERGY_MEASUREMENT_VERSION,
-                  measurement_window='growth_search_gate_and_fit_excludes_reporting_evaluations')
+                  energy_measurement_version='nvml_total_growth_block_time_allocation_v1',
+                  eval_each_epoch=False, energy_window_epochs=5,
+                  measurement_window='growth_search_gate_fit_and_selection_validation_excludes_final_evaluation')
     config.update(data_metadata(args, train))
     config['steps'] = x.shape[1]
     if skip_completed(destination, config):
@@ -226,10 +245,13 @@ def main():
         (destination / 'summary.json').write_text(json.dumps(model.gate_zo_summary, indent=2))
         (destination / 'status.json').write_text(json.dumps(dict(status='success', hidden_neurons=model.hidden_count)))
     except BaseException:
-        if recorder is not None and recorder.meter is not None:
+        if recorder is not None and recorder.memory is not None:
             recorder.finish_measurement()
         (destination / 'status.json').write_text(json.dumps(dict(status='failed', error=traceback.format_exc())))
         raise
+    finally:
+        if recorder is not None:
+            recorder.close()
 
 
 if __name__ == '__main__':

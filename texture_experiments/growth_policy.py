@@ -1,7 +1,7 @@
 """Instance-local growth policy; never patch or write the original bundle.
 
-Compile a private copy of the native function with three checked control-flow
-changes. Candidate search, gating, fitting and accounting remain native.
+Compile a private copy with checked growth and reporting changes.
+Candidate search, gating and fitting remain native.
 """
 import ast
 import functools
@@ -24,20 +24,33 @@ def grow_until_neurons(function):
         raise RuntimeError('Native GateZO stopping conditions changed; review adapter')
     if not isinstance(failure.body[-1], ast.Break):
         raise RuntimeError('Native GateZO search failure handling changed; review adapter')
-    metric_positions = [index for index, node in enumerate(loop.body)
-                        if isinstance(node, ast.Assign)
-                        and any(isinstance(target, ast.Name) and target.id == 'train_metrics'
-                                for target in node.targets)]
-    if len(metric_positions) != 1:
-        raise RuntimeError('Native GateZO train-metric position changed; review adapter')
+    reporting = [node for node in loop.body if isinstance(node, ast.If)
+                 and ast.unparse(node.test) == 'runtime'
+                 and any(isinstance(child, ast.Expr) and isinstance(child.value, ast.Call)
+                         and ast.unparse(child.value.func) == 'runtime.epoch_row'
+                         for child in node.body)]
+    if len(reporting) != 1:
+        raise RuntimeError('Native GateZO reporting block changed; review adapter')
+    block = reporting[0]
+    expected_reporting = ast.parse('''
+runtime.end(train_metrics['accuracy'], train_metrics['mse'])
+runtime.begin('test', attempts)
+test_h, _ = model.getH(X_test)
+observed = classification_metrics(np.asarray(test_h), T_test, model.Beta, _counter(model))
+runtime.end(observed['accuracy'], observed['mse'])
+runtime.epoch_row(attempts, unit='growth_round')
+runtime.rows[-1]['validation_accuracy'] = checkpoint_metrics['accuracy']
+runtime._csv()
+''').body
+    if [ast.dump(n) for n in block.body] != [ast.dump(n) for n in expected_reporting]:
+        raise RuntimeError('Native GateZO test reporting changed; review adapter')
+    # Keep the train-side metrics required by structural selection. Remove only
+    # held-out test reporting, including its forward pass, from every growth round.
+    block.body = [block.body[0], *block.body[5:]]
     loop.test = ast.parse('model.hidden_count < model.max_hidden', mode='eval').body
     failure.body[-1] = ast.Continue()
-    # Candidate search, structural selection and readout fitting are measured;
-    # reporting evaluations on training/validation/test data are not.
-    stop_measurement = ast.parse(
-        'if runtime:\n    runtime.finish_measurement()'
-    ).body[0]
-    loop.body.insert(metric_positions[0], stop_measurement)
+    # Train/validation computations used by structure selection stay inside the
+    # continuous training window. No per-round held-out test is executed.
     # Keep the target-sized checkpoint, even when a smaller checkpoint scored better.
     # Otherwise native final restoration would undo the requested growth target.
     checkpoint.test = ast.BoolOp(op=ast.And(), values=[
@@ -66,6 +79,7 @@ def grow_until_neurons(function):
         test_metrics = namespace['classification_metrics'](
             namespace['np'].asarray(test_h), test_targets, beta, namespace['_counter'](model)
         )
+        runtime.final_evaluation = (train_metrics, test_metrics)
         return train_metrics, test_metrics
 
     # The adapted growth function resolves this name in its private namespace.
@@ -73,6 +87,8 @@ def grow_until_neurons(function):
 
     @functools.wraps(function)
     def wrapped(model, *args, **kwargs):
+        if model.structural_gate.config.growth_protocol != 'validation_checkpoint':
+            raise ValueError('Texture energy experiments require validation_checkpoint')
         if model.max_hidden < 1 or model.hidden_count >= model.max_hidden:
             raise ValueError('Growth requires a positive target above the initial hidden count')
         result = adapted(model, *args, **kwargs)

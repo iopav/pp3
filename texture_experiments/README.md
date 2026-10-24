@@ -11,7 +11,7 @@
 SHD 读取 shd_train.h5、shd_test.h5 中的 labels、spikes/times、spikes/units；需要 h5py。默认预处理参数为 --shd-dt 0.005 秒、--shd-max-time 1.4 秒、--shd-channel-group-size 1，对应 280 步、700 输入、20 类。这些是可调实验配置，随结果保存。时间范围为 [0,max_time)，重复事件合并为二值占用，通道分组后维度为 ceil(700/group_size)，不做数据增强。冒烟运行取前 16 个时间箱，不对完整时域重采样。GateZO 会物化全部输入数组，完整 SHD 运行需评估主机内存；真实 SHD 全量训练与超算执行尚未验证。
 
 ```bash
-sbatch texture_experiments/submit.sbatch
+sbatch --partition=gpu texture_experiments/submit.sbatch
 sbatch texture_experiments/submit.sbatch --dataset shd --data-root /home/yizhil/pp3/data/shd
 python texture_experiments/run_all.py --cpu --dataset texture-mini --smoke
 python texture_experiments/run_all.py --cpu --dataset shd --data-root /path/to/shd --smoke
@@ -35,7 +35,7 @@ python texture_experiments/gatezo.py --device cuda:0 --max-hidden 49
 
 ```bash
 # 在仓库根目录提交；作业脚本会初始化 Conda 并激活 avalanche。
-sbatch texture_experiments/submit.sbatch
+sbatch --partition=gpu texture_experiments/submit.sbatch
 sbatch texture_experiments/submit.sbatch --experiments rsnn gatezo
 ```
 
@@ -55,9 +55,9 @@ GateZO 调用相邻 texture_bdnn_gatezo_bundle 的 BDNN1GateZO 与 GATE_ZO_DEFAU
 
 四个梯度基线默认关闭每轮训练集和测试集报告评估，连续训练 5 个 epoch 后刷新 metrics.csv；末尾不足 5 轮按实际轮数测量。仅在窗口起止读取 nvmlDeviceGetTotalEnergyConsumption()，以差值除以 1000 得到窗口焦耳数，再按各 epoch 的训练耗时占比分摊 energy_j。窗口内没有报告评估、CSV 写盘或日志输出，但包含正常训练循环的主机调度开销；分摊值是逐轮估计，各轮之和等于窗口差值。计数器不支持/读取失败时留空，不回退到功率积分；计数器未增长时保留零差值，固定 5 轮仍不能保证任意硬件上都足够长。
 
-添加 `--eval-each-epoch` 可恢复原先每轮的训练集与测试集评估，并自动使用单 epoch 训练能耗窗口，评估在窗口关闭后执行。例如 `python texture_experiments/run_all.py --experiments ann rnn rsnn snnsurrogate --eval-each-epoch --output /new/output`。默认输出不含 mse、test_mse、train_acc、test_acc 四列；训练交叉熵照常保留。GateZO 不采用此开关，保留原有搜索和评估流程及功率积分计量。
+添加 `--eval-each-epoch` 可恢复四个梯度模型每轮的训练集与测试集评估，并自动使用单 epoch 训练能耗窗口，评估在窗口关闭后执行。默认输出不含 mse、test_mse、train_acc、test_acc 四列；训练交叉熵照常保留。GateZO 不采用此开关，默认关闭每个增长轮次的测试集报告以及 Recorder 的重复全量训练/测试评估。其连续 5 个增长尝试（包含失败尝试）构成能耗窗口，按各轮耗时分摊；末尾不足 5 轮单独结算。结构选择所需的训练子集指标和验证计算保留并计入训练能耗，最终重拟合另开窗口，最终训练/测试评估在该窗口关闭后各执行一次。
 
-config.json 保存配置，model.pt 保存最终权重，status.json 记录成功或失败。GateZO 仍每轮刷新 metrics.csv，最终最佳结构恢复与读出重拟合另存 final_metrics.json、summary.json，不混入 epoch 行；final_metrics 中累计值包含最终处理。
+config.json 保存配置，model.pt 保存最终权重，status.json 记录成功或失败。GateZO 每 5 个增长尝试刷新 metrics.csv，末尾余数在最终重拟合前刷新；最终目标宽度结构恢复与读出重拟合另存 final_metrics.json、summary.json，不混入 epoch 行。final_metrics 的能耗只包含最终重拟合，累计值包含增长和重拟合，准确率来自窗口关闭后的最终评估。
 
 `metrics.csv` 仅保留轮次、模型大小、内存、损失、准确率、能耗、功率与耗时等数值指标。`energy_method`、`energy_reason`、`gpu_uuid`、`auxiliary_mem_method`、`auxiliary_mem_reason` 以及 GateZO 的 `unit`、`source_unit` 不写入结果，也不另存元数据文件。GateZO 的 validation_accuracy 由结构搜索回调填充，属于有效数值指标，予以保留；最终处理仍单独写入 final_metrics.json。已有结果不自动改写，已完成实验仍遵循原有跳过规则。
 
@@ -69,15 +69,30 @@ config.json 保存配置，model.pt 保存最终权重，status.json 记录成�
 | mse / test_mse | 当前模型全训练/测试集 softmax 概率对 one-hot 的 MSE，除以 N×类别数；梯度基线仅启用 --eval-each-epoch 时输出 |
 | train_acc / test_acc | 当前模型重新评估的全训练/测试准确率，0..1；梯度基线仅启用 --eval-each-epoch 时输出 |
 | train_cross_entropy | 仅梯度模型：训练期间按样本加权的交叉熵 |
-| energy_j / power_w | 梯度基线：累计计数器窗口差值按训练耗时分摊与 energy/seconds；GateZO：搜索/门控/拟合窗口的功率积分估计与 energy/seconds |
+| energy_j / power_w | 累计计数器窗口差值按训练耗时分摊与 energy/seconds；GateZO 的窗口为 5 个增长尝试，包含结构选择所需的验证计算 |
 | total_energy_j / total_power_w | 累计能量及累计能量/累计测量时长，不对功率求和 |
 
-auxiliary_mem_bytes 是 PyTorch 活跃分配峰值口径，不是 nvidia-smi 进程占用或 CUDA reserved memory；它不包含 NumPy/CPU 内存、CUDA context、allocator 保留但未被活跃张量占用的缓存和非 PyTorch 库分配。hidden_state_mem_bytes 是主隐藏激活加递归状态的下界，用于解释 auxiliary 的一部分；完整 BPTT/autograd 内存以 auxiliary 实测峰值为准。能耗为整张 GPU 的功率积分估计，包含空闲功耗及可能的其他进程，不含 CPU。CPU 运行或读取失败时留空并保留原因，任一轮缺测则累计能量也留空。初始化、训练集报告评估、测试集评估、CSV 和最终 checkpoint 写盘不在积分窗口内；GateZO 的候选搜索、结构门控和参数拟合计入。
+auxiliary_mem_bytes 是 PyTorch 活跃分配峰值口径，不是 nvidia-smi 进程占用或 CUDA reserved memory；它不包含 NumPy/CPU 内存、CUDA context、allocator 保留但未被活跃张量占用的缓存和非 PyTorch 库分配。hidden_state_mem_bytes 是主隐藏激活加递归状态的下界，用于解释 auxiliary 的一部分；完整 BPTT/autograd 内存以 auxiliary 实测峰值为准。能耗为整张 GPU 的累计计数差值，包含空闲功耗及可能的其他进程，不含 CPU。CPU 运行或读取失败时留空，任一窗口缺测则累计能量也留空。初始化、最终报告评估、CSV 和最终 checkpoint 写盘不在测量窗口内；GateZO 的候选搜索、结构门控、拟合及选择所需的训练/验证计算计入。
 
-config.json 记录 energy_measurement_version、eval_each_epoch 和 energy_window_epochs（后两项仅梯度基线），防止误用不同测量口径的旧结果。重跑请指定新的 --output 目录，旧 CSV 无法据此恢复真实逐轮能耗。GPU 计数器与功率接口说明见 [NVML Device Queries](https://docs.nvidia.com/deploy/nvml-api/latest/api/group__nvmlDeviceQueries.html)。
+config.json 记录 energy_measurement_version、eval_each_epoch 和 energy_window_epochs（GateZO 单位为增长尝试），防止误用不同测量口径的旧结果。重跑请指定新的 --output 目录，旧 CSV 无法据此恢复真实逐轮能耗。GPU 计数器与功率接口说明见 [NVML Device Queries](https://docs.nvidia.com/deploy/nvml-api/latest/api/group__nvmlDeviceQueries.html)。
 
 ## 验证
 
-`python -m unittest discover -s texture_experiments -p 'test_energy_blocks.py'` 检查五轮窗口、末尾余数、能量守恒和评估开关。GateZO 的功率积分仍优先读取 NVML_FI_DEV_POWER_INSTANT，不支持时使用 nvmlDeviceGetPowerUsage；诊断原因和来源不写入结果。仓库根目录执行 `python -m unittest discover -s tests -p 'test_energy*.py'` 检查累计计数器和功率积分各自的读取与异常处理。
+`python -m unittest discover -s texture_experiments -p 'test_energy_blocks.py'` 检查梯度模型五轮窗口、末尾余数、能量守恒和评估开关。`test_gatezo_energy_blocks.py` 检查增长窗口及最终测试边界。仓库根目录执行 `python -m unittest discover -s tests -p 'test_energy*.py'` 检查累计计数器和旧功率积分工具各自的读取与异常处理。
 
 python texture_experiments/test_baselines.py 检查梯度、状态重置、批次加权指标和辅助内存口径。python texture_experiments/test_gatezo.py 检查实际神经元上限、目标宽度与运行时隔离。--smoke 对四个梯度模型取最多 8 个样本、前 16 步；GateZO 每类最多取 4 个样本、前 16 步，但仍增长到目标隐藏大小 49，因此其增长行数不固定。结果单独存于 outputs/<数据集>/smoke。冒烟结果不能代表完整训练性能。依赖 PyTorch、NumPy，以及原 bundle 所需 SciPy、scikit-learn、matplotlib；NVML 读取需要 nvidia-ml-py。
+
+
+## 全部五种方法的训练能耗运行
+
+在项目根目录提交以下命令，顺序执行 RNN、RSNN、SNN surrogate、ANN 和 GateZO。不要添加 `--eval-each-epoch`。四个梯度模型每 5 epoch 测量，GateZO 每 5 个增长尝试测量，均按时间比例分摊。GateZO 改动仅位于 texture_experiments 的适配器，原 texture_bdnn_gatezo_bundle 文件不修改。
+
+```bash
+sbatch --partition=gpu texture_experiments/submit.sbatch \
+  --experiments rnn rsnn snnsurrogate ann gatezo \
+  --output texture_experiments/outputs_energy_all_20261025
+```
+
+默认数据集是 texture-mini，完整 Texture 添加 `--dataset texture`。输出目录与旧测量结果区分；GateZO 新配置使用 `nvml_total_growth_block_time_allocation_v1`，不会把旧逐轮功率积分结果作为匹配结果复用。
+
+`test_gatezo_energy_blocks.py` 使用实际适配后的增长函数验证五轮窗口、失败尝试、余数、缺测、验证保留和最终测试仅调用一次；候选搜索与能耗遥测在该测试中模拟，不构成真实 GPU 能耗精度验证。
