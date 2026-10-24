@@ -22,6 +22,14 @@ class CompletionTests(unittest.TestCase):
         (self.path / 'model.pt').write_bytes(b'checkpoint placeholder')
         (self.path / 'metrics.csv').write_text('epoch\n1\n2\n')
 
+    def test_old_energy_measurements_are_not_reused(self):
+        self.write_run()
+        from energy import ENERGY_MEASUREMENT_VERSION
+        with self.assertRaisesRegex(FileExistsError, 'energy_measurement_version'):
+            skip_completed(self.path, dict(self.config,
+                energy_measurement_version=ENERGY_MEASUREMENT_VERSION))
+        self.assertTrue((self.path / 'metrics.csv').exists())
+
     def write(self, name, value):
         (self.path / name).write_text(json.dumps(value), encoding='utf-8')
 

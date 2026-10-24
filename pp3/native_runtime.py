@@ -227,27 +227,24 @@ class Runtime:
         return result
 
     def epoch_row(self, epoch, unit='epoch'):
-        """输出阶段分项和 epoch 合计；增长轮次等原始单位保存在 source_unit。"""
-        row = dict(method=self.config['method'], dataset=self.config['dataset'],
-                   seed=self.config['seed'], epoch=epoch, unit='epoch', source_unit=unit,
-                   smoke=self.config.get('smoke', False))
+        """输出已统计的阶段 FLOPs 与 epoch 合计；FFT/other 已包含在总数内。"""
+        row = dict(epoch=epoch)
         phases = ['train', 'test'] + [phase for number, phase in self.results
             if number == epoch and phase not in ('train', 'test')]
         # 保留 train_flops/test_flops、train_gpu_energy_j/test_gpu_energy_j 等独立列。
         # 缺少的阶段填空；其他阶段（如 readout_fit）按实际记录追加。
         for phase in phases:
             result = self.results.get((epoch, phase), {})
-            for key in ('accuracy', 'loss', 'seconds', 'data_wait_seconds', 'gpu_energy_j',
-                        'energy_method', 'energy_reason', 'complete', 'flops', 'known_flops',
-                        'fft_flops_estimated', 'other_flops_estimated'):
+            for key in ('accuracy', 'loss', 'seconds', 'gpu_energy_j',
+                        'other_flops_estimated'):
                 row[f'{phase}_{key}'] = result.get(key)
+            row[f'{phase}_flops'] = result.get('known_flops')
+            row[f'{phase}_fft_flops_included'] = result.get('fft_flops_estimated')
         measured = [self.results[(epoch, phase)] for phase in phases if (epoch, phase) in self.results]
         # 合计包含本 epoch 的全部已记录阶段，不等于纯训练成本。
-        # 例如 train=100、test=20，则 epoch_known_flops=120，训练分项仍为 100。
-        # known_flops 始终保留已覆盖的计数；完整 FLOPs 仅在各阶段覆盖完整时提供。
-        row['epoch_flops_complete'] = bool(measured) and all(r['complete'] for r in measured)
-        row['epoch_known_flops'] = sum(r['known_flops'] for r in measured)
-        row['epoch_flops'] = row['epoch_known_flops'] if row['epoch_flops_complete'] else None
+        # known_flops 已含 FFT 和 other 估算项，不能再把分项加一次。
+        # 即使存在未知算子也输出已统计的合计；未知算子仍记录于 flops_unknown.json。
+        row['epoch_flops'] = sum(r['known_flops'] for r in measured)
         row['epoch_seconds'] = sum(r['seconds'] for r in measured)
         # 任一已记录阶段的能耗不可用，合计也填空，不能把缺失能耗当成 0。
         row['epoch_gpu_energy_j'] = (sum(r['gpu_energy_j'] for r in measured)
@@ -274,23 +271,17 @@ class Runtime:
         # 它既不是参数张量字节数之和，也不是训练期间的内存或显存峰值。
         for row in self.rows:
             row['final_model_bytes'] = path.stat().st_size
-            for (number, phase), result in self.results.items():
-                if phase.startswith('final_'):
-                    # 向各 epoch 行补充最终阶段信息，仅作关联；不能按行重复累加。
-                    row[phase+'_accuracy'] = result['accuracy']
-                    row[phase+'_known_flops'] = result['known_flops']
-                    row[phase+'_flops'] = result['flops']
         self._csv()
         self.finished = True
         # prepare/final_* 的一次性开销单独存入 status，供 reporting 单独导出。
         # 调用方通常让这些阶段使用 epoch=0，避免与常规 epoch 合计重叠。
         # 未知算子的完整记录已由 end() 写入 flops_unknown.json。
-        one_time = [dict(epoch=number, phase=phase, **{k: result.get(k) for k in
-                    ('gpu_energy_j','seconds','flops','known_flops','energy_reason','energy_method','accuracy')})
+        one_time = [dict(epoch=number, phase=phase, flops=result.get('known_flops'),
+                    **{k: result.get(k) for k in ('gpu_energy_j','seconds','accuracy')})
                     for (number, phase), result in self.results.items()
                     if phase == 'prepare' or phase.startswith('final_')]
         write_json(self.output/'status.json', dict(
-            artifact_version=2, experiment_id=self.config.get('experiment_id'),
+            artifact_version=3, experiment_id=self.config.get('experiment_id'),
             method=self.config['method'], dataset=self.config['dataset'], seed=self.config['seed'],
             one_time_metrics=one_time, flops_unknown_file='flops_unknown.json',
             status='success' if self.complete else 'flops_incomplete',

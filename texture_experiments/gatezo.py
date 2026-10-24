@@ -14,7 +14,8 @@ import numpy as np
 import torch
 from data import add_data_arguments, load_data, data_metadata
 from completion import skip_completed
-from energy import AuxiliaryMemory, Energy
+from energy import AuxiliaryMemory, Energy, ENERGY_MEASUREMENT_VERSION
+from metrics import compact_metrics
 from growth_policy import grow_until_neurons
 
 BUNDLE = Path(__file__).resolve().parents[1] / 'texture_bdnn_gatezo_bundle'
@@ -143,6 +144,7 @@ class Recorder:
             energy_method=';'.join(sorted(set(p['energy_method'] for p in self.parts))),
             energy_reason=';'.join(sorted(set(p['energy_reason'] for p in self.parts if p['energy_reason']))),
             gpu_uuid=self.parts[0]['gpu_uuid'], validation_accuracy=None)
+        row = compact_metrics(row)
         self.parts = []
         if unit == 'final_refit_and_test':
             (self.output / 'final_metrics.json').write_text(json.dumps(row, indent=2))
@@ -204,6 +206,7 @@ def main():
                   torch_version=torch.__version__, deterministic_algorithms=True,
                   cudnn_benchmark=False, cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
+                  energy_measurement_version=ENERGY_MEASUREMENT_VERSION,
                   measurement_window='growth_search_gate_and_fit_excludes_reporting_evaluations')
     config.update(data_metadata(args, train))
     config['steps'] = x.shape[1]

@@ -1,6 +1,7 @@
 """Conservative completed-task discovery without importing torch."""
 import csv
 import hashlib
+import math
 import json
 from pathlib import Path
 
@@ -69,16 +70,17 @@ def completed_status(directory):
                     or int(row['et_observed_input_size']) != stage['input_size']
                     or row['et_aa'] != stage['aa']):
                     return None
-        if status.get('artifact_version') == 2:
+        if status.get('artifact_version') in (2, 3):
             if not status.get('experiment_id'):
                 return None
             epochs = [int(row['epoch']) for row in rows]
             if len(set(epochs)) != len(epochs):
                 return None
             for row in rows:
-                if row.get('epoch_flops_complete') not in {'True', 'False'}:
+                if status['artifact_version'] == 2 and row.get('epoch_flops_complete') not in {'True', 'False'}:
                     return None
-                if float(row['epoch_known_flops']) < 0:
+                counted = float(row['epoch_flops' if status['artifact_version'] == 3 else 'epoch_known_flops'])
+                if not math.isfinite(counted) or counted < 0:
                     return None
                 if int(row['final_model_bytes']) != status['model_bytes']:
                     return None
@@ -108,7 +110,7 @@ def completed_index(root):
         if '_history' in path.relative_to(root).parts:
             continue
         status = completed_status(path.parent)
-        if status and status.get('artifact_version') == 2 and status.get('experiment_id'):
+        if status and status.get('artifact_version') in (2, 3) and status.get('experiment_id'):
             result[status['experiment_id']] = path.parent
     for path in sorted(Path(root).rglob('launch.json')):
         if '_history' in path.relative_to(root).parts:

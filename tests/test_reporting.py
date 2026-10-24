@@ -34,7 +34,8 @@ class ReportingTests(unittest.TestCase):
             self.assertEqual([row['epoch'] for row in rows],['1','','1',''])
             self.assertEqual([row['experiment_id'] for row in metadata['rows']],
                              ['config_a','config_a','config_b','config_b'])
-            self.assertEqual(metadata['rows'][1]['energy_note'],'CPU run: GPU energy unavailable')
+            self.assertTrue(all('energy_note' not in row for row in metadata['rows']))
+            self.assertNotIn('notes', metadata)
 
     def test_missing_flops_and_final_cost_not_repeated(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -62,11 +63,12 @@ class ReportingTests(unittest.TestCase):
             self.assertEqual([r['flops'] for r in rows],['100','100','20'])
             self.assertNotIn('known_flops',rows[0])
             self.assertNotIn('flops_complete',rows[0])
-            self.assertEqual(rows[0]['mem_mib'],'1.0')
+            self.assertEqual(rows[0]['mem_bytes'],'1048576')
+            self.assertNotIn('mem_mib', rows[0])
             for field in ('experiment_id','record_type','source_unit','energy_note','output'):
                 self.assertNotIn(field,rows[0])
             metadata=json.loads(destination.with_suffix('.metadata.json').read_text(encoding='utf-8'))
-            self.assertEqual(metadata['rows'][0]['source_unit'],'growth_round')
+            self.assertNotIn('source_unit', metadata['rows'][0])
             self.assertEqual([r['csv_data_row'] for r in metadata['rows']],[1,2,3])
             self.assertEqual([r['record_type'] for r in metadata['rows']],
                              ['epoch','epoch','final_refit_and_test'])

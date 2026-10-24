@@ -1,0 +1,652 @@
+{
+  "root": "E:\\Downloads\\rs",
+  "files": 42,
+  "rows": 3240,
+  "columns": {
+    "train_gpu_energy_j": {
+      "positive": 3240
+    },
+    "test_gpu_energy_j": {
+      "positive": 3240
+    },
+    "epoch_gpu_energy_j": {
+      "positive": 3240
+    }
+  },
+  "issues": [],
+  "per_file": [
+    {
+      "file": "E:\\Downloads\\rs\\shd\\spsn\\seed_57\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\spsn\\seed_58\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\spsn\\seed_59\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\spsn\\seed_60\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\spsn\\seed_61\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\tp\\seed_57\\metrics.csv",
+      "rows": 12,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 12
+        },
+        "test_gpu_energy_j": {
+          "positive": 12
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 12
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\tp\\seed_58\\metrics.csv",
+      "rows": 12,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 12
+        },
+        "test_gpu_energy_j": {
+          "positive": 12
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 12
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\tp\\seed_59\\metrics.csv",
+      "rows": 11,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 11
+        },
+        "test_gpu_energy_j": {
+          "positive": 11
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 11
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\tp\\seed_60\\metrics.csv",
+      "rows": 17,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 17
+        },
+        "test_gpu_energy_j": {
+          "positive": 17
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 17
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\shd\\tp\\seed_61\\metrics.csv",
+      "rows": 17,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 17
+        },
+        "test_gpu_energy_j": {
+          "positive": 17
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 17
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\ffsnn\\seed_57\\metrics.csv",
+      "rows": 10,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 10
+        },
+        "test_gpu_energy_j": {
+          "positive": 10
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 10
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\ffsnn\\seed_58\\metrics.csv",
+      "rows": 9,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 9
+        },
+        "test_gpu_energy_j": {
+          "positive": 9
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 9
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\gatezo\\seed_57\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\gatezo\\seed_58\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\gatezo\\seed_59\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\gatezo\\seed_60\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\gatezo\\seed_61\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\spsn\\seed_57\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\spsn\\seed_58\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\spsn\\seed_59\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\spsn\\seed_60\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\spsn\\seed_61\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\tp\\seed_57\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\tp\\seed_58\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\tp\\seed_59\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\tp\\seed_60\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\spike\\tp\\seed_61\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\gatezo\\seed_57\\metrics.csv",
+      "rows": 29,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 29
+        },
+        "test_gpu_energy_j": {
+          "positive": 29
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 29
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\gatezo\\seed_58\\metrics.csv",
+      "rows": 29,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 29
+        },
+        "test_gpu_energy_j": {
+          "positive": 29
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 29
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\gatezo\\seed_59\\metrics.csv",
+      "rows": 29,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 29
+        },
+        "test_gpu_energy_j": {
+          "positive": 29
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 29
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\gatezo\\seed_60\\metrics.csv",
+      "rows": 36,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 36
+        },
+        "test_gpu_energy_j": {
+          "positive": 36
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 36
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\gatezo\\seed_61\\metrics.csv",
+      "rows": 29,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 29
+        },
+        "test_gpu_energy_j": {
+          "positive": 29
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 29
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\spsn\\seed_57\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\spsn\\seed_58\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\spsn\\seed_59\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\spsn\\seed_60\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\spsn\\seed_61\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\tp\\seed_57\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\tp\\seed_58\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\tp\\seed_59\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\tp\\seed_60\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    },
+    {
+      "file": "E:\\Downloads\\rs\\texture\\tp\\seed_61\\metrics.csv",
+      "rows": 100,
+      "columns": {
+        "train_gpu_energy_j": {
+          "positive": 100
+        },
+        "test_gpu_energy_j": {
+          "positive": 100
+        },
+        "epoch_gpu_energy_j": {
+          "positive": 100
+        }
+      }
+    }
+  ],
+  "energy_methods": {
+    "nvml_total": 6480
+  }
+}

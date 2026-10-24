@@ -15,10 +15,11 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from energy import AuxiliaryMemory, Energy
+from energy import AuxiliaryMemory, Energy, ENERGY_MEASUREMENT_VERSION
 from models import Classifier
 from data import add_data_arguments, load_data, data_metadata
 from completion import skip_completed
+from metrics import compact_metrics
 
 
 def evaluate(model, loader, device):
@@ -83,6 +84,7 @@ def main(method):
                   deterministic_algorithms=True, cudnn_benchmark=False,
                   cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
+                  energy_measurement_version=ENERGY_MEASUREMENT_VERSION,
                   measurement_window='optimization_excludes_train_and_test_reporting_evaluation')
     if skip_completed(destination, config):
         return
@@ -150,6 +152,7 @@ def main(method):
                     epoch_seconds=seconds, total_seconds=total_seconds,
                     energy_method=energy['energy_method'], energy_reason=energy['energy_reason'],
                     gpu_uuid=energy['gpu_uuid'])
+                row = compact_metrics(row)
                 if writer is None:
                     writer = csv.DictWriter(stream, fieldnames=list(row))
                     writer.writeheader()

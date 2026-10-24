@@ -37,7 +37,7 @@ def summarize(directories, destination):
             if not status:
                 excluded.append(dict(path=str(out),reason='Not completed or required artifacts invalid'))
                 continue
-            config = status if status.get('artifact_version') == 2 else json.loads((out/'launch.json').read_text(encoding='utf-8'))
+            config = status if status.get('artifact_version') in (2, 3) else json.loads((out/'launch.json').read_text(encoding='utf-8'))
             # Older runs lack a source/config identity; preserve them separately.
             key=config.get('experiment_id') or 'legacy:'+str(out)
             task={k:config[k] for k in ('method','dataset','seed')}
