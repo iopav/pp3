@@ -41,12 +41,18 @@ def data_signature(config):
     return result
 
 
+def training_finished(status):
+    """FLOPs coverage is diagnostic only, including legacy status labels."""
+    return (bool(status.get('training_completed'))
+            and status.get('status') in {'success', 'flops_incomplete'})
+
+
 def completed_status(directory):
-    """Check completion reports, model size and per-epoch training records."""
+    """Check training artifacts without requiring FLOPs coverage diagnostics."""
     directory=Path(directory)
     try:
         status=json.loads((directory/'status.json').read_text(encoding='utf-8'))
-        if not status.get('training_completed') or status.get('status') not in {'success','flops_incomplete'}:
+        if not training_finished(status):
             return None
         if (directory/'model.pt').stat().st_size != status['model_bytes'] or status['model_bytes']<=0:
             return None
@@ -77,8 +83,6 @@ def completed_status(directory):
             if len(set(epochs)) != len(epochs):
                 return None
             for row in rows:
-                if status['artifact_version'] == 2 and row.get('epoch_flops_complete') not in {'True', 'False'}:
-                    return None
                 counted = float(row['epoch_flops' if status['artifact_version'] == 3 else 'epoch_known_flops'])
                 if not math.isfinite(counted) or counted < 0:
                     return None
@@ -87,17 +91,7 @@ def completed_status(directory):
             return status
         for row in rows:
             epoch=int(row['epoch'])
-            phase=json.loads((directory/f'epoch_{epoch:04d}_train_operations.json').read_text(encoding='utf-8'))
-            if 'complete' not in phase:
-                return None
             if row.get('final_model_bytes') and int(row['final_model_bytes'])!=status['model_bytes']:
-                return None
-            if row.get('test_accuracy'):
-                test=json.loads((directory/f'epoch_{epoch:04d}_test_operations.json').read_text(encoding='utf-8'))
-                if 'complete' not in test:
-                    return None
-        for path in directory.glob('epoch_*_operations.json'):
-            if 'complete' not in json.loads(path.read_text(encoding='utf-8')):
                 return None
         return status
     except (OSError,ValueError,KeyError,TypeError):

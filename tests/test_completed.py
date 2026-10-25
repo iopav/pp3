@@ -3,6 +3,9 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+import contextlib
+import io
+from unittest.mock import patch
 from pp3.completed import identity, completed_index, completed_status, source_digest
 from summarize_experiments import summarize
 
@@ -22,6 +25,56 @@ def fixture(out, **changes):
 
 
 class CompletedTests(unittest.TestCase):
+    def test_cleaned_v2_and_v3_ignore_coverage_but_validate_training_artifacts(self):
+        for version in (2, 3):
+            for coverage in (True, False, None):
+                with self.subTest(version=version, coverage=coverage), tempfile.TemporaryDirectory() as folder:
+                    out=Path(folder)/'task'; config=fixture(out)
+                    metric='epoch_known_flops' if version==2 else 'epoch_flops'
+                    csv_path=out/'metrics.csv'
+                    csv_path.write_text(f'epoch,{metric},final_model_bytes\n1,12,4\n')
+                    original=csv_path.read_bytes()
+                    status=dict(artifact_version=version,experiment_id=config['experiment_id'],
+                        status='flops_incomplete',training_completed=True,model_bytes=4,epochs=1)
+                    if coverage is not None:
+                        status['flops_complete']=coverage
+                    (out/'status.json').write_text(json.dumps(status))
+                    self.assertIsNotNone(completed_status(out))
+                    self.assertIn(config['experiment_id'],completed_index(out))
+                    self.assertEqual(csv_path.read_bytes(),original)
+                    for change in ({'training_completed':False},{'status':'failed'},
+                                   {'epochs':2},{'model_bytes':5}):
+                        (out/'status.json').write_text(json.dumps(dict(status,**change)))
+                        self.assertIsNone(completed_status(out))
+
+    def test_legacy_does_not_require_operator_coverage_reports(self):
+        with tempfile.TemporaryDirectory() as folder:
+            out=Path(folder)/'task'; fixture(out)
+            (out/'epoch_0001_train_operations.json').unlink()
+            self.assertIsNotNone(completed_status(out))
+
+    def test_controller_skips_cleaned_v2_without_launch_and_returns_success(self):
+        import run_experiments
+        with tempfile.TemporaryDirectory() as folder:
+            argv=['run_experiments.py','--cpu','--methods','spsn','--datasets','spike',
+                  '--seeds','57','--output',folder]
+            capture=io.StringIO()
+            with patch('sys.argv',argv+['--dry-run']), contextlib.redirect_stdout(capture):
+                self.assertEqual(run_experiments.main(),0)
+            config=json.loads(capture.getvalue())['tasks'][0]
+            out=Path(config['output']); fixture(out,**config)
+            (out/'metrics.csv').write_text('epoch,epoch_known_flops,final_model_bytes\n1,12,4\n')
+            (out/'status.json').write_text(json.dumps(dict(artifact_version=2,
+                experiment_id=config['experiment_id'],status='flops_incomplete',
+                training_completed=True,flops_complete=False,model_bytes=4,epochs=1)))
+            capture=io.StringIO()
+            with patch('sys.argv',argv), patch.object(run_experiments.subprocess,'Popen') as launch, \
+                 contextlib.redirect_stdout(capture):
+                self.assertEqual(run_experiments.main(),0)
+            launch.assert_not_called()
+            self.assertIn(f'跳过 [skip completed] spsn/spike/57: {out}',capture.getvalue())
+            self.assertNotIn('epoch_flops_complete',(out/'metrics.csv').read_text())
+
     def test_old_resnet_baseline_is_not_accepted_as_efficienttrain(self):
         with tempfile.TemporaryDirectory() as folder:
             out=Path(folder)/'old_et'

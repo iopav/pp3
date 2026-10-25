@@ -10,6 +10,7 @@ import shutil
 import signal
 import traceback
 import constants
+from pp3.completed import training_finished
 from importlib.metadata import version, PackageNotFoundError
 
 ROOT=Path(__file__).resolve().parent
@@ -37,7 +38,7 @@ def record_exit(config, log, process_code, interruption=None):
             else:
                 reason = f'Child exited with code {process_code}; no successful completion report; see preceding output'
         status.update(status='failed', training_completed=False, reason=reason)
-    code = process_code or (0 if status.get('status') == 'success' else 2)
+    code = process_code or (0 if training_finished(status) else 2)
     status.update(process_exit_code=process_code, exit_code=code)
     lines = [f'finish {config["method"]}/{config["dataset"]}/{config["seed"]} exit={code}',
              f'  status={status.get("status", "failed")} training_completed={status.get("training_completed", False)}',
@@ -45,7 +46,7 @@ def record_exit(config, log, process_code, interruption=None):
     if status.get('reason'):
         lines.append(str(status['reason']))
     if status.get('status') == 'flops_incomplete':
-        lines.append('  FLOPs coverage check failed; see flops_unknown.json')
+        lines.append('  FLOPs coverage incomplete (diagnostic only); see flops_unknown.json')
     # Seek explicitly: the child may have advanced the shared file descriptor.
     log.seek(0, os.SEEK_END)
     log.write('\n[controller]\n'+'\n'.join(lines)+'\n')
@@ -185,11 +186,11 @@ def main():
         previous=existing.get(c['experiment_id'])
         status=completed_status(previous) if previous else None
         if status:
-            code=0 if status['status']=='success' else 2
+            code=0  # completed_status already validated training; coverage is diagnostic.
             finished.append(dict(method=c['method'],dataset=c['dataset'],seed=c['seed'],
                 device='previous',exit_code=code,output=str(previous),skipped=True,
                 experiment_id=c['experiment_id']))
-            print(f'skip completed {c["method"]}/{c["dataset"]}/{c["seed"]}: {previous}',flush=True)
+            print(f'跳过 [skip completed] {c["method"]}/{c["dataset"]}/{c["seed"]}: {previous}',flush=True)
         else:
             remaining.append(c)
     pending=remaining

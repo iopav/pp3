@@ -32,7 +32,8 @@ class ControllerTests(unittest.TestCase):
     def test_final_status_diagnostics(self):
         cases = [
             (0, {'status':'flops_incomplete', 'training_completed':True,
-                 'flops_missing':['aten.unknown: unknown']}, None, 'FLOPs coverage check failed; see flops_unknown.json', 2),
+                 'flops_missing':['aten.unknown: unknown']}, None, 'FLOPs coverage incomplete (diagnostic only); see flops_unknown.json', 0),
+            (0, {'status':'flops_incomplete', 'training_completed':False}, None, 'training_completed=False', 2),
             (0, [], None, 'Invalid status report', 2),
             (1, {'status':'success', 'training_completed':True}, None, 'status=failed', 1),
             (-9, {}, None, 'Child terminated by signal SIGKILL' if os.name != 'nt' else 'Child exited with code -9', -9),
