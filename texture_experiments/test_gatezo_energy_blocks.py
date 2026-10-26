@@ -15,7 +15,7 @@ from gatezo import BDNN1GateZO, BoundedGateZO, Recorder
 class GateZOEnergyBlockTests(unittest.TestCase):
     def run_growth(self, directory, hidden, failures, readings):
         model = BoundedGateZO(max_hidden=hidden, compute_device='cpu', nB=1,
-            L_max=1, growth_protocol='validation_checkpoint', gate_zo_seed=22,
+            L_max=hidden, growth_protocol='validation_checkpoint', gate_zo_seed=22,
             gate_zo_verbose=False)
         x = np.ones((20, 2, 9), dtype=np.float32)
         labels = np.eye(2, dtype=np.float32)[np.arange(20) % 2]
@@ -65,9 +65,9 @@ class GateZOEnergyBlockTests(unittest.TestCase):
             self.assertNotIn('train_acc', row)
         return rows, json.loads((directory/'final_metrics.json').read_text())
 
-    def test_five_rounds_remainder_failed_attempts_and_final_test(self):
+    def test_five_rounds_remainder_and_final_test(self):
         with tempfile.TemporaryDirectory() as folder:
-            rows, final = self.run_growth(Path(folder), 7, 2,
+            rows, final = self.run_growth(Path(folder), 7, 0,
                 [1000, 16000, 16000, 22000, 22000, 25000])
         for group, total in ((rows[:5], 15.), (rows[5:], 6.)):
             self.assertAlmostEqual(sum(float(r['energy_j']) for r in group), total)
@@ -75,8 +75,7 @@ class GateZOEnergyBlockTests(unittest.TestCase):
             for row in group:
                 self.assertAlmostEqual(float(row['energy_j']),
                                        total * float(row['epoch_seconds']) / duration)
-        self.assertTrue(all(r['validation_accuracy'] == '' for r in rows[:2]))
-        self.assertTrue(all(r['validation_accuracy'] != '' for r in rows[2:]))
+        self.assertTrue(all(r['validation_accuracy'] != '' for r in rows))
         self.assertEqual(final['energy_j'], 3.)
         self.assertEqual(final['total_energy_j'], 24.)
         self.assertIn('test_acc', final)

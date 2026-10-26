@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --account=naiss2026-4-902-gpu
+#SBATCH --partition=gpu
 #SBATCH --job-name=texture-five
 #SBATCH --gpus=1
 #SBATCH --cpus-per-task=4

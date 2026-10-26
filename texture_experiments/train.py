@@ -83,7 +83,7 @@ def main(method):
                   batch_size=args.batch_size, seed=args.seed, method=method,
                   smoke=args.smoke, data_root=str(args.data_root.resolve()), device=args.device,
                   eval_each_epoch=args.eval_each_epoch,
-                  energy_window_epochs=1 if args.eval_each_epoch else 5)
+                  energy_window_epochs=1 if args.eval_each_epoch else (10 if method == 'ann' else 5))
     device = torch.device(args.device)
     if device.type == 'cuda' and not torch.cuda.is_available():
         raise RuntimeError('CUDA unavailable; use run_all.py --cpu for an explicit CPU run')

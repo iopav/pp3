@@ -47,8 +47,9 @@ runtime._csv()
     # Keep the train-side metrics required by structural selection. Remove only
     # held-out test reporting, including its forward pass, from every growth round.
     block.body = [block.body[0], *block.body[5:]]
-    loop.test = ast.parse('model.hidden_count < model.max_hidden', mode='eval').body
-    failure.body[-1] = ast.Continue()
+    loop.test = ast.parse('model.L < model.L_max and model.hidden_count < model.max_hidden',
+                          mode='eval').body
+    # Preserve the native break on candidate-search failure. No unlimited retries.
     # Train/validation computations used by structure selection stay inside the
     # continuous training window. No per-round held-out test is executed.
     # Keep the target-sized checkpoint, even when a smaller checkpoint scored better.
@@ -93,6 +94,8 @@ runtime._csv()
             raise ValueError('Growth requires a positive target above the initial hidden count')
         result = adapted(model, *args, **kwargs)
         if model.hidden_count != model.max_hidden:
-            raise RuntimeError('GateZO returned without reaching its neuron target')
+            raise RuntimeError('GateZO stopped before its neuron target: '
+                               f'L={model.L}, L_max={model.L_max}, '
+                               f'hidden={model.hidden_count}, target={model.max_hidden}')
         return result
     return wrapped

@@ -1,4 +1,4 @@
-"""Exercise five-epoch counter windows through the actual baseline loop."""
+"""Exercise method-specific counter windows through the actual baseline loop."""
 import contextlib
 import csv
 import io
@@ -25,7 +25,7 @@ class EnergyBlockTests(unittest.TestCase):
         self.assertEqual(allocate_block_energy(missing, None, *totals), (None, 11.))
         self.assertIsNone(missing[0]['energy_j'])
 
-    def run_baseline(self, root, epochs, evaluate_enabled=False):
+    def run_baseline(self, root, epochs, evaluate_enabled=False, method='ann'):
         dataset = Sequences(np.ones((4, 3, 9), dtype=np.float32), np.arange(4), 12)
         events = []
         counter = Mock()
@@ -49,8 +49,8 @@ class EnergyBlockTests(unittest.TestCase):
         with patch.object(sys, 'argv', argv), patch('train.load_data', return_value=(dataset, dataset)), \
              patch('train.data_metadata', return_value={}), patch('train.TotalEnergyCounter', return_value=counter), \
              patch('train.evaluate', side_effect=evaluate), contextlib.redirect_stdout(io.StringIO()):
-            main('ann')
-        out = root/'texture-mini/full/ann/seed_57'
+            main(method)
+        out = root/f'texture-mini/full/{method}/seed_57'
         with (out/'metrics.csv').open(encoding='utf-8') as stream:
             rows = list(csv.DictReader(stream))
         counter.close.assert_called_once()
@@ -59,7 +59,7 @@ class EnergyBlockTests(unittest.TestCase):
 
     def test_five_epoch_block_and_final_remainder_without_evaluation(self):
         with tempfile.TemporaryDirectory() as directory:
-            rows, events, config = self.run_baseline(Path(directory), 7)
+            rows, events, config = self.run_baseline(Path(directory), 7, method='rnn')
             self.assertEqual(events, ['counter'] * 4)
             self.assertEqual(len(rows), 7)
             self.assertEqual(config['energy_window_epochs'], 5)
@@ -74,6 +74,24 @@ class EnergyBlockTests(unittest.TestCase):
             for block in (rows[:5], rows[5:]):
                 powers = [float(row['energy_j']) / float(row['epoch_seconds']) for row in block]
                 self.assertTrue(all(abs(powers[0] - p) < 1e-6 for p in powers))
+
+    def test_ann_ten_epoch_window_and_remainder(self):
+        for epochs in (10, 13):
+            with self.subTest(epochs=epochs), tempfile.TemporaryDirectory() as directory:
+                rows, events, config = self.run_baseline(Path(directory), epochs)
+                self.assertEqual(config['energy_window_epochs'], 10)
+                self.assertEqual(events, ['counter'] * (2 if epochs == 10 else 4))
+                self.assertEqual(len(rows), epochs)
+                self.assertNotIn('test_acc', rows[0])
+                self.assertAlmostEqual(sum(float(r['energy_j']) for r in rows[:10]), 15.)
+                if epochs > 10:
+                    self.assertAlmostEqual(sum(float(r['energy_j']) for r in rows[10:]), 6.)
+                for block in (rows[:10], rows[10:]):
+                    duration = sum(float(r['epoch_seconds']) for r in block)
+                    energy = sum(float(r['energy_j']) for r in block)
+                    for row in block:
+                        self.assertAlmostEqual(float(row['energy_j']),
+                                               energy * float(row['epoch_seconds']) / duration)
 
     def test_enabled_evaluation_occurs_after_each_closed_counter_window(self):
         with tempfile.TemporaryDirectory() as directory:

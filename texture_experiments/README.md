@@ -47,13 +47,13 @@ sbatch texture_experiments/submit.sbatch --experiments rsnn gatezo
 
 四个梯度模型默认单隐藏层、49 个神经元、100 epoch、batch size 128、完整数据时间长度（当前 texture-mini 为 77 步）。输出层不计入隐藏层数。手写模型的默认值集中在 defaults.json：SGD 默认参数（lr=0.01；已同步用户在旧目录的配置修改）、交叉熵、seed=57、时间平均读出、框架默认初始化。RNN 为 tanh RNN；ANN 对时间步共享 Linear+ReLU 后平均；SNN 为 LIF，beta=0.9、阈值=1、减法 reset（reset 梯度 detach），fast-sigmoid surrogate slope=25；RSNN 增加隐藏脉冲密集递归连接。使用完整反向传播，不截断时间。所有入口设置 Python、NumPy、PyTorch 和全部 CUDA seed，关闭 cuDNN benchmark，启用 cuDNN deterministic 与严格 torch deterministic algorithms；遇到没有确定性实现的算子时直接失败，不静默降级。这些是新增模型的默认定义，不声称来自已有 GateZO 配置。
 
-GateZO 调用相邻 texture_bdnn_gatezo_bundle 的 BDNN1GateZO 与 GATE_ZO_DEFAULTS，使用 validation_checkpoint 协议和统一 seed=57，其余搜索及门控超参保持默认；对所选数据集全部类别训练（Texture 为 12 类、SHD 为 20 类），不运行两阶段增量协议。最大且目标保留隐藏神经元为 49，每个增长 loop 记录一行。当前适配器按 W 的列数强制增长到目标宽度，--epochs 仅记录为兼容参数，不构成 GateZO 增长上限；剩余容量不足时缩小新增块。候选池仍为默认 100，不属于保留模型宽度。
+GateZO 调用相邻 texture_bdnn_gatezo_bundle 的 BDNN1GateZO 与 GATE_ZO_DEFAULTS，使用 validation_checkpoint 协议和统一 seed=57；原生超参数明确设为 nB=1、L_max=49，分别控制每轮候选新增神经元数和成功增长轮数上限。这两个值在 GateZO 适配器内部设置，无需命令行参数；--epochs 仅为 GateZO 兼容参数，四个梯度模型仍默认训练 100 epoch。目标宽度为 49，每轮成功增加一个神经元，共 49 轮；候选搜索失败沿用原生停止行为，未达到目标则实验失败，不无限重试。其余搜索及门控超参保持默认，候选池 T_max=100；nB=1 配合 min_keep=1 时无法删去该轮唯一候选。适配器仍跳过误差及平台期提前停止，并仅保存目标宽度 checkpoint。对所选数据集全部类别单阶段训练，不运行原版两阶段增量协议，因而完整实验流程不与 spec 完全等同，详见 GATEZO_PARITY_AUDIT_CN.md。
 
 运行不依赖 pp3 controller、配置、拆分和输出。energy.py 是本目录独立工具。GateZO Recorder 兼容原实现已有的 _pp3_runtime 回调属性，但不导入 pp3 runtime，counter=None。没有修改原 bundle。
 
 ## 输出与指标
 
-四个梯度基线默认关闭每轮训练集和测试集报告评估，连续训练 5 个 epoch 后刷新 metrics.csv；末尾不足 5 轮按实际轮数测量。仅在窗口起止读取 nvmlDeviceGetTotalEnergyConsumption()，以差值除以 1000 得到窗口焦耳数，再按各 epoch 的训练耗时占比分摊 energy_j。窗口内没有报告评估、CSV 写盘或日志输出，但包含正常训练循环的主机调度开销；分摊值是逐轮估计，各轮之和等于窗口差值。计数器不支持/读取失败时留空，不回退到功率积分；计数器未增长时保留零差值，固定 5 轮仍不能保证任意硬件上都足够长。
+四个梯度基线默认关闭每轮训练集和测试集报告评估，ANN 连续训练 10 个 epoch 后刷新 metrics.csv，其他三个梯度模型每 5 个 epoch 刷新；末尾不足窗口长度时按实际轮数测量。仅在窗口起止读取 nvmlDeviceGetTotalEnergyConsumption()，以差值除以 1000 得到窗口焦耳数，再按各 epoch 的训练耗时占比分摊 energy_j。窗口内没有报告评估、CSV 写盘或日志输出，但包含正常训练循环的主机调度开销；分摊值是逐轮估计，各轮之和等于窗口差值。计数器不支持/读取失败时留空，不回退到功率积分；计数器未增长时保留零差值，固定窗口仍不能保证任意硬件上都足够长。
 
 添加 `--eval-each-epoch` 可恢复四个梯度模型每轮的训练集与测试集评估，并自动使用单 epoch 训练能耗窗口，评估在窗口关闭后执行。默认输出不含 mse、test_mse、train_acc、test_acc 四列；训练交叉熵照常保留。GateZO 不采用此开关，默认关闭每个增长轮次的测试集报告以及 Recorder 的重复全量训练/测试评估。其连续 5 个增长尝试（包含失败尝试）构成能耗窗口，按各轮耗时分摊；末尾不足 5 轮单独结算。结构选择所需的训练子集指标和验证计算保留并计入训练能耗，最终重拟合另开窗口，最终训练/测试评估在该窗口关闭后各执行一次。
 
@@ -78,21 +78,21 @@ config.json 记录 energy_measurement_version、eval_each_epoch 和 energy_windo
 
 ## 验证
 
-`python -m unittest discover -s texture_experiments -p 'test_energy_blocks.py'` 检查梯度模型五轮窗口、末尾余数、能量守恒和评估开关。`test_gatezo_energy_blocks.py` 检查增长窗口及最终测试边界。仓库根目录执行 `python -m unittest discover -s tests -p 'test_energy*.py'` 检查累计计数器和旧功率积分工具各自的读取与异常处理。
+`python -m unittest discover -s texture_experiments -p 'test_energy_blocks.py'` 检查 ANN 十轮窗口、RNN 五轮窗口、末尾余数、能量守恒和评估开关。`test_gatezo_energy_blocks.py` 检查增长窗口及最终测试边界。仓库根目录执行 `python -m unittest discover -s tests -p 'test_energy*.py'` 检查累计计数器和旧功率积分工具各自的读取与异常处理。
 
-python texture_experiments/test_baselines.py 检查梯度、状态重置、批次加权指标和辅助内存口径。python texture_experiments/test_gatezo.py 检查实际神经元上限、目标宽度与运行时隔离。--smoke 对四个梯度模型取最多 8 个样本、前 16 步；GateZO 每类最多取 4 个样本、前 16 步，但仍增长到目标隐藏大小 49，因此其增长行数不固定。结果单独存于 outputs/<数据集>/smoke。冒烟结果不能代表完整训练性能。依赖 PyTorch、NumPy，以及原 bundle 所需 SciPy、scikit-learn、matplotlib；NVML 读取需要 nvidia-ml-py。
+python texture_experiments/test_baselines.py 检查梯度、状态重置、批次加权指标和辅助内存口径。python texture_experiments/test_gatezo.py 检查原生 nB/L_max、轮数上限、搜索失败停止、实际神经元上限、目标宽度与运行时隔离。--smoke 对四个梯度模型取最多 8 个样本、前 16 步；GateZO 每类最多取 4 个样本、前 16 步，仍使用 nB=1、L_max=49，成功运行需达到 49 个隐藏神经元。结果单独存于 outputs/<数据集>/smoke。冒烟结果不能代表完整训练性能。依赖 PyTorch、NumPy，以及原 bundle 所需 SciPy、scikit-learn、matplotlib；NVML 读取需要 nvidia-ml-py。
 
 
 ## 全部五种方法的训练能耗运行
 
-在项目根目录提交以下命令，顺序执行 RNN、RSNN、SNN surrogate、ANN 和 GateZO。不要添加 `--eval-each-epoch`。四个梯度模型每 5 epoch 测量，GateZO 每 5 个增长尝试测量，均按时间比例分摊。GateZO 改动仅位于 texture_experiments 的适配器，原 texture_bdnn_gatezo_bundle 文件不修改。
+在项目根目录提交以下命令，顺序执行 RNN、RSNN、SNN surrogate、ANN 和 GateZO。不要添加 `--eval-each-epoch`。ANN 每 10 epoch 测量，其他三个梯度模型每 5 epoch 测量，GateZO 每 5 个增长尝试测量，均按时间比例分摊。GateZO 改动仅位于 texture_experiments 的适配器，原 texture_bdnn_gatezo_bundle 文件不修改。
 
 ```bash
 sbatch --partition=gpu texture_experiments/submit.sbatch \
   --experiments rnn rsnn snnsurrogate ann gatezo \
-  --output texture_experiments/outputs_energy_all_20261025
+  --output texture_experiments/outputs_energy_nb1_lmax49
 ```
 
 默认数据集是 texture-mini，完整 Texture 添加 `--dataset texture`。输出目录与旧测量结果区分；GateZO 新配置使用 `nvml_total_growth_block_time_allocation_v1`，不会把旧逐轮功率积分结果作为匹配结果复用。
 
-`test_gatezo_energy_blocks.py` 使用实际适配后的增长函数验证五轮窗口、失败尝试、余数、缺测、验证保留和最终测试仅调用一次；候选搜索与能耗遥测在该测试中模拟，不构成真实 GPU 能耗精度验证。
+`test_gatezo_energy_blocks.py` 使用实际适配后的增长函数验证五轮窗口、余数、缺测、验证保留和最终测试仅调用一次；候选搜索与能耗遥测在该测试中模拟，不构成真实 GPU 能耗精度验证。

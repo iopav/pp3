@@ -63,6 +63,18 @@ def array_bytes(value):
     return value.numel() * value.element_size() if isinstance(value, torch.Tensor) else np.asarray(value).nbytes
 
 
+def native_settings(*, rounds=49, growth=1, batch_size=128, device='cuda:0', seed=57):
+    """Use the native nB and L_max controls, independent of baseline epochs."""
+    if rounds < 1 or growth < 1:
+        raise ValueError('L_max and nB must be positive')
+    native = dict(GATE_ZO_DEFAULTS)
+    native.pop('seed', None)
+    native.update(L_max=rounds, nB=growth, compute_batch_size=batch_size,
+                  compute_device=device, growth_protocol='validation_checkpoint',
+                  gate_zo_seed=seed, gate_zo_verbose=False)
+    return native
+
+
 class Recorder:
     """Five growth-round counter windows; final refit is measured separately."""
     counter = None  # Native hook: no FLOPs instrumentation.
@@ -182,14 +194,18 @@ def main():
     add_data_arguments(parser)
     parser.add_argument('--output', type=Path, default=Path(__file__).parent / 'outputs')
     parser.add_argument('--device', default='cuda:0')
-    parser.add_argument('--epochs', type=int, default=100, help='Compatibility argument; neuron-target policy ignores the loop limit')
+    parser.add_argument('--epochs', type=int, default=100,
+                        help='Baseline compatibility argument; GateZO uses internal L_max=49')
     parser.add_argument('--batch-size', type=int, default=128)
     parser.add_argument('--seed', type=int, default=57)
     parser.add_argument('--max-hidden', type=int, default=49)
     parser.add_argument('--smoke', action='store_true')
     args = parser.parse_args()
+    native = native_settings(batch_size=args.batch_size, device=args.device, seed=args.seed)
     if min(args.epochs, args.batch_size, args.max_hidden) < 1:
         parser.error('epochs, batch-size and max-hidden must be positive')
+    if args.max_hidden > native['L_max'] * native['nB']:
+        parser.error('max-hidden cannot exceed L-max * nB')
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
@@ -210,17 +226,14 @@ def main():
         return torch.stack(x).numpy(), np.eye(train.classes, dtype=np.float32)[list(y)]
     x, targets = arrays(train)
     x_test, t_test = arrays(test)
-    native = dict(GATE_ZO_DEFAULTS)
-    native.pop('seed', None)
-    native.update(L_max=1 if args.smoke else args.epochs, compute_batch_size=args.batch_size,
-                  compute_device=args.device, growth_protocol='validation_checkpoint', gate_zo_seed=args.seed,
-                  gate_zo_verbose=False)
     destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / 'gatezo' / f'seed_{args.seed}'
     config = dict(method='gatezo', max_hidden=args.max_hidden, layers=1, native_args=native,
                   source=str(BUNDLE), data_root=str(args.data_root.resolve()), smoke=args.smoke,
                   train_samples=len(x), test_samples=len(x_test), seed=args.seed,
-                  epochs_unit='growth_loop', stopping_policy='exact_neuron_target',
+                  epochs_unit='growth_loop', stopping_policy='native_L_max_with_neuron_target',
                   requested_epochs=args.epochs, epoch_limit_applied=False,
+                  growth_round_limit=native['L_max'], growth_round_limit_applied=True,
+                  candidate_failure_policy='stop_and_fail_if_target_unmet',
                   torch_version=torch.__version__, deterministic_algorithms=True,
                   cudnn_benchmark=False, cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
