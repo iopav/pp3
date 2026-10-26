@@ -29,6 +29,7 @@ data/
 # =========================
 # Python dependencies bundled locally
 # =========================
+WMPoetry/
 python_deps/
 
 # =========================
