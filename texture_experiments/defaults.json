@@ -5,6 +5,7 @@
   "layers": 1,
   "seed": 57,
   "optimizer": "SGD",
+  "momentum": 0.9,
   "lr": 0.01,
   "loss": "cross_entropy",
   "rnn_nonlinearity": "tanh",

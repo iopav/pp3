@@ -311,7 +311,9 @@ def test_rec(epoch=None):
 
 # %%
 torch.manual_seed(runtime.config['seed'] if runtime else 42)
-loss_fn = swish_loss 
+# Keep the native swish loss; make its configured alpha effective in PP3.
+from functools import partial
+loss_fn = partial(swish_loss, alpha=settings['loss_alpha']) if runtime else swish_loss
 learning_rate = settings['lr'] if runtime else 0.001
 optimiser = Adam(model.parameters(), lr=learning_rate)
 num_epochs = settings['epochs'] if runtime else 1 + (600)

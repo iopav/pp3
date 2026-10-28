@@ -1,0 +1,137 @@
+% Compile with pdfLaTeX, XeLaTeX, or LuaLaTeX.
+\documentclass[a4paper,10pt]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{amsmath,amssymb}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\newcommand{\metric}[1]{\texttt{\detokenize{#1}}}
+\pagestyle{empty}
+\begin{document}
+\begin{center}\large\bfseries Texture Experiment Metrics\end{center}
+
+Let $N$ be the number of evaluated samples, $C$ the number of classes,
+$z_{ic}$ the logits, and $Y_{ic}$ the one-hot labels.
+Memory values are bytes in actual stored dtypes; $e$ denotes an epoch.
+
+\textbf{Epoch and hidden width.}
+\metric{epoch} is the training epoch for gradient models or the growth-attempt
+index for GateZO. GateZO's \metric{hidden_neurons} is $H=\operatorname{cols}(W)$.
+
+\textbf{Accuracy.}
+\metric{train_acc}, \metric{test_acc}, and \metric{validation_accuracy}
+use their respective datasets:
+\[
+ A=\frac{1}{N}\sum_{i=1}^{N}
+ \mathbf{1}\!\left[\arg\max_c z_{ic}=y_i\right].
+\]
+Values are fractions in $[0,1]$, not percentages.
+
+\textbf{Training cross-entropy.}
+For batch $b$ of size $n_b$, let $L_b$ be its mean cross-entropy.
+The gradient models report the sample-weighted training loss:
+\[
+ p_{ic}=\frac{e^{z_{ic}}}{\sum_k e^{z_{ik}}},\qquad
+ L_b=-\frac{1}{n_b}\sum_{i\in b}\log p_{i,y_i},\qquad
+ \text{\metric{train_cross_entropy}}=
+ \frac{\sum_b n_b L_b}{\sum_b n_b}.
+\]
+These predictions are made during training, before each batch update.
+
+\textbf{Probability MSE.}
+\metric{mse} and \metric{test_mse} are evaluated on the training and test sets:
+\[
+ \mathrm{MSE}=\frac{1}{NC}\sum_{i=1}^{N}\sum_{c=1}^{C}(Y_{ic}-p_{ic})^2.
+\]
+The denominator is $NC$, not $N$. GateZO uses stabilized softmax with
+$10^{-12}$ added to its denominator.
+
+\textbf{Parameter storage (bytes).}
+\[
+ \text{\metric{para_mem_bytes}}=
+ \sum_{\theta}\operatorname{numel}(\theta)\operatorname{element\_size}(\theta).
+\]
+For GateZO, sum the actual array bytes of $W,U,\beta$.
+This excludes gradients, optimizer state, and checkpoint serialization overhead.
+
+\textbf{Auxiliary state storage (bytes).}
+\[
+ \text{\metric{auxiliary_mem_bytes}}=
+ \text{\metric{optimizer_state_bytes}}
+ +\text{\metric{hiddenstatememfor bp}}.
+\]
+\[
+ M_{\mathrm{opt},e}=\sum_{S\in\mathcal O_e}\operatorname{bytes}(S)+8n_e,
+ \qquad \text{\metric{optimizer_state_bytes}}=M_{\mathrm{opt},e}.
+\]
+Here $\mathcal O_e$ contains unique optimizer tensor/array backing storages,
+and $n_e$ counts numeric scalar entries. Optimizer state is counted after the
+epoch's last update, using actual tensor
+storage bytes with alias deduplication (CPU and GPU). Numeric Python state
+scalars count as 8 logical bytes each. SGD uses momentum 0.9; its momentum
+buffers are saved in the final checkpoint. Once initialized for all parameters,
+SGD momentum storage equals parameter storage when their dtypes match.
+RNG, sampling/split state,
+configuration, parameter groups, gradients, and temporary workspaces are excluded.
+This is the requested sum of state storage and BP peak, not a simultaneous
+GPU peak or serialized checkpoint size. GateZO has no optimizer, BP, or separate
+learned gate parameters: selected structure is encoded in W/U/Beta, already
+counted as model parameters. Its auxiliary and BP values are zero.
+
+\textbf{Hidden state memory for BP (bytes).}
+\metric{hiddenstatememfor bp} measures live nonparameter tensor storage saved
+by autograd for backward on the training device:
+\[
+ M_{\mathrm{BP},e}=\max_{b,t}\sum_{S\in\mathcal S_{b,t}\setminus\mathcal P}
+ \operatorname{bytes}(S).
+\]
+Here $\mathcal S_{b,t}$ contains unique live backing storages saved for backward,
+and $\mathcal P$ contains model parameter storages. Hooks cover forward, loss,
+and backward; shared views count once, using their full backing storage.
+Saved inputs and labels are included. CPU runs count CPU saved storage;
+CUDA runs count saved CUDA storage. GateZO has no BP and reports zero.
+This is saved-tensor payload, not CPU graph-node metadata or all backward
+workspaces. It is not an additional allocation estimate and must not be added
+again to auxiliary memory. RNN/RSNN recurrent states reset for each batch;
+no separate cross-batch state is retained. Saved BP tensors are released after
+backward and are not serialized in the checkpoint; only their measured size
+is recorded. Hook overhead is included in training time.
+
+\textbf{Time (seconds).}
+\[
+ \text{\metric{epoch_seconds}}=t_e=t_e^{\mathrm{end}}-t_e^{\mathrm{start}},
+ \qquad
+ \text{\metric{total_seconds}}=\sum_{j\le e}t_j.
+\]
+Only measured training/growth/refit segments are included; reporting evaluation
+and the entire script's wall-clock duration are not included.
+
+\textbf{Energy (joules).}
+A window $w$ uses synchronized cumulative GPU energy readings in mJ:
+\[
+ E_w=\frac{C_w^{\mathrm{end}}-C_w^{\mathrm{start}}}{1000},\qquad
+ \text{\metric{energy_j}}=E_e=E_w\frac{t_e}{\sum_{j\in w}t_j},\qquad
+ \text{\metric{total_energy_j}}=\sum_{j\le e}E_j.
+\]
+Default windows contain 10 epochs for ANN and 5 epochs/growth attempts for the
+other methods. The final partial window is measured separately. The last row
+receives the remaining window energy to preserve the sum. These are time-based
+allocations, not independent per-epoch energy measurements.
+
+\textbf{Power (watts).}
+\[
+ \text{\metric{power_w}}=\frac{E_e}{t_e},\qquad
+ \text{\metric{total_power_w}}=\frac{\sum_{j\le e}E_j}{\sum_{j\le e}t_j}.
+\]
+Power is derived, not independently sampled. Within one window, per-row power
+is equal up to rounding. Energy includes whole-GPU activity, not CPU energy.
+
+\textbf{Availability and final rows.}
+Gradient-model accuracy and MSE require \metric{--eval-each-epoch}, which also
+switches energy windows to one training epoch. GateZO records validation
+accuracy during growth; final train/test accuracy and MSE are in
+\metric{final_metrics.json}. Its noncumulative energy/time cover final refitting;
+its cumulative values include growth and refitting. Final reporting evaluation
+is outside that window. Missing measurements remain blank/null; missing energy
+also makes cumulative energy and power unavailable. A zero counter difference
+remains zero. Do not sum cumulative columns or memory values across epochs.
+\end{document}

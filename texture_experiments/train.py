@@ -16,11 +16,13 @@ import numpy as np
 import torch
 from torch.nn import functional as F
 from torch.utils.data import DataLoader
-from energy import AuxiliaryMemory, TotalEnergyCounter
+from energy import TotalEnergyCounter
 from models import Classifier
 from data import add_data_arguments, load_data, data_metadata
 from completion import skip_completed
 from metrics import compact_metrics
+from bp_memory import SavedTensorMemory, BP_MEMORY_VERSION, BP_MEMORY_FIELD
+from state_memory import make_optimizer, optimizer_state_bytes, AUX_MEMORY_VERSION, SynchronizedSegment
 
 
 def allocate_block_energy(rows, joules, total_energy, total_seconds):
@@ -101,10 +103,7 @@ def main(method):
     train_eval = DataLoader(train, batch_size=args.batch_size)
     test_loader = DataLoader(test, batch_size=args.batch_size)
     model = Classifier(method, config, inputs=train.inputs, classes=train.classes).to(device)
-    optimizers = {'Adam': torch.optim.Adam, 'SGD': torch.optim.SGD}
-    if config['optimizer'] not in optimizers:
-        raise ValueError('Supported optimizers: Adam, SGD')
-    optimizer = optimizers[config['optimizer']](model.parameters(), lr=config['lr'])
+    optimizer = make_optimizer(model.parameters(), config)
     destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / method / f'seed_{args.seed}'
     config.update(train_samples=len(train), test_samples=len(test), torch_version=torch.__version__,
                   optimizer_defaults=optimizer.defaults, steps=train.steps,
@@ -113,6 +112,10 @@ def main(method):
                   cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
                   energy_measurement_version='nvml_total_train_block_time_allocation_v1',
+                  bp_memory_version=BP_MEMORY_VERSION,
+                  auxiliary_memory_version=AUX_MEMORY_VERSION,
+                  optimizer_state_measurement='epoch_end_after_last_step',
+                  bp_memory_aggregation='maximum_live_saved_nonparameter_storage_per_epoch',
                   measurement_window='consecutive_training_epochs_excludes_reporting_evaluation')
     if skip_completed(destination, config):
         return
@@ -131,43 +134,33 @@ def main(method):
                 _, initial_energy = counter.read()
                 for epoch in range(first_epoch, last_epoch + 1):
                     para_mem_bytes = sum(p.numel() * p.element_size() for p in model.parameters())
-                    parameter_device_bytes = sum(
-                        p.numel() * p.element_size()
-                        for p in model.parameters() if p.device == device
-                    )
                     if device.type == 'cuda':
                         torch.cuda.synchronize(device)
                     start = time.perf_counter()
-                    with AuxiliaryMemory(device, parameter_device_bytes) as memory:
+                    with SynchronizedSegment(device):
                         model.train()
                         loss_sum = count = 0
-                        recurrent_state_mem_bytes = 0
-                        hidden_activation_mem_bytes = 0
+                        bp_memory_bytes = 0
                         for x, y in train_loader:
                             x, y = x.to(device), y.to(device)
                             optimizer.zero_grad(set_to_none=True)
-                            logits = model(x)
-                            recurrent_state_mem_bytes = max(
-                                recurrent_state_mem_bytes, model.recurrent_state_bytes)
-                            hidden_activation_mem_bytes = max(
-                                hidden_activation_mem_bytes, model.hidden_activation_bytes)
-                            loss = F.cross_entropy(logits, y)
-                            if not torch.isfinite(loss):
-                                raise FloatingPointError('Nonfinite training loss')
-                            loss.backward()
+                            with SavedTensorMemory(model.parameters(), device) as bp_memory:
+                                logits = model(x)
+                                loss = F.cross_entropy(logits, y)
+                                if not torch.isfinite(loss):
+                                    raise FloatingPointError('Nonfinite training loss')
+                                loss.backward()
+                            bp_memory_bytes = max(bp_memory_bytes, bp_memory.peak_bytes)
                             optimizer.step()
                             loss_sum += loss.item() * len(y)
                             count += len(y)
                     seconds = time.perf_counter() - start
-                    memory_metrics = memory.result()
-                    hidden_state_mem_bytes = recurrent_state_mem_bytes + hidden_activation_mem_bytes
-                    if (memory_metrics['auxiliary_mem_bytes'] is not None
-                            and memory_metrics['auxiliary_mem_bytes'] < hidden_state_mem_bytes):
-                        raise RuntimeError('Measured auxiliary memory is smaller than hidden working storage')
+                    optimizer_bytes = optimizer_state_bytes(optimizer)
                     rows.append(compact_metrics(dict(epoch=epoch,
                         para_mem_bytes=para_mem_bytes,
-                        auxiliary_mem_bytes=memory_metrics['auxiliary_mem_bytes'],
-                        hidden_state_mem_bytes=hidden_state_mem_bytes,
+                        optimizer_state_bytes=optimizer_bytes,
+                        auxiliary_mem_bytes=optimizer_bytes + bp_memory_bytes,
+                        **{BP_MEMORY_FIELD: bp_memory_bytes},
                         train_cross_entropy=loss_sum / count,
                         energy_j=None, power_w=None, total_energy_j=None, total_power_w=None,
                         epoch_seconds=seconds, total_seconds=None)))
@@ -190,7 +183,8 @@ def main(method):
                 stream.flush()
                 for row in rows:
                     print(json.dumps(row), flush=True)
-        torch.save(dict(model=model.state_dict(), config=config), destination / 'model.pt')
+        torch.save(dict(model=model.state_dict(), optimizer=optimizer.state_dict(),
+                        completed_epochs=config['epochs'], config=config), destination / 'model.pt')
         (destination / 'status.json').write_text(json.dumps(dict(status='success', epochs=config['epochs'])))
     except BaseException:
         (destination / 'status.json').write_text(json.dumps(dict(status='failed', error=traceback.format_exc())))

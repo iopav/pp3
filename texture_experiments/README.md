@@ -47,7 +47,7 @@ sbatch texture_experiments/submit.sbatch --experiments rsnn gatezo
 
 四个梯度模型默认单隐藏层、49 个神经元、100 epoch、batch size 128、完整数据时间长度（当前 texture-mini 为 77 步）。输出层不计入隐藏层数。手写模型的默认值集中在 defaults.json：SGD 默认参数（lr=0.01；已同步用户在旧目录的配置修改）、交叉熵、seed=57、时间平均读出、框架默认初始化。RNN 为 tanh RNN；ANN 对时间步共享 Linear+ReLU 后平均；SNN 为 LIF，beta=0.9、阈值=1、减法 reset（reset 梯度 detach），fast-sigmoid surrogate slope=25；RSNN 增加隐藏脉冲密集递归连接。使用完整反向传播，不截断时间。所有入口设置 Python、NumPy、PyTorch 和全部 CUDA seed，关闭 cuDNN benchmark，启用 cuDNN deterministic 与严格 torch deterministic algorithms；遇到没有确定性实现的算子时直接失败，不静默降级。这些是新增模型的默认定义，不声称来自已有 GateZO 配置。
 
-GateZO 调用相邻 texture_bdnn_gatezo_bundle 的 BDNN1GateZO 与 GATE_ZO_DEFAULTS，使用 validation_checkpoint 协议和统一 seed=57；原生超参数明确设为 nB=1、L_max=49，分别控制每轮候选新增神经元数和成功增长轮数上限。这两个值在 GateZO 适配器内部设置，无需命令行参数；--epochs 仅为 GateZO 兼容参数，四个梯度模型仍默认训练 100 epoch。目标宽度为 49，每轮成功增加一个神经元，共 49 轮；候选搜索失败沿用原生停止行为，未达到目标则实验失败，不无限重试。其余搜索及门控超参保持默认，候选池 T_max=100；nB=1 配合 min_keep=1 时无法删去该轮唯一候选。适配器仍跳过误差及平台期提前停止，并仅保存目标宽度 checkpoint。对所选数据集全部类别单阶段训练，不运行原版两阶段增量协议，因而完整实验流程不与 spec 完全等同，详见 GATEZO_PARITY_AUDIT_CN.md。
+GateZO 调用相邻 texture_bdnn_gatezo_bundle 的 BDNN1GateZO 与 GATE_ZO_DEFAULTS，使用 validation_checkpoint 协议和统一 seed=57；原生超参数明确设为 nB=1、L_max=49，分别控制每轮候选新增神经元数和成功增长轮数上限。这两个值在 GateZO 适配器内部设置，无需命令行参数；--epochs 仅为 GateZO 兼容参数，四个梯度模型仍默认训练 100 epoch。目标宽度为 49，每轮成功增加一个神经元，共 49 轮；候选搜索失败沿用原生停止行为，未达到目标则实验失败，不无限重试。其余搜索及门控超参保持默认，候选池 T_max=20；nB=1 配合 min_keep=1 时无法删去该轮唯一候选。适配器仍跳过误差及平台期提前停止，并仅保存目标宽度 checkpoint。对所选数据集全部类别单阶段训练，不运行原版两阶段增量协议，因而完整实验流程不与 spec 完全等同，详见 GATEZO_PARITY_AUDIT_CN.md。
 
 运行不依赖 pp3 controller、配置、拆分和输出。energy.py 是本目录独立工具。GateZO Recorder 兼容原实现已有的 _pp3_runtime 回调属性，但不导入 pp3 runtime，counter=None。没有修改原 bundle。
 
@@ -64,15 +64,24 @@ config.json 保存配置，model.pt 保存最终权重，status.json 记录成�
 | 字段 | 口径 |
 | --- | --- |
 | para_mem_bytes | 最终保留模型参数按各自实际 dtype 计算的字节总和，包括输出层；GateZO 为实际 W、U、Beta，不含 GPU 临时副本、梯度、优化器状态与序列化开销 |
-| auxiliary_mem_bytes | 优化/搜索窗口内 torch.cuda.max_memory_allocated 减去常驻 CUDA 参数字节；包含 hidden activation、递归状态、梯度、输入批次和临时 Torch 张量。CPU 运行留空 |
-| hidden_state_mem_bytes (included) | 主隐藏激活 B×T×H×dtype 与持续递归状态之和，作为 hidden working memory 下界；ANN 的递归状态为 0，但隐藏激活非零。该值已包含在 auxiliary_mem_bytes 中，不能再次相加 |
+| optimizer_state_bytes | 每轮最后一次 optimizer.step 后的优化器 state 存储；Tensor/NumPy 按实际底层存储去重，CPU/GPU 都计入，数值标量按 8 字节约定计数；不含 param_groups |
+| auxiliary_mem_bytes | optimizer_state_bytes + hiddenstatememfor bp；SGD momentum=0.9。不是运行时显存峰值。GateZO 无优化器、BP 或独立可训练门控状态，故为 0；CPU 运行也输出数值 |
+| hiddenstatememfor bp | 单位 bytes；autograd 为 BP 保存的非参数张量底层存储的存活峰值，每轮取 batch 最大值。按存储去重并排除模型参数，包含被保存的输入、标签及中间张量。CUDA 训练统计 CUDA 存储，CPU 训练统计 CPU 存储；GateZO 不做 BP，增长和最终记录均为 0 |
 | mse / test_mse | 当前模型全训练/测试集 softmax 概率对 one-hot 的 MSE，除以 N×类别数；梯度基线仅启用 --eval-each-epoch 时输出 |
 | train_acc / test_acc | 当前模型重新评估的全训练/测试准确率，0..1；梯度基线仅启用 --eval-each-epoch 时输出 |
 | train_cross_entropy | 仅梯度模型：训练期间按样本加权的交叉熵 |
 | energy_j / power_w | 累计计数器窗口差值按训练耗时分摊与 energy/seconds；GateZO 的窗口为 5 个增长尝试，包含结构选择所需的验证计算 |
 | total_energy_j / total_power_w | 累计能量及累计能量/累计测量时长，不对功率求和 |
 
-auxiliary_mem_bytes 是 PyTorch 活跃分配峰值口径，不是 nvidia-smi 进程占用或 CUDA reserved memory；它不包含 NumPy/CPU 内存、CUDA context、allocator 保留但未被活跃张量占用的缓存和非 PyTorch 库分配。hidden_state_mem_bytes 是主隐藏激活加递归状态的下界，用于解释 auxiliary 的一部分；完整 BPTT/autograd 内存以 auxiliary 实测峰值为准。能耗为整张 GPU 的累计计数差值，包含空闲功耗及可能的其他进程，不含 CPU。CPU 运行或读取失败时留空，任一窗口缺测则累计能量也留空。初始化、最终报告评估、CSV 和最终 checkpoint 写盘不在测量窗口内；GateZO 的候选搜索、结构门控、拟合及选择所需的训练/验证计算计入。
+2026-10-28 按指定口径将 auxiliary 改为“轮末优化器状态 + 本轮 BP 保存张量峰值”。它是两个定义明确的分项之和，不是同时刻存储峰值，也不是最终 checkpoint 文件大小。排除随机数、采样划分、配置、训练进度、梯度和搜索临时空间；因此不能据 GateZO 的 aux=0 推断其运行内存为零。hiddenstatememfor bp 使用 saved_tensors_hooks，按底层存储去重并排除模型参数，包含 autograd 保存的输入/标签，不是整个计算图 CPU 元数据大小；该值已包含在 auxiliary 中，不再重复相加。能耗口径不变。
+
+2026-10-28 起配置增加 bp_memory_version 和 bp_memory_aggregation，以拒绝将旧形状估算结果复用为新 BP 指标。hooks 只持有 detach 后的共享存储别名，不复制或卸载张量，随 autograd 释放保存对象更新计数；统计会增加 Python 调用开销，现有计时与能耗包括该开销。使用新输出目录重新运行，历史 CSV 不改写。`test_bp_memory.py` 检查存储去重、参数排除、retain_graph/释放生命周期，以及四模型 CPU/CUDA 输出、梯度和更新一致性。
+
+### 保存与复用
+
+四个梯度入口默认 SGD momentum=0.9，最终 model.pt 保存 model、optimizer、completed_epochs 和 config，动量缓冲实际落盘。hidden 字段只保存测量值，不序列化计算图。未增加 --resume 或保存 RNG/采样器现场，不能宣称完整精确续跑功能已实现。配置新增 auxiliary_memory_version，旧结果与新口径不兼容，须使用新的 --output；不覆盖历史结果。
+
+GateZO 的选中结构通过裁剪后的 W/U/Beta 保存，没有需跨轮更新的独立 gate logits 或优化器动量；门控阈值属于 config。最终 checkpoint 另存 growth_round 和 hidden_neurons 作为进度元数据，不计入指定的 aux。候选池、屏蔽评分和日志历史不是该口径下的持久学习状态；目标宽度适配器的临时 checkpoint 副本也不计作最终保留的额外模型。原 AuxiliaryMemory 工具仅留作旧测试，训练入口已不再用它计算指标。
 
 config.json 记录 energy_measurement_version、eval_each_epoch 和 energy_window_epochs（GateZO 单位为增长尝试），防止误用不同测量口径的旧结果。重跑请指定新的 --output 目录，旧 CSV 无法据此恢复真实逐轮能耗。GPU 计数器与功率接口说明见 [NVML Device Queries](https://docs.nvidia.com/deploy/nvml-api/latest/api/group__nvmlDeviceQueries.html)。
 

@@ -32,6 +32,10 @@ def run(args):
         config, settings = runtime.config, runtime.config['model']
         # SHD selects this project's existing MLP path; dimensions come from the actual dataset.
         args.dataset, args.algorithm, args.T = 'SHD', 'TP', 1
+        # SHD profile pins the native script choices instead of CLI defaults.
+        args.T = settings.get('T', args.T)
+        args.optim = settings.get('optim', args.optim)
+        args.scheduler_name = settings.get('scheduler_name', args.scheduler_name)
         args.epochs, args.batch_size = settings['epochs'], settings['batch_size']
         args.hidden_layers, args.hidden_layers_size = settings['layers'], settings['hidden_size']
         args.learning_rate, args.layerwise_optim = settings['lr'], settings['layerwise']
@@ -536,8 +540,14 @@ def train(model,
         for t in range(time_steps):  # Loop over time  steps
             x_t = x[:, t, :]
             out_t, out_teacher_t = model(x_t, labels_one_hot) 
-            loss_t = criterion(out_t, labels)
-            loss_teacher_t = criterion(out_teacher_t, labels)
+            # Original reporting losses at every time step (kept for comparison):
+            # loss_t = criterion(out_t, labels)
+            # loss_teacher_t = criterion(out_teacher_t, labels)
+            # TP uses local losses in model.update(); only the last CE is reported.
+            # Preserve the BP path and compute the final TP CE before its update.
+            if not custom_grad or t == time_steps - 1:
+                loss_t = criterion(out_t, labels)
+                loss_teacher_t = criterion(out_teacher_t, labels)
             
             if custom_grad:
                 if T == 1: # Update at each time step

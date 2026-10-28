@@ -55,6 +55,15 @@ class EnergyBlockTests(unittest.TestCase):
             rows = list(csv.DictReader(stream))
         counter.close.assert_called_once()
         self.assertFalse((out/'metrics_metadata.jsonl').exists())
+        import torch
+        saved = torch.load(out/'model.pt', weights_only=False)
+        self.assertEqual(saved['completed_epochs'], epochs)
+        self.assertEqual(saved['optimizer']['param_groups'][0]['momentum'], .9)
+        self.assertTrue(saved['optimizer']['state'])
+        for row in rows:
+            self.assertEqual(int(row['auxiliary_mem_bytes']),
+                int(row['optimizer_state_bytes']) + int(row['hiddenstatememfor bp']))
+            self.assertEqual(int(row['optimizer_state_bytes']), int(row['para_mem_bytes']))
         return rows, events, json.loads((out/'config.json').read_text())
 
     def test_five_epoch_block_and_final_remainder_without_evaluation(self):
@@ -66,7 +75,8 @@ class EnergyBlockTests(unittest.TestCase):
             self.assertFalse(config['eval_each_epoch'])
             self.assertNotIn('test_acc', rows[0])
             self.assertNotIn('train_acc', rows[0])
-            self.assertIn('hidden_state_mem_bytes (included)', rows[0])
+            self.assertIn('hiddenstatememfor bp', rows[0])
+            self.assertTrue(all(int(row['hiddenstatememfor bp']) > 0 for row in rows))
             energies = [float(row['energy_j']) for row in rows]
             self.assertAlmostEqual(sum(energies[:5]), 15.)
             self.assertAlmostEqual(sum(energies[5:]), 6.)

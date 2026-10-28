@@ -9,5 +9,4 @@ METADATA_FIELDS = {
 
 def compact_metrics(row):
     """Discard descriptive fields without producing a metadata file."""
-    return {('hidden_state_mem_bytes (included)' if key == 'hidden_state_mem_bytes' else key): value
-            for key, value in row.items() if key not in METADATA_FIELDS}
+    return {key: value for key, value in row.items() if key not in METADATA_FIELDS}

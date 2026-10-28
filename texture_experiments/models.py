@@ -27,18 +27,9 @@ class Classifier(nn.Module):
         if method == 'rsnn':
             self.recurrent = nn.Linear(h, h, bias=False)
         self.readout = nn.Linear(h, classes)
-        self.recurrent_state_bytes = 0
-        self.hidden_activation_bytes = 0
 
     def forward(self, x):
         h = self.config['hidden_size']
-        # Separate recurrent state from the primary B*T*H hidden activation.
-        # The latter is present for ANN as well and is needed by backpropagation.
-        states = {'ann': 0, 'rnn': 1, 'rsnn': 2, 'snnsurrogate': 1}[self.method]
-        self.recurrent_state_bytes = x.size(0) * h * x.element_size() * states
-        self.hidden_activation_bytes = (
-            x.size(0) * x.size(1) * h * x.element_size()
-        )
         if self.method == 'rnn':
             features, _ = self.hidden(x)
             pooled = features.mean(dim=1)

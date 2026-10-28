@@ -29,16 +29,12 @@ class BaselineTests(unittest.TestCase):
 
     def test_state_resets_and_ann_is_order_invariant(self):
         x = torch.randn(3, 7, 9)
-        for method, states in [('rnn', 1), ('rsnn', 2), ('snnsurrogate', 1), ('ann', 0)]:
+        for method in ('rnn', 'rsnn', 'snnsurrogate', 'ann'):
             model = Classifier(method, self.config).eval()
             first = model(x)
             model(torch.randn_like(x))
             torch.testing.assert_close(first, model(x))
-            self.assertEqual(model.recurrent_state_bytes, 3 * 49 * 4 * states)
-            self.assertEqual(model.hidden_activation_bytes, 3 * 7 * 49 * 4)
             if method == 'ann':
-                self.assertEqual(model.recurrent_state_bytes, 0)
-                self.assertGreater(model.hidden_activation_bytes, 0)
                 torch.testing.assert_close(first, model(x.flip(1)))
 
     def test_metrics_weight_unequal_batches(self):

@@ -174,11 +174,25 @@ class TP_MLP(nn.Module):
         self.trace_target.append(trace_targ)
 
     def _spike_summer(self, layer_idx, spike_in, spike_tgt):
-        self.cumulative_spikes[layer_idx]          += spike_in.sum().item()
+        # Original host read on every time step (kept for comparison):
+        # self.cumulative_spikes[layer_idx]          += spike_in.sum().item()
+        # Binary spikes: int64 keeps long-run counts exact without a graph or host sync.
+        self.cumulative_spikes[layer_idx] += spike_in.detach().sum(dtype=torch.int64)
         self.total_spike_neurons[layer_idx]        += spike_in.numel()
-        self.cumulative_spikes_target[layer_idx]   += spike_tgt.sum().item()
+        # self.cumulative_spikes_target[layer_idx]   += spike_tgt.sum().item()
+        self.cumulative_spikes_target[layer_idx] += spike_tgt.detach().sum(dtype=torch.int64)
         self.total_spike_neurons_target[layer_idx] += spike_tgt.numel()
     
+    def spike_count_summary(self):
+        """Read counters on demand, outside the per-time-step training loop."""
+        def host_counts(values):
+            return [int(v.item()) if isinstance(v, torch.Tensor) else int(v)
+                    for v in values]
+        return dict(student=host_counts(self.cumulative_spikes),
+                    teacher=host_counts(self.cumulative_spikes_target),
+                    student_elements=list(self.total_spike_neurons),
+                    teacher_elements=list(self.total_spike_neurons_target))
+
     def update(self):
         bs = self.ts[0].shape[0]
         for i in range(len(self.network) - 1):

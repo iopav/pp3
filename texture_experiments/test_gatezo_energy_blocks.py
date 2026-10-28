@@ -63,7 +63,13 @@ class GateZOEnergyBlockTests(unittest.TestCase):
         for row in rows:
             self.assertNotIn('test_acc', row)
             self.assertNotIn('train_acc', row)
-        return rows, json.loads((directory/'final_metrics.json').read_text())
+            self.assertEqual(int(row['hiddenstatememfor bp']), 0)
+            self.assertEqual(int(row['optimizer_state_bytes']), 0)
+            self.assertEqual(int(row['auxiliary_mem_bytes']), 0)
+        final = json.loads((directory/'final_metrics.json').read_text())
+        self.assertEqual(final['hiddenstatememfor bp'], 0)
+        self.assertEqual(final['auxiliary_mem_bytes'], 0)
+        return rows, final
 
     def test_five_rounds_remainder_and_final_test(self):
         with tempfile.TemporaryDirectory() as folder:

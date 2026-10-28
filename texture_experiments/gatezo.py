@@ -15,9 +15,11 @@ import numpy as np
 import torch
 from data import add_data_arguments, load_data, data_metadata
 from completion import skip_completed
-from energy import AuxiliaryMemory, TotalEnergyCounter
+from energy import TotalEnergyCounter
 from train import allocate_block_energy
 from metrics import compact_metrics
+from bp_memory import BP_MEMORY_VERSION, BP_MEMORY_FIELD
+from state_memory import AUX_MEMORY_VERSION, SynchronizedSegment
 from growth_policy import grow_until_neurons
 
 BUNDLE = Path(__file__).resolve().parents[1] / 'texture_bdnn_gatezo_bundle'
@@ -69,7 +71,7 @@ def native_settings(*, rounds=49, growth=1, batch_size=128, device='cuda:0', see
         raise ValueError('L_max and nB must be positive')
     native = dict(GATE_ZO_DEFAULTS)
     native.pop('seed', None)
-    native.update(L_max=rounds, nB=growth, compute_batch_size=batch_size,
+    native.update(T_max=20, L_max=rounds, nB=growth, compute_batch_size=batch_size,
                   compute_device=device, growth_protocol='validation_checkpoint',
                   gate_zo_seed=seed, gate_zo_verbose=False)
     return native
@@ -109,10 +111,7 @@ class Recorder:
         if self.model.compute_device.type == 'cuda':
             torch.cuda.synchronize(self.model.compute_device)
         self.started = time.perf_counter()
-        parameter_bytes = sum(array_bytes(value)
-            for value in (self.model.W, self.model.U, self.model.Beta)
-            if isinstance(value, torch.Tensor) and value.device == self.model.compute_device)
-        self.memory = AuxiliaryMemory(self.model.compute_device, parameter_bytes)
+        self.memory = SynchronizedSegment(self.model.compute_device)
         self.memory.__enter__()
 
     def end(self, accuracy=None, loss=None):
@@ -132,7 +131,6 @@ class Recorder:
             return
         self.memory.__exit__(None, None, None)
         self.seconds = time.perf_counter() - self.started
-        self.memory_metrics = self.memory.result()
         self.memory = None
         if self.phase == 'final_refit_and_test':
             # Called by the refit adapter before final train/test evaluation.
@@ -140,14 +138,9 @@ class Recorder:
 
     def epoch_row(self, epoch, unit='growth_round'):
         m = self.model
-        batch = min(m.compute_batch_size, len(self.x))
-        hidden_state = batch * m.hidden_count * (3 + self.x.shape[1]) * 4
-        auxiliary = self.memory_metrics['auxiliary_mem_bytes']
-        if auxiliary is not None and auxiliary < hidden_state:
-            raise RuntimeError('Measured auxiliary memory is smaller than hidden working storage')
         row = compact_metrics(dict(epoch=epoch, hidden_neurons=m.hidden_count,
             para_mem_bytes=sum(array_bytes(v) for v in (m.W, m.U, m.Beta) if not isinstance(v, list)),
-            auxiliary_mem_bytes=auxiliary, hidden_state_mem_bytes=hidden_state,
+            optimizer_state_bytes=0, auxiliary_mem_bytes=0, **{BP_MEMORY_FIELD: 0},
             energy_j=None, power_w=None, total_energy_j=None, total_power_w=None,
             epoch_seconds=self.seconds, total_seconds=None, validation_accuracy=None))
         if unit == 'final_refit_and_test':
@@ -238,6 +231,10 @@ def main():
                   cudnn_benchmark=False, cudnn_deterministic=True,
                   cublas_workspace_config=os.environ['CUBLAS_WORKSPACE_CONFIG'],
                   energy_measurement_version='nvml_total_growth_block_time_allocation_v1',
+                  bp_memory_version=BP_MEMORY_VERSION,
+                  auxiliary_memory_version=AUX_MEMORY_VERSION,
+                  gate_persistent_state_policy='structure_in_W_U_Beta_no_learned_gate_state',
+                  bp_memory_aggregation='no_backward_zero',
                   eval_each_epoch=False, energy_window_epochs=5,
                   measurement_window='growth_search_gate_fit_and_selection_validation_excludes_final_evaluation')
     config.update(data_metadata(args, train))
@@ -254,7 +251,9 @@ def main():
         model.classification(x, targets, x_test, t_test)
         if model.hidden_count != args.max_hidden:
             raise AssertionError('Final hidden size differs from target')
-        torch.save(dict(W=model.W, U=model.U, Beta=model.Beta, config=config), destination / 'model.pt')
+        torch.save(dict(W=model.W, U=model.U, Beta=model.Beta,
+                        growth_round=int(model.L), hidden_neurons=model.hidden_count,
+                        config=config), destination / 'model.pt')
         (destination / 'summary.json').write_text(json.dumps(model.gate_zo_summary, indent=2))
         (destination / 'status.json').write_text(json.dumps(dict(status='success', hidden_neurons=model.hidden_count)))
     except BaseException:

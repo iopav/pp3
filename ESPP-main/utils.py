@@ -99,7 +99,9 @@ def train(net, trainloader, epochs, device, model_name, batch_size=1, freeze=[],
                     samples, labels = get_samples(monitored, trainloader, args.n_hidden, device)
                     runtime.readouts, _, _ = train_out_proj_fast(monitored, args,
                         runtime.config['model'].get('readout_epochs', 1), batch_size,
-                        samples, labels, lr=runtime.config['model']['readout_lr'])
+                        samples, labels, lr=runtime.config['model']['readout_lr'],
+                        cat=runtime.config['model'].get('readout_cat', False),
+                        weight_decay=runtime.config['model'].get('readout_weight_decay', 0.))
                     runtime.end()
                     runtime.begin('test', measured_epoch+1)
                     train_accs, _ = get_accuracy(monitored, runtime.readouts, trainloader, device)
