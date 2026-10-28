@@ -55,7 +55,7 @@ GateZO 调用相邻 texture_bdnn_gatezo_bundle 的 BDNN1GateZO 与 GATE_ZO_DEFAU
 
 四个梯度基线默认关闭每轮训练集和测试集报告评估，ANN 连续训练 10 个 epoch 后刷新 metrics.csv，其他三个梯度模型每 5 个 epoch 刷新；末尾不足窗口长度时按实际轮数测量。仅在窗口起止读取 nvmlDeviceGetTotalEnergyConsumption()，以差值除以 1000 得到窗口焦耳数，再按各 epoch 的训练耗时占比分摊 energy_j。窗口内没有报告评估、CSV 写盘或日志输出，但包含正常训练循环的主机调度开销；分摊值是逐轮估计，各轮之和等于窗口差值。计数器不支持/读取失败时留空，不回退到功率积分；计数器未增长时保留零差值，固定窗口仍不能保证任意硬件上都足够长。
 
-默认 CSV 输出 train_acc 与 final_test_acc，不输出 mse、test_mse、test_acc。梯度模型中间轮的 train_acc 使用训练过程中各批次更新前的预测，按样本数加权；最后一行改用最终模型全训练集评估。添加 `--eval-each-epoch` 可逐轮重新评估训练集，并使用单 epoch 能耗窗口。两种模式均只在训练结束后评估测试集，final_test_acc 前面的行留空，只有最后一行填写。新增评估在能耗窗口关闭后执行。GateZO 增长轮复用已有 growth 训练子集准确率，最终行记录重拟合后的全训练集准确率；中间轮与最终行的训练准确率口径不同。GateZO 仍使用连续 5 个增长尝试的能耗窗口，最终重拟合另开窗口。
+默认 CSV 输出 train_acc 与 final_test_acc，不输出 mse、test_mse、test_acc。梯度模型每个 epoch（包括最后一轮）的 train_acc 均使用训练过程中各批次更新前的预测，计算全轮正确数除以全轮样本数，每轮记录一次，不额外遍历训练集评估。兼容参数 `--eval-each-epoch` 仅切换为单 epoch 能耗窗口，不再增加训练集评估。测试集只在训练结束后评估一次，final_test_acc 前面的行留空，只有最后一行填写，评估在能耗窗口关闭后执行。GateZO 增长轮复用已有 growth 训练子集准确率，最终行记录重拟合后的全训练集准确率；中间轮与最终行的训练准确率口径不同。GateZO 仍使用连续 5 个增长尝试的能耗窗口，最终重拟合另开窗口。
 
 config.json 保存配置，model.pt 保存最终权重，status.json 记录成功或失败。GateZO 每 5 个增长尝试刷新 metrics.csv，末尾余数在最终重拟合前刷新；最终目标宽度结构恢复与读出重拟合另存 final_metrics.json、summary.json，并在 CSV 末尾追加最终重拟合行。该行 epoch 沿用最后增长轮编号，不代表新增增长轮；其能耗只包含最终重拟合，累计值包含增长和重拟合，准确率来自窗口关闭后的最终评估。
 
@@ -67,7 +67,7 @@ config.json 保存配置，model.pt 保存最终权重，status.json 记录成�
 | optimizer_state_bytes | 每轮最后一次 optimizer.step 后的优化器 state 存储；Tensor/NumPy 按实际底层存储去重，CPU/GPU 都计入，数值标量按 8 字节约定计数；不含 param_groups |
 | auxiliary_mem_bytes | optimizer_state_bytes + hiddenstatememfor bp；SGD momentum=0.9。不是运行时显存峰值。GateZO 无优化器、BP 或独立可训练门控状态，故为 0；CPU 运行也输出数值 |
 | hiddenstatememfor bp | 单位 bytes；autograd 为 BP 保存的非参数张量底层存储的存活峰值，每轮取 batch 最大值。按存储去重并排除模型参数，包含被保存的输入、标签及中间张量。CUDA 训练统计 CUDA 存储，CPU 训练统计 CPU 存储；GateZO 不做 BP，增长和最终记录均为 0 |
-| train_acc | 0..1；中间轮采用上述训练统计口径，最后一行为最终模型全训练集准确率 |
+| train_acc | 0..1；梯度模型所有轮次均为当轮训练过程的正确数/样本数；GateZO 使用上述增长与重拟合口径 |
 | final_test_acc | 0..1；仅最后一行填写最终模型全测试集准确率，其余行留空 |
 | train_cross_entropy | 仅梯度模型：训练期间按样本加权的交叉熵 |
 | energy_j / power_w | 累计计数器窗口差值按训练耗时分摊与 energy/seconds；GateZO 的窗口为 5 个增长尝试，包含结构选择所需的验证计算 |
@@ -106,4 +106,4 @@ sbatch --partition=gpu texture_experiments/submit.sbatch \
 
 `test_gatezo_energy_blocks.py` 使用实际适配后的增长函数验证五轮窗口、余数、缺测、验证保留和最终测试仅调用一次；候选搜索与能耗遥测在该测试中模拟，不构成真实 GPU 能耗精度验证。
 
-Accuracy schema: `accuracy_reporting_version=train_and_final_test_v1` is included in config matching. Existing CSVs are not rewritten; use a new `--output` for old configurations. Final GateZO metrics are written to both JSON and the last CSV row.
+Accuracy schema: gradient models use `accuracy_reporting_version=online_train_and_final_test_v2`; GateZO uses `train_and_final_test_v1`. This field is included in config matching. Existing CSVs are not rewritten; use a new `--output` for old configurations. Final GateZO metrics are written to both JSON and the last CSV row.

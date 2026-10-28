@@ -126,10 +126,10 @@ Power is derived, not independently sampled. Within one window, per-row power
 is equal up to rounding. Energy includes whole-GPU activity, not CPU energy.
 
 \textbf{Availability and final rows.}
-Gradient models report sample-weighted online training accuracy at intermediate
-epochs; the final row uses a full training-set evaluation of the final model.
-\metric{--eval-each-epoch} instead evaluates training accuracy after each epoch
-and switches energy windows to one epoch. Testing is always final-only.
+Gradient models report sample-weighted online training accuracy at every epoch,
+including the final epoch, with no additional training-set evaluation.
+The legacy \metric{--eval-each-epoch} flag only switches energy windows to one
+epoch; it does not add evaluation. Testing is always final-only.
 \metric{final_test_acc} is blank except in the last CSV row. MSE is not exported.
 GateZO reports growth-subset training accuracy during growth and full training
 accuracy after final refitting. Its final record is appended to the CSV (reusing

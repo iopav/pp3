@@ -27,6 +27,7 @@ class EnergyBlockTests(unittest.TestCase):
 
     def run_baseline(self, root, epochs, evaluate_enabled=False, method='ann'):
         dataset = Sequences(np.ones((4, 3, 9), dtype=np.float32), np.arange(4), 12)
+        test_dataset = Sequences(np.zeros((2, 3, 9), dtype=np.float32), np.arange(2), 12)
         events = []
         counter = Mock()
         readings = iter([(0., 1000), (1., 16000), (2., 16000), (3., 22000),
@@ -37,6 +38,7 @@ class EnergyBlockTests(unittest.TestCase):
             return next(readings)
 
         def evaluate(*args):
+            self.assertIs(args[1].dataset, test_dataset, 'Training set must not be evaluated again')
             events.append('evaluation')
             return dict(acc=.5, mse=.1)
 
@@ -45,7 +47,7 @@ class EnergyBlockTests(unittest.TestCase):
                 '--data-root', str(root), '--output', str(root)]
         if evaluate_enabled:
             argv.append('--eval-each-epoch')
-        with patch.object(sys, 'argv', argv), patch('train.load_data', return_value=(dataset, dataset)), \
+        with patch.object(sys, 'argv', argv), patch('train.load_data', return_value=(dataset, test_dataset)), \
              patch('train.data_metadata', return_value={}), patch('train.TotalEnergyCounter', return_value=counter), \
              patch('train.evaluate', side_effect=evaluate), contextlib.redirect_stdout(io.StringIO()):
             main(method)
@@ -68,7 +70,7 @@ class EnergyBlockTests(unittest.TestCase):
     def test_five_epoch_block_and_final_remainder_without_evaluation(self):
         with tempfile.TemporaryDirectory() as directory:
             rows, events, config = self.run_baseline(Path(directory), 7, method='rnn')
-            self.assertEqual(events, ['counter'] * 4 + ['evaluation'] * 2)
+            self.assertEqual(events, ['counter'] * 4 + ['evaluation'])
             self.assertEqual(len(rows), 7)
             self.assertEqual(config['energy_window_epochs'], 5)
             self.assertFalse(config['eval_each_epoch'])
@@ -76,7 +78,6 @@ class EnergyBlockTests(unittest.TestCase):
             self.assertTrue(all(0 <= float(r['train_acc']) <= 1 for r in rows))
             self.assertTrue(all(r['final_test_acc'] == '' for r in rows[:-1]))
             self.assertEqual(float(rows[-1]['final_test_acc']), .5)
-            self.assertEqual(float(rows[-1]['train_acc']), .5)
             self.assertIn('hiddenstatememfor bp', rows[0])
             self.assertTrue(all(int(row['hiddenstatememfor bp']) > 0 for row in rows))
             energies = [float(row['energy_j']) for row in rows]
@@ -88,11 +89,11 @@ class EnergyBlockTests(unittest.TestCase):
                 self.assertTrue(all(abs(powers[0] - p) < 1e-6 for p in powers))
 
     def test_ann_ten_epoch_window_and_remainder(self):
-        for epochs in (10, 13):
+        for epochs in (1, 10, 13):
             with self.subTest(epochs=epochs), tempfile.TemporaryDirectory() as directory:
                 rows, events, config = self.run_baseline(Path(directory), epochs)
                 self.assertEqual(config['energy_window_epochs'], 10)
-                self.assertEqual(events, ['counter'] * (2 if epochs == 10 else 4) + ['evaluation'] * 2)
+                self.assertEqual(events, ['counter'] * (2 if epochs <= 10 else 4) + ['evaluation'])
                 self.assertEqual(len(rows), epochs)
                 self.assertNotIn('test_acc', rows[0])
                 self.assertAlmostEqual(sum(float(r['energy_j']) for r in rows[:10]), 15.)
@@ -105,12 +106,12 @@ class EnergyBlockTests(unittest.TestCase):
                         self.assertAlmostEqual(float(row['energy_j']),
                                                energy * float(row['epoch_seconds']) / duration)
 
-    def test_enabled_evaluation_occurs_after_each_closed_counter_window(self):
+    def test_legacy_flag_does_not_add_training_evaluation(self):
         with tempfile.TemporaryDirectory() as directory:
             rows, events, config = self.run_baseline(Path(directory), 3, True)
-            self.assertEqual(events, ['counter', 'counter', 'evaluation'] * 3 + ['evaluation'])
+            self.assertEqual(events, ['counter', 'counter'] * 3 + ['evaluation'])
             self.assertEqual(config['energy_window_epochs'], 1)
-            self.assertTrue(all(float(row['train_acc']) == .5 for row in rows))
+            self.assertTrue(all(0 <= float(row['train_acc']) <= 1 for row in rows))
             self.assertEqual([r['final_test_acc'] for r in rows], ['', '', '0.5'])
             self.assertNotIn('mse', rows[0])
             self.assertNotIn('test_acc', rows[0])

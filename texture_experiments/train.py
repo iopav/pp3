@@ -75,7 +75,7 @@ def main(method):
     parser.add_argument('--batch-size', type=int, default=defaults['batch_size'])
     parser.add_argument('--seed', type=int, default=defaults['seed'])
     parser.add_argument('--eval-each-epoch', action='store_true',
-                        help='Evaluate train accuracy each epoch; test accuracy is final-only')
+                        help='Legacy flag: use single-epoch energy windows; no extra train evaluation')
     parser.add_argument('--smoke', action='store_true', help='One epoch; first 16 steps, <=8 samples per source split')
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1:
@@ -85,7 +85,7 @@ def main(method):
                   batch_size=args.batch_size, seed=args.seed, method=method,
                   smoke=args.smoke, data_root=str(args.data_root.resolve()), device=args.device,
                   eval_each_epoch=args.eval_each_epoch,
-                  accuracy_reporting_version='train_and_final_test_v1',
+                  accuracy_reporting_version='online_train_and_final_test_v2',
                   energy_window_epochs=1 if args.eval_each_epoch else (10 if method == 'ann' else 5))
     device = torch.device(args.device)
     if device.type == 'cuda' and not torch.cuda.is_available():
@@ -101,7 +101,6 @@ def main(method):
     config.update(data_metadata(args, train))
     generator = torch.Generator().manual_seed(args.seed)
     train_loader = DataLoader(train, batch_size=args.batch_size, shuffle=True, generator=generator)
-    train_eval = DataLoader(train, batch_size=args.batch_size)
     test_loader = DataLoader(test, batch_size=args.batch_size)
     model = Classifier(method, config, inputs=train.inputs, classes=train.classes).to(device)
     optimizer = make_optimizer(model.parameters(), config)
@@ -172,11 +171,8 @@ def main(method):
                           if initial_energy is not None and final_energy is not None else None)
                 total_energy, total_seconds = allocate_block_energy(
                     rows, joules, total_energy, total_seconds)
-                # Reporting evaluations must stay outside the energy window.
-                # Always evaluate the final model; optional train evaluation is per epoch.
-                if args.eval_each_epoch or last_epoch == config['epochs']:
-                    train_metrics = evaluate(model, train_eval, device)
-                    rows[-1]['train_acc'] = train_metrics['acc']
+                # Test once outside the energy window. All train accuracies use
+                # the predictions already collected during their training epoch.
                 if last_epoch == config['epochs']:
                     test_metrics = evaluate(model, test_loader, device)
                     rows[-1]['final_test_acc'] = test_metrics['acc']
