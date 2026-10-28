@@ -75,7 +75,7 @@ def main(method):
     parser.add_argument('--batch-size', type=int, default=defaults['batch_size'])
     parser.add_argument('--seed', type=int, default=defaults['seed'])
     parser.add_argument('--eval-each-epoch', action='store_true',
-                        help='Restore train/test reporting evaluation; measure energy one epoch at a time')
+                        help='Evaluate train accuracy each epoch; test accuracy is final-only')
     parser.add_argument('--smoke', action='store_true', help='One epoch; first 16 steps, <=8 samples per source split')
     args = parser.parse_args()
     if args.epochs < 1 or args.batch_size < 1:
@@ -85,6 +85,7 @@ def main(method):
                   batch_size=args.batch_size, seed=args.seed, method=method,
                   smoke=args.smoke, data_root=str(args.data_root.resolve()), device=args.device,
                   eval_each_epoch=args.eval_each_epoch,
+                  accuracy_reporting_version='train_and_final_test_v1',
                   energy_window_epochs=1 if args.eval_each_epoch else (10 if method == 'ann' else 5))
     device = torch.device(args.device)
     if device.type == 'cuda' and not torch.cuda.is_available():
@@ -139,7 +140,7 @@ def main(method):
                     start = time.perf_counter()
                     with SynchronizedSegment(device):
                         model.train()
-                        loss_sum = count = 0
+                        loss_sum = count = correct = 0
                         bp_memory_bytes = 0
                         for x, y in train_loader:
                             x, y = x.to(device), y.to(device)
@@ -153,6 +154,7 @@ def main(method):
                             bp_memory_bytes = max(bp_memory_bytes, bp_memory.peak_bytes)
                             optimizer.step()
                             loss_sum += loss.item() * len(y)
+                            correct += (logits.detach().argmax(-1) == y).sum().item()
                             count += len(y)
                     seconds = time.perf_counter() - start
                     optimizer_bytes = optimizer_state_bytes(optimizer)
@@ -162,6 +164,7 @@ def main(method):
                         auxiliary_mem_bytes=optimizer_bytes + bp_memory_bytes,
                         **{BP_MEMORY_FIELD: bp_memory_bytes},
                         train_cross_entropy=loss_sum / count,
+                        train_acc=correct / count, final_test_acc=None,
                         energy_j=None, power_w=None, total_energy_j=None, total_power_w=None,
                         epoch_seconds=seconds, total_seconds=None)))
                 _, final_energy = counter.read()
@@ -169,13 +172,14 @@ def main(method):
                           if initial_energy is not None and final_energy is not None else None)
                 total_energy, total_seconds = allocate_block_energy(
                     rows, joules, total_energy, total_seconds)
-                # Disabled by default: these calls must stay outside a counter window.
-                # Enabling them uses single-epoch windows, preserving each model snapshot.
-                if args.eval_each_epoch:
+                # Reporting evaluations must stay outside the energy window.
+                # Always evaluate the final model; optional train evaluation is per epoch.
+                if args.eval_each_epoch or last_epoch == config['epochs']:
                     train_metrics = evaluate(model, train_eval, device)
+                    rows[-1]['train_acc'] = train_metrics['acc']
+                if last_epoch == config['epochs']:
                     test_metrics = evaluate(model, test_loader, device)
-                    rows[-1].update(mse=train_metrics['mse'], test_mse=test_metrics['mse'],
-                                    train_acc=train_metrics['acc'], test_acc=test_metrics['acc'])
+                    rows[-1]['final_test_acc'] = test_metrics['acc']
                 if writer is None:
                     writer = csv.DictWriter(stream, fieldnames=list(rows[0]))
                     writer.writeheader()

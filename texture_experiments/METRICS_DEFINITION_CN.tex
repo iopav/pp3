@@ -18,7 +18,7 @@ Memory values are bytes in actual stored dtypes; $e$ denotes an epoch.
 index for GateZO. GateZO's \metric{hidden_neurons} is $H=\operatorname{cols}(W)$.
 
 \textbf{Accuracy.}
-\metric{train_acc}, \metric{test_acc}, and \metric{validation_accuracy}
+\metric{train_acc}, \metric{final_test_acc}, and \metric{validation_accuracy}
 use their respective datasets:
 \[
  A=\frac{1}{N}\sum_{i=1}^{N}
@@ -37,7 +37,7 @@ The gradient models report the sample-weighted training loss:
 \]
 These predictions are made during training, before each batch update.
 
-\textbf{Probability MSE.}
+\textbf{Internal probability MSE (not exported).}
 \metric{mse} and \metric{test_mse} are evaluated on the training and test sets:
 \[
  \mathrm{MSE}=\frac{1}{NC}\sum_{i=1}^{N}\sum_{c=1}^{C}(Y_{ic}-p_{ic})^2.
@@ -126,10 +126,15 @@ Power is derived, not independently sampled. Within one window, per-row power
 is equal up to rounding. Energy includes whole-GPU activity, not CPU energy.
 
 \textbf{Availability and final rows.}
-Gradient-model accuracy and MSE require \metric{--eval-each-epoch}, which also
-switches energy windows to one training epoch. GateZO records validation
-accuracy during growth; final train/test accuracy and MSE are in
-\metric{final_metrics.json}. Its noncumulative energy/time cover final refitting;
+Gradient models report sample-weighted online training accuracy at intermediate
+epochs; the final row uses a full training-set evaluation of the final model.
+\metric{--eval-each-epoch} instead evaluates training accuracy after each epoch
+and switches energy windows to one epoch. Testing is always final-only.
+\metric{final_test_acc} is blank except in the last CSV row. MSE is not exported.
+GateZO reports growth-subset training accuracy during growth and full training
+accuracy after final refitting. Its final record is appended to the CSV (reusing
+the last growth epoch number) and saved in \metric{final_metrics.json}.
+Its noncumulative energy/time cover final refitting;
 its cumulative values include growth and refitting. Final reporting evaluation
 is outside that window. Missing measurements remain blank/null; missing energy
 also makes cumulative energy and power unavailable. A zero counter difference

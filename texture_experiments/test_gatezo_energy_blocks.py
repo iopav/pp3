@@ -59,17 +59,22 @@ class GateZOEnergyBlockTests(unittest.TestCase):
         self.assertGreater(len(validation_calls), 0)
         with (directory/'metrics.csv').open(newline='', encoding='utf-8') as stream:
             rows = list(csv.DictReader(stream))
-        self.assertEqual(len(rows), hidden + failures)
+        self.assertEqual(len(rows), hidden + failures + 1)
         for row in rows:
             self.assertNotIn('test_acc', row)
-            self.assertNotIn('train_acc', row)
+            self.assertTrue(0 <= float(row['train_acc']) <= 1)
             self.assertEqual(int(row['hiddenstatememfor bp']), 0)
             self.assertEqual(int(row['optimizer_state_bytes']), 0)
             self.assertEqual(int(row['auxiliary_mem_bytes']), 0)
         final = json.loads((directory/'final_metrics.json').read_text())
         self.assertEqual(final['hiddenstatememfor bp'], 0)
         self.assertEqual(final['auxiliary_mem_bytes'], 0)
-        return rows, final
+        self.assertTrue(all(r['final_test_acc'] == '' for r in rows[:-1]))
+        self.assertEqual(float(rows[-1]['final_test_acc']), final['final_test_acc'])
+        self.assertEqual(float(rows[-1]['train_acc']), final['train_acc'])
+        self.assertEqual(float(rows[-1]['total_energy_j']) if rows[-1]['total_energy_j'] else None, final['total_energy_j'])
+        self.assertNotIn('mse', rows[-1])
+        return rows[:-1], final
 
     def test_five_rounds_remainder_and_final_test(self):
         with tempfile.TemporaryDirectory() as folder:
@@ -84,7 +89,7 @@ class GateZOEnergyBlockTests(unittest.TestCase):
         self.assertTrue(all(r['validation_accuracy'] != '' for r in rows))
         self.assertEqual(final['energy_j'], 3.)
         self.assertEqual(final['total_energy_j'], 24.)
-        self.assertIn('test_acc', final)
+        self.assertIn('final_test_acc', final)
 
     def test_exact_five_rounds_missing_energy_stays_missing(self):
         with tempfile.TemporaryDirectory() as folder:

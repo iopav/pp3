@@ -94,6 +94,7 @@ class Recorder:
         self.epoch = 0
         self.final_evaluation = None
         self.final_joules = None
+        self.train_accuracy = None
 
     def begin(self, phase, epoch=None):
         if phase == 'test':
@@ -115,6 +116,7 @@ class Recorder:
         self.memory.__enter__()
 
     def end(self, accuracy=None, loss=None):
+        self.train_accuracy = accuracy
         self.finish_measurement()
         if self.phase == 'final_refit_and_test':
             self.epoch_row(self.epoch, unit='final_refit_and_test')
@@ -142,14 +144,16 @@ class Recorder:
             para_mem_bytes=sum(array_bytes(v) for v in (m.W, m.U, m.Beta) if not isinstance(v, list)),
             optimizer_state_bytes=0, auxiliary_mem_bytes=0, **{BP_MEMORY_FIELD: 0},
             energy_j=None, power_w=None, total_energy_j=None, total_power_w=None,
-            epoch_seconds=self.seconds, total_seconds=None, validation_accuracy=None))
+            epoch_seconds=self.seconds, total_seconds=None, validation_accuracy=None,
+            train_acc=self.train_accuracy, final_test_acc=None))
         if unit == 'final_refit_and_test':
             self.total_energy, self.total_seconds = allocate_block_energy(
                 [row], self.final_joules, self.total_energy, self.total_seconds)
             train, test = self.final_evaluation
-            row.update(mse=train['mse'], test_mse=test['mse'],
-                       train_acc=train['accuracy'], test_acc=test['accuracy'])
+            row.update(train_acc=train['accuracy'], final_test_acc=test['accuracy'])
             (self.output / 'final_metrics.json').write_text(json.dumps(row, indent=2))
+            self.rows.append(row)
+            self.write_csv()
             print(json.dumps(row), flush=True)
         else:
             self.rows.append(row)
@@ -165,13 +169,16 @@ class Recorder:
         joules = self.close_window()
         self.total_energy, self.total_seconds = allocate_block_energy(
             self.pending, joules, self.total_energy, self.total_seconds)
+        self.write_csv()
+        for row in self.pending:
+            print(json.dumps(row), flush=True)
+        self.pending.clear()
+
+    def write_csv(self):
         with (self.output / 'metrics.csv').open('w', newline='', encoding='utf-8') as stream:
             writer = csv.DictWriter(stream, fieldnames=list(self.rows[0]))
             writer.writeheader()
             writer.writerows(self.rows)
-        for row in self.pending:
-            print(json.dumps(row), flush=True)
-        self.pending.clear()
 
     def _csv(self):
         # Native code fills validation_accuracy immediately before this callback.
@@ -236,6 +243,7 @@ def main():
                   gate_persistent_state_policy='structure_in_W_U_Beta_no_learned_gate_state',
                   bp_memory_aggregation='no_backward_zero',
                   eval_each_epoch=False, energy_window_epochs=5,
+                  accuracy_reporting_version='train_and_final_test_v1',
                   measurement_window='growth_search_gate_fit_and_selection_validation_excludes_final_evaluation')
     config.update(data_metadata(args, train))
     config['steps'] = x.shape[1]

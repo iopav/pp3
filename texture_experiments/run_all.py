@@ -16,7 +16,7 @@ def main():
     parser.add_argument('--seed', type=int, default=57)
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--eval-each-epoch', action='store_true',
-                        help='Restore reporting evaluation for the four gradient baselines')
+                        help='Evaluate train accuracy each epoch; test accuracy remains final-only')
     args, extra = parser.parse_known_args()
     if args.cpu and args.gpu is not None:
         parser.error('--cpu and --gpu are mutually exclusive')
