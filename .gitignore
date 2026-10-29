@@ -39,7 +39,7 @@ python_deps/
 outputs/
 logs/
 results/
-audit/
+/audit/
 # =========================
 # Checkpoints
 # =========================
