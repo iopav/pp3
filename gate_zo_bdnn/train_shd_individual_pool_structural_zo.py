@@ -603,7 +603,6 @@ def main():
     )
     train_features = sequence_features(train_traces, args)
     val_features = sequence_features(val_traces, args)
-    del train_traces, val_traces
     beta, current_train, current_val, feature_mean, feature_scale = solve_sequence_ridge(
         train_features, train_labels, val_features, val_labels, args.ridge, device
     )
@@ -669,7 +668,6 @@ def main():
         selected = selected[: min(capacity, args.growth_step)]
         keep, selection_record = [], {"mode": args.selection_mode}
         prepared = None
-        provisional_state = provisional_traces = None
         if selected:
             if hasattr(core, "prepare_structural_candidates"):
                 prepared = core.prepare_structural_candidates(
@@ -705,12 +703,6 @@ def main():
             proposal_train_traces = core.selected_traces(
                 pool_train, old_hidden, committed_candidates
             )
-        # selected_traces uses advanced indexing (independent storage). Keep
-        # only the small proposal and reporting metadata, not the full pool
-        # while evaluating validation or allocating the next round's pool.
-        preparation_record = prepared["record"] if prepared is not None else None
-        del pool_train, pool_state, prepared, provisional_state, provisional_traces
-        del three_factor_eligibility, check, rates
         proposal_val_traces, vcheck, _ = core.extract_readout_traces(
             val_loader, proposal, device, args.readout_bins
         )
@@ -718,7 +710,6 @@ def main():
             raise RuntimeError("validation sample order changed")
         proposal_train_features = sequence_features(proposal_train_traces, args)
         proposal_val_features = sequence_features(proposal_val_traces, args)
-        del proposal_train_traces, proposal_val_traces
         proposal_beta, proposal_train, proposal_val, proposal_mean, proposal_scale = (
             solve_sequence_ridge(
                 proposal_train_features, train_labels, proposal_val_features,
@@ -738,13 +729,16 @@ def main():
                 "structural_selection": selection_record,
                 "kept_relative": keep,
                 "kept_candidates": committed_candidates,
-                "candidate_preparation": preparation_record,
+                "candidate_preparation": (
+                    prepared["record"] if prepared is not None else None
+                ),
                 "proposal_validation": proposal_val,
                 "accepted": bool(accepted),
             }
         )
         if accepted:
             state = proposal
+            train_traces, val_traces = proposal_train_traces, proposal_val_traces
             train_features, val_features = proposal_train_features, proposal_val_features
             beta, current_train, current_val = proposal_beta, proposal_train, proposal_val
             feature_mean, feature_scale = proposal_mean, proposal_scale
@@ -768,10 +762,6 @@ def main():
                 f"base_val={current_val['accuracy']:.4f} "
                 f"failures={failures}/{args.growth_failure_patience}", flush=True,
             )
-        # Accepted features remain owned by train_features/val_features;
-        # rejected proposals must not survive into test or the next round.
-        del proposal, proposal_train_features, proposal_val_features
-        del proposal_beta, proposal_mean, proposal_scale
         if runtime:
             runtime.end(current_train['accuracy'])
             runtime.begin('test', round_index)
@@ -780,7 +770,6 @@ def main():
             observed_features = sequence_features(observed_traces, args)
             observed_logits = apply_sequence_readout(observed_features, beta, feature_mean, feature_scale)
             observed_metrics = blocks.core.classification_metrics(observed_logits, observed_labels)
-            del observed_traces, observed_features, observed_logits, observed_labels
             runtime.end(observed_metrics['accuracy'])
             # Monitoring only: no test quantity feeds the growth decision or final refit.
             runtime.epoch_row(round_index, unit='growth_round')
