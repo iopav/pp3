@@ -59,12 +59,13 @@ class EnergyBlockTests(unittest.TestCase):
         import torch
         saved = torch.load(out/'model.pt', weights_only=False)
         self.assertEqual(saved['completed_epochs'], epochs)
-        self.assertEqual(saved['optimizer']['param_groups'][0]['momentum'], .9)
+        self.assertEqual(saved['optimizer']['param_groups'][0]['lr'], .001)
+        self.assertEqual(saved['optimizer']['param_groups'][0]['betas'], (.9, .999))
         self.assertTrue(saved['optimizer']['state'])
         for row in rows:
             self.assertEqual(int(row['auxiliary_mem_bytes']),
                 int(row['optimizer_state_bytes']) + int(row['hiddenstatememfor bp']))
-            self.assertEqual(int(row['optimizer_state_bytes']), int(row['para_mem_bytes']))
+            self.assertGreaterEqual(int(row['optimizer_state_bytes']), 2 * int(row['para_mem_bytes']))
         return rows, events, json.loads((out/'config.json').read_text())
 
     def test_five_epoch_block_and_final_remainder_without_evaluation(self):

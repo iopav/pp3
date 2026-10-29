@@ -201,6 +201,8 @@ def main():
     parser.add_argument('--max-hidden', type=int, default=49)
     parser.add_argument('--smoke', action='store_true')
     args = parser.parse_args()
+    from startup_power import report_startup_power
+    report_startup_power(args.device)
     native = native_settings(batch_size=args.batch_size, device=args.device, seed=args.seed)
     if min(args.epochs, args.batch_size, args.max_hidden) < 1:
         parser.error('epochs, batch-size and max-hidden must be positive')

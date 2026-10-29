@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-METHODS = ('rnn', 'rsnn', 'snnsurrogate', 'ann', 'gatezo')
+METHODS = ('rnn', 'rsnn', 'snnsurrogate', 'ann', 'gatezo', 'bdnn')
 
 
 def main():
@@ -30,11 +30,16 @@ def main():
     env['CUDA_VISIBLE_DEVICES'] = '' if args.cpu else gpu
     env['PYTHONHASHSEED'] = str(args.seed)
     env['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
+    if not args.dry_run:
+        env.pop('TEXTURE_STARTUP_POWER_REPORTED', None)
+        subprocess.run([sys.executable, str(Path(__file__).with_name('startup_power.py')),
+                        '--device', 'cpu' if args.cpu else 'cuda:0'], env=env, check=True)
+        env['TEXTURE_STARTUP_POWER_REPORTED'] = '1'
     for method in dict.fromkeys(args.experiments):
         command = [sys.executable, str(Path(__file__).with_name(method + '.py')),
                    '--device', 'cpu' if args.cpu else 'cuda:0',
                    '--seed', str(args.seed), *extra]
-        if args.eval_each_epoch and method != 'gatezo':
+        if args.eval_each_epoch and method not in ('gatezo', 'bdnn'):
             command.append('--eval-each-epoch')
         print(f'CUDA_VISIBLE_DEVICES={env["CUDA_VISIBLE_DEVICES"]} {command}', flush=True)
         if not args.dry_run:

@@ -78,6 +78,8 @@ def main(method):
                         help='Legacy flag: use single-epoch energy windows; no extra train evaluation')
     parser.add_argument('--smoke', action='store_true', help='One epoch; first 16 steps, <=8 samples per source split')
     args = parser.parse_args()
+    from startup_power import report_startup_power
+    report_startup_power(args.device)
     if args.epochs < 1 or args.batch_size < 1:
         parser.error('epochs and batch-size must be positive')
     train, test = load_data(args, args.smoke)

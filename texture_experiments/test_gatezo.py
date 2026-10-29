@@ -22,8 +22,9 @@ class GateZOTests(unittest.TestCase):
               patch.object(run_all.subprocess, 'run') as run):
             run.return_value.returncode = 0
             self.assertEqual(run_all.main(), 0)
-        self.assertEqual(run.call_count, 5)
-        for call in run.call_args_list:
+        self.assertEqual(run.call_count, 7)  # one power probe, six methods
+        self.assertTrue(run.call_args_list[0].args[0][1].endswith('startup_power.py'))
+        for call in run.call_args_list[1:]:
             command = call.args[0]
             self.assertEqual(command[command.index('--epochs') + 1], '100')
             self.assertNotIn('--nB', command)

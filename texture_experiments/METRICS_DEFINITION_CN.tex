@@ -67,9 +67,9 @@ Here $\mathcal O_e$ contains unique optimizer tensor/array backing storages,
 and $n_e$ counts numeric scalar entries. Optimizer state is counted after the
 epoch's last update, using actual tensor
 storage bytes with alias deduplication (CPU and GPU). Numeric Python state
-scalars count as 8 logical bytes each. SGD uses momentum 0.9; its momentum
+scalars count as 8 logical bytes each. Adam uses learning rate 0.001; its moment
 buffers are saved in the final checkpoint. Once initialized for all parameters,
-SGD momentum storage equals parameter storage when their dtypes match.
+Adam retains first and second moments plus step state; count actual state tensor storage.
 RNG, sampling/split state,
 configuration, parameter groups, gradients, and temporary workspaces are excluded.
 This is the requested sum of state storage and BP peak, not a simultaneous
