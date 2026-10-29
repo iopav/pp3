@@ -1,5 +1,0 @@
-Using device: cpu
-tensor(1.)
-Max Test Acc: 0.0
-Epoch of Max Test Acc: 0
-Max Train Acc: 0.0

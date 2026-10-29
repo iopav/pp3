@@ -1,28 +1,0 @@
-D:\workspace\pp3\ESPP-main\data.py:71: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
-  imgs.append(torch.tensor(im).view(im.shape[0], -1))
-  0%|          | 0/1 [00:00<?, ?it/s]100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 1/1 [00:00<00:00, 18.51it/s]
-  0%|          | 0/1 [00:00<?, ?it/s]Cross Entropy Loss: [2.9896858 2.9957325]
-Correct: [15.  5.]%
-100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 1/1 [00:00<00:00, 10.74it/s]
-  0%|          | 0/14 [00:00<?, ?it/s] 21%|¨€¨€¨‡       | 3/14 [00:00<00:00, 20.60it/s] 43%|¨€¨€¨€¨€¨†     | 6/14 [00:00<00:00, 21.88it/s] 64%|¨€¨€¨€¨€¨€¨€¨…   | 9/14 [00:00<00:00, 22.56it/s] 86%|¨€¨€¨€¨€¨€¨€¨€¨€¨„ | 12/14 [00:00<00:00, 22.64it/s]100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 14/14 [00:00<00:00, 22.59it/s]
-Directly from inputs:
-Accuracy: 17.50%
-From layer 1:
-Accuracy: 5.00%
-  0%|          | 0/7 [00:00<?, ?it/s] 43%|¨€¨€¨€¨€¨†     | 3/7 [00:00<00:00, 22.93it/s] 86%|¨€¨€¨€¨€¨€¨€¨€¨€¨„ | 6/7 [00:00<00:00, 22.45it/s]100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 7/7 [00:00<00:00, 22.41it/s]
-Directly from inputs:
-Accuracy: 20.00%
-From layer 1:
-Accuracy: 5.00%
-Exception ignored in: <function SHDEvents.__del__ at 0x000001D5FB974670>
-Traceback (most recent call last):
-  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_bdnn_rsnn_pure.py", line 93, in __del__
-  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_bdnn_rsnn_pure.py", line 89, in close
-  File "D:\workspace\pp3\python_deps\h5py\_hl\files.py", line 620, in close
-TypeError: bad operand type for unary ~: 'NoneType'
-Exception ignored in: <function SHDEvents.__del__ at 0x000001D5FB974670>
-Traceback (most recent call last):
-  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_bdnn_rsnn_pure.py", line 93, in __del__
-  File "D:\workspace\pp3\gate_zo_bdnn\train_shd_bdnn_rsnn_pure.py", line 89, in close
-  File "D:\workspace\pp3\python_deps\h5py\_hl\files.py", line 620, in close
-TypeError: bad operand type for unary ~: 'NoneType'

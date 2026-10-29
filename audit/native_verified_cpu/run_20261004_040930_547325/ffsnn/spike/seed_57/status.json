@@ -1,7 +1,0 @@
-{
-  "status": "flops_incomplete",
-  "training_completed": true,
-  "flops_complete": false,
-  "model_bytes": 8327,
-  "epochs": 1
-}

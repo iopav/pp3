@@ -1,5 +1,0 @@
-{
-  "status": "failed",
-  "training_completed": false,
-  "reason": "Traceback (most recent call last):\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_radlif_residual_proposal.py\", line 19, in <module>\n    main()\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_radlif_residual_proposal.py\", line 15, in main\n    trainer.main()\n  File \"D:\\workspace\\pp3\\gate_zo_bdnn\\train_shd_individual_pool_structural_zo.py\", line 767, in main\n    observed_metrics = core.classification_metrics(observed_logits, observed_labels)\nAttributeError: module 'shd_radlif_residual_proposal_core' has no attribute 'classification_metrics'\n"
-}

@@ -1,1 +1,0 @@
-Synthetic inputs for execution checks only; not accuracy evidence.

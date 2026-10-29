@@ -1,2 +1,0 @@
-[compute] device=cuda:0 batch_size=3 cuda_available=True
-[gatezo:validation_checkpoint] round=1 proposed=3 kept=3 hidden=3 train_acc=0.2000 checkpoint_acc=0.1000 mse=0.047137 time_h=0.001214

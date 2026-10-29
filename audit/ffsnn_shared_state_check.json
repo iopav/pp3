@@ -1,6 +1,0 @@
-{
-  "first_layer_positive_negative_different": true,
-  "second_layer_outputs_equal": true,
-  "second_layer_fc_gradient_max": 1.9073486328125e-06,
-  "loss": 0.0
-}

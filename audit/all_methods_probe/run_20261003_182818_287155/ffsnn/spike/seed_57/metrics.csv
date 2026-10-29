@@ -1,2 +1,0 @@
-method,dataset,seed,epoch,smoke,train_accuracy,train_loss,train_samples,train_seconds,train_data_wait_seconds,train_gpu_energy_j,train_energy_method,train_energy_reason,train_complete,train_flops,train_known_flops,train_fft_flops_estimated,cumulative_flops_including_prepare
-ffsnn,spike,57,1,True,0.25,2.995732307434082,4,3.4057135000184644,0.004955499985953793,,unavailable,CPU run: GPU energy unavailable,False,,5764776,0,

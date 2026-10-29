@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "D:\workspace\pp3\pp3\worker.py", line 147, in main
-    execute(config)
-  File "D:\workspace\pp3\pp3\worker.py", line 122, in execute
-    raise RuntimeError(f'Uncovered {phase} operators; see epoch operation report')
-RuntimeError: Uncovered train operators; see epoch operation report
-

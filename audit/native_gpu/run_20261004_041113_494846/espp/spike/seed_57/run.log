@@ -1,16 +1,0 @@
-D:\workspace\pp3\ESPP-main\data.py:71: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
-  imgs.append(torch.tensor(im).view(im.shape[0], -1))
-  0%|          | 0/1 [00:00<?, ?it/s]100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 1/1 [00:00<00:00, 24.05it/s]
-  0%|          | 0/1 [00:00<?, ?it/s]Cross Entropy Loss: [2.9804227 2.976474 ]
-Correct: [0. 5.]%
-100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 1/1 [00:00<00:00, 25.91it/s]
-  0%|          | 0/7 [00:00<?, ?it/s] 29%|¨€¨€¨‚       | 2/7 [00:00<00:00, 19.08it/s] 57%|¨€¨€¨€¨€¨€¨ƒ    | 4/7 [00:00<00:00, 18.11it/s] 86%|¨€¨€¨€¨€¨€¨€¨€¨€¨„ | 6/7 [00:00<00:00, 18.39it/s]100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 7/7 [00:00<00:00, 18.42it/s]
-Directly from inputs:
-Accuracy: 5.00%
-From layer 1:
-Accuracy: 5.00%
-  0%|          | 0/7 [00:00<?, ?it/s] 29%|¨€¨€¨‚       | 2/7 [00:00<00:00, 19.09it/s] 57%|¨€¨€¨€¨€¨€¨ƒ    | 4/7 [00:00<00:00, 19.28it/s] 86%|¨€¨€¨€¨€¨€¨€¨€¨€¨„ | 6/7 [00:00<00:00, 19.20it/s]100%|¨€¨€¨€¨€¨€¨€¨€¨€¨€¨€| 7/7 [00:00<00:00, 19.25it/s]
-Directly from inputs:
-Accuracy: 15.00%
-From layer 1:
-Accuracy: 5.00%

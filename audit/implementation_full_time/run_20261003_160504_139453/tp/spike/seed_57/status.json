@@ -1,7 +1,0 @@
-{
-  "status": "success",
-  "model_bytes": 5525,
-  "epochs": 1,
-  "total_flops": 17135728,
-  "flops_complete": true
-}
