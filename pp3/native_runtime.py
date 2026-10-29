@@ -190,7 +190,8 @@ class Runtime:
         self.counter.stage = phase
         if excluded:
             self.counter.mark_excluded('python_scalar_bookkeeping', excluded)
-        self.energy = Energy(self.device, self.config['power_sample_seconds'])
+        # Measure the assigned device even when the model computes on CPU.
+        self.energy = Energy(torch.device(self.config['device']), self.config['power_sample_seconds'])
         self.energy.__enter__()
         self.counter.__enter__()
 

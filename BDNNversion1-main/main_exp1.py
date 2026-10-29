@@ -35,7 +35,7 @@ if runtime:
     SCN_DEFAULTS = dict(SCN_DEFAULTS, L_max=settings['epochs'], T_max=settings['pool_size'],
                        nB=settings['growth_step'], tol=settings['tol'],
                        Lambdas=settings['lambdas'], r=settings['r'])
-    # This original BDNN implementation computes on CPU; do not report GPU model energy.
+    # Compute on CPU; Runtime separately measures the controller-assigned GPU.
     runtime.device = torch.device('cpu')
     os.chdir(runtime.output)
 else:
