@@ -86,7 +86,7 @@ if os.environ.get('PP3_CONFIG'):
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Producing data...")
 
-data_paths =r"D:\workspace\Avalanche\avalanche-master\dataset\texture-mini\texture_spikesT450_T77.npz"
+data_paths =r"pp3/data/texture-mini/texture_spikesT450_T77.npz"
 
 print("Loading data...")
 with np.load(data_paths) as data:

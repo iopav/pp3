@@ -37,7 +37,7 @@ class bdnn1(torch.nn.Module):
                  tol=1e-4,
                  Lambdas=[0.5, 1, 3, 5, 7, 9, 15, 25, 50, 100, 150, 200],
                  r=[0.9, 0.99, 0.999, 0.9999, 0.99999, 0.99999],
-                 nB=1,
+                 nB=7,
                  verbose=50,
                  alpha=0.13,
                  beta=1
