@@ -18,6 +18,8 @@ def main():
     parser.add_argument('--eval-each-epoch', action='store_true',
                         help='Legacy flag: single-epoch energy windows without extra train evaluation')
     args, extra = parser.parse_known_args()
+    if '--smoke' in extra and 'bdnn' in args.experiments:
+        parser.error('Native BDNN preserves the full dataset and original parameters; exclude bdnn from --smoke or supply a small dataset without --smoke.')
     if args.cpu and args.gpu is not None:
         parser.error('--cpu and --gpu are mutually exclusive')
     inherited = os.environ.get('CUDA_VISIBLE_DEVICES')

@@ -49,6 +49,7 @@ start = time.time()
 M = bdnn1(**SCN_DEFAULTS)
 if runtime:
     M.alpha, M.beta, M._pp3_runtime = settings['alpha'], settings['beta'], runtime
+    runtime.bdnn_model = M  # Observation only; native classification below is unchanged.
 ErrorList, RateList, RateList2, timelist, suitW, suitU, Beta = M.classification(X_train, Y_train, X_test, Y_test)
 end = time.time()
 if runtime:

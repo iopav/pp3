@@ -1,194 +1,86 @@
-"""Fixed-width ordinary BDNN using the unmodified BDNNversion1-main primitives.
-
-The native implementation computes on CPU, even when a GPU is selected for
-telemetry. GPU board energy is not CPU training energy.
-"""
+"""Copied native main_exp1, dataset replacement and observation only."""
 import argparse
-import csv
+import hashlib
 import json
 import os
 from pathlib import Path
-import random
+import subprocess
 import sys
-import time
-import traceback
-import importlib.util
 
-os.environ['CUBLAS_WORKSPACE_CONFIG'] = ':4096:8'
-import numpy as np
-import torch
-from data import add_data_arguments, load_data, data_metadata
-from completion import skip_completed
-from energy import TotalEnergyCounter
-from train import allocate_block_energy
-from startup_power import report_startup_power
-from bp_memory import BP_MEMORY_FIELD
-
-SOURCE = Path(__file__).resolve().parents[1] / 'BDNNversion1-main'
-sys.path.insert(0, str(SOURCE))
-def source_module(name, filename):
-    spec = importlib.util.spec_from_file_location(name, SOURCE / filename)
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+ROOT = Path(__file__).resolve().parent
+NATIVE = ROOT / 'bdnn_native'
+ARTIFACTS = ('model.pt', 'metrics.csv', 'summary.json', 'final_metrics.json',
+             'suitW_old_20cla.npy', 'suitU_old_20cla.npy', 'suitB_old_20cla.npy',
+             'Ratelist_for_20_old_classes.npy', 'RateList2_for_20_old_classes.npy',
+             'error_old_6cla.npy', 'rate_old_6cla.npy')
 
 
-bdnn1 = source_module('_texture_ordinary_bdnn', 'bdnn1.py').bdnn1
-SCN_DEFAULTS = source_module('_texture_ordinary_bdnn_config', 'config.py').SCN_DEFAULTS
-sys.path.remove(str(SOURCE))
-
-
-def finite(value):
-    if not np.isfinite(np.asarray(value)).all():
-        raise FloatingPointError('Nonfinite BDNN state/output')
-
-
-def width(model):
-    return 0 if isinstance(model.W, list) else model.W.shape[1]
-
-
-def grow_one(model, x, targets):
-    # Native classification searches against T throughout; preserve this rule.
-    w, u, failed = model.sc_Search(x, targets)
-    if failed:
-        raise RuntimeError(f'BDNN candidate search failed at hidden={width(model)}')
-    finite(w)
-    finite(u)
-    before = width(model)
-    model.addNodes(w, u)
-    if width(model) != before + 1:
-        raise RuntimeError('BDNN must add exactly one hidden neuron')
-    _, loss = model.upgradeSCN(x, targets)
-    for value in (model.W, model.U, model.Beta, loss):
-        finite(value)
-    output = model.getOutput(x)
-    finite(output)
-    return float((output.argmax(1) == targets.argmax(1)).mean())
-
-
-def run_growth(model, x, targets, target_width, counter, output, test_evaluation):
-    rows = []
-    total_energy = total_seconds = 0.0
-
-    def row(seconds, accuracy):
-        return dict(epoch=int(model.L), hidden_neurons=width(model),
-                    para_mem_bytes=sum(np.asarray(v).nbytes for v in (model.W, model.U, model.Beta)),
-                    optimizer_state_bytes=0, auxiliary_mem_bytes=0, **{BP_MEMORY_FIELD: 0},
-                    train_acc=accuracy, final_test_acc=None, energy_j=None, power_w=None,
-                    total_energy_j=None, total_power_w=None, epoch_seconds=seconds, total_seconds=None)
-
-    def flush(block, initial):
-        nonlocal total_energy, total_seconds
-        _, final = counter.read()
-        joules = (final - initial) / 1000 if initial is not None and final is not None else None
-        total_energy, total_seconds = allocate_block_energy(block, joules, total_energy, total_seconds)
-        rows.extend(block)
-
-    def save():
-        with (output / 'metrics.csv').open('w', newline='', encoding='utf-8') as stream:
-            writer = csv.DictWriter(stream, fieldnames=rows[0])
-            writer.writeheader()
-            writer.writerows(rows)
-
-    while width(model) < target_width:
-        _, initial = counter.read()
-        block = []
-        try:
-            for _ in range(min(5, target_width - width(model))):
-                started = time.perf_counter()
-                acc = grow_one(model, x, targets)
-                block.append(row(time.perf_counter() - started, acc))
-        except BaseException:
-            block.append(row(time.perf_counter() - started, None))
-            flush(block, initial)
-            save()
-            raise
-        flush(block, initial)
-        save()
-        for item in block:
-            print(json.dumps(item), flush=True)
-    _, initial = counter.read()
-    started = time.perf_counter()
-    h, _ = model.getH(x)
-    model.computeBeta(h, targets)
-    finite(model.Beta)
-    flush([row(time.perf_counter() - started, None)], initial)
-    prediction = model.getOutput(x)
-    finite(prediction)
-    rows[-1]['train_acc'] = float((prediction.argmax(1) == targets.argmax(1)).mean())
-    rows[-1]['final_test_acc'] = test_evaluation(model)
-    save()
-    (output / 'final_metrics.json').write_text(json.dumps(rows[-1], indent=2), encoding='utf-8')
-    print(json.dumps(rows[-1]), flush=True)
-    return rows
+def reuse(destination, config):
+    if not destination.exists():
+        return False
+    try:
+        previous = json.loads((destination/'config.json').read_text(encoding='utf-8'))
+        status = json.loads((destination/'status.json').read_text(encoding='utf-8'))
+        valid = (previous == config and status.get('status') == 'success'
+                 and all((destination/name).is_file() and (destination/name).stat().st_size
+                         for name in ARTIFACTS))
+    except (OSError, ValueError):
+        valid = False
+    if not valid:
+        raise FileExistsError(f'{destination}: existing run differs or is incomplete; use a new --output')
+    print(f'[skip] bdnn: completed native run at {destination}', flush=True)
+    return True
 
 
 def main():
+    from data import add_data_arguments, default_data_root
     parser = argparse.ArgumentParser(description=__doc__)
     add_data_arguments(parser)
-    parser.add_argument('--output', type=Path, default=Path(__file__).parent / 'outputs')
-    parser.add_argument('--device', default='cuda:0', help='Telemetry device; native BDNN computes on CPU')
-    parser.add_argument('--epochs', type=int, default=100, help='Compatibility only: BDNN grows to max-hidden')
-    parser.add_argument('--batch-size', type=int, default=128, help='Compatibility only: native full-array computation')
-    parser.add_argument('--seed', type=int, default=57)
-    parser.add_argument('--max-hidden', type=int, default=49)
+    parser.add_argument('--output', type=Path, default=ROOT/'outputs')
+    parser.add_argument('--device', default='cuda:0', help='Board telemetry only; native BDNN uses CPU')
+    for flag in ('epochs', 'batch-size', 'seed'):
+        parser.add_argument('--'+flag, type=int, help='Shared-launcher compatibility; NOT applied to native BDNN')
     parser.add_argument('--smoke', action='store_true')
     args = parser.parse_args()
-    if min(args.max_hidden, args.epochs, args.batch_size) < 1:
-        parser.error('max-hidden, epochs and batch-size must be positive')
+    if args.smoke:
+        parser.error('Native BDNN does not truncate data or change parameters for --smoke. Use a separate small dataset fixture.')
+    from startup_power import report_startup_power
     report_startup_power(args.device)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.use_deterministic_algorithms(True)
-    train, test = load_data(args)
-
-    def arrays(dataset):
-        pairs = [dataset[i] for i in range(len(dataset))]
-        if args.smoke:
-            pairs = [p for label in range(train.classes) for p in [p for p in pairs if p[1] == label][:4]]
-        x, y = zip(*pairs)
-        x = torch.stack(x).numpy()
-        return (x[:, :16] if args.smoke else x), np.eye(train.classes, dtype=np.float32)[list(y)]
-
-    x, targets = arrays(train)
-    x_test, test_targets = arrays(test)
-    native = dict(SCN_DEFAULTS, nB=1, L_max=args.max_hidden)
-    config = dict(method='bdnn', max_hidden=args.max_hidden, layers=1, native_args=native,
-                  seed=args.seed, source=str(SOURCE), smoke=args.smoke,
-                  data_root=str(args.data_root.resolve()), compute_device='cpu', telemetry_device=args.device,
-                  epochs_unit='growth_attempt', energy_window_epochs=5,
-                  energy_measurement_version='nvml_total_growth_block_time_allocation_v1',
-                  accuracy_reporting_version='growth_train_final_test_v1',
-                  stopping_policy='fixed_width_candidate_failure_is_failure',
-                  train_samples=len(x), test_samples=len(x_test))
-    config.update(data_metadata(args, train))
-    config['steps'] = x.shape[1]
-    destination = args.output / args.dataset / ('smoke' if args.smoke else 'full') / 'bdnn' / f'seed_{args.seed}'
-    if skip_completed(destination, config):
-        return
+    for key in ('epochs', 'batch_size', 'seed'):
+        if getattr(args, key) is not None:
+            print(f'[bdnn native] --{key.replace("_", "-")} is not applied; preserving original execution', flush=True)
+    data_root = (args.data_root or default_data_root(args.dataset)).resolve()
+    import runpy
+    defaults = runpy.run_path(str(NATIVE/'config.py'))['SCN_DEFAULTS']
+    config = dict(method='bdnn', dataset=args.dataset, data_root=str(data_root),
+        shd_dt=args.shd_dt, shd_max_time=args.shd_max_time,
+        shd_channel_group_size=args.shd_channel_group_size,
+        native_args=defaults, random_seed=None, compute_device='cpu', telemetry_device=args.device,
+        protocol='native_main_exp1_dataset_only_v1',
+        accuracy_reporting='native_per_growth_test_and_test_selected_final',
+        energy_measurement='native_phase_boundaries_final_refit_includes_native_final_test',
+        source_sha256={str(p.relative_to(ROOT)): hashlib.sha256(p.read_bytes()).hexdigest()
+                       for p in sorted([*NATIVE.glob('*.py'), ROOT/'bdnn.py',
+                                        ROOT/'native_bdnn_metrics.py', ROOT/'data.py', ROOT/'energy.py'])})
+    destination = (args.output/args.dataset/'full'/'bdnn'/'native').resolve()
+    if reuse(destination, config):
+        return 0
     destination.mkdir(parents=True, exist_ok=False)
-    (destination / 'config.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
-    counter = TotalEnergyCounter(torch.device(args.device))
+    (destination/'config.json').write_text(json.dumps(config, indent=2), encoding='utf-8')
+    env = os.environ.copy()
+    for key in ('PP3_CONFIG', 'PP3_CONFIG_JSON', 'PYTHONHASHSEED'):
+        env.pop(key, None)
+    env['TEXTURE_BDNN_CONFIG'] = str(destination/'config.json')
     try:
-        model = bdnn1(**native)
-        def final_test(model):
-            prediction = model.getOutput(x_test)
-            finite(prediction)
-            return float((prediction.argmax(1) == test_targets.argmax(1)).mean())
-        run_growth(model, x, targets, args.max_hidden, counter, destination, final_test)
-        if width(model) != args.max_hidden:
-            raise RuntimeError('BDNN did not reach target width')
-        torch.save(dict(W=torch.as_tensor(model.W), U=torch.as_tensor(model.U), Beta=torch.as_tensor(model.Beta),
-                        hidden_neurons=width(model), growth_round=int(model.L), config=config), destination / 'model.pt')
-        (destination / 'summary.json').write_text(json.dumps(dict(hidden_neurons=width(model), compute_device='cpu')))
-        (destination / 'status.json').write_text(json.dumps(dict(status='success', hidden_neurons=width(model))))
-    except BaseException:
-        (destination / 'status.json').write_text(json.dumps(dict(status='failed', error=traceback.format_exc())))
+        result = subprocess.run([sys.executable, str(NATIVE/'main_exp1.py')], cwd=destination, env=env)
+        success = result.returncode == 0 and all((destination/name).is_file() for name in ARTIFACTS)
+        (destination/'status.json').write_text(json.dumps(dict(status='success' if success else 'failed',
+                                                              returncode=result.returncode)), encoding='utf-8')
+        return result.returncode or (0 if success else 1)
+    except BaseException as error:
+        (destination/'status.json').write_text(json.dumps(dict(status='failed', error=str(error))), encoding='utf-8')
         raise
-    finally:
-        counter.close()
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

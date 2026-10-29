@@ -249,6 +249,13 @@ class BDNNNumpyAccountingTests(unittest.TestCase):
                 state = torch.load(output/'model.pt', weights_only=False)
                 with (output/'metrics.csv').open(newline='') as stream:
                     rows = list(csv.DictReader(stream))
+                for row in rows:
+                    self.assertGreaterEqual(int(row['para_mem_bytes']), 0)
+                    self.assertEqual(int(row['optimizer_state_bytes']), 0)
+                    self.assertEqual(int(row['auxiliary_mem_bytes']), 0)
+                    self.assertEqual(int(row['hiddenstatememfor bp']), 0)
+                    self.assertEqual(int(row['final_para_mem_bytes']),
+                                     sum(np.asarray(state[k]).nbytes for k in ('W', 'U', 'Beta')))
                 runs.append((state, [(r['train_accuracy'], r['test_accuracy'], r['train_loss']) for r in rows]))
             for key in runs[0][0]:
                 np.testing.assert_array_equal(np.asarray(runs[0][0][key]), np.asarray(runs[1][0][key]))

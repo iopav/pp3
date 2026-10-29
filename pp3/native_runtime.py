@@ -249,6 +249,11 @@ class Runtime:
         # 任一已记录阶段的能耗不可用，合计也填空，不能把缺失能耗当成 0。
         row['epoch_gpu_energy_j'] = (sum(r['gpu_energy_j'] for r in measured)
             if measured and all(r['gpu_energy_j'] is not None for r in measured) else None)
+        if self.config['method'] == 'bdnn' and hasattr(self, 'bdnn_model'):
+            row.update(para_mem_bytes=sum(np.asarray(v).nbytes for v in
+                       (self.bdnn_model.W, self.bdnn_model.U, self.bdnn_model.Beta)),
+                       optimizer_state_bytes=0, auxiliary_mem_bytes=0,
+                       **{'hiddenstatememfor bp': 0})
         self.rows.append(row)
         self._csv()
 
@@ -271,6 +276,8 @@ class Runtime:
         # 它既不是参数张量字节数之和，也不是训练期间的内存或显存峰值。
         for row in self.rows:
             row['final_model_bytes'] = path.stat().st_size
+            if self.config['method'] == 'bdnn':
+                row['final_para_mem_bytes'] = sum(np.asarray(state[k]).nbytes for k in ('W', 'U', 'Beta'))
         self._csv()
         self.finished = True
         # prepare/final_* 的一次性开销单独存入 status，供 reporting 单独导出。

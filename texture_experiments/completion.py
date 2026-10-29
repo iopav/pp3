@@ -37,7 +37,7 @@ def skip_completed(destination, config):
     if differences:
         reject('configuration differs: ' + ', '.join(differences))
     required = ['model.pt', 'metrics.csv']
-    if config['method'] in ('gatezo', 'bdnn'):
+    if config['method'] == 'gatezo':
         required += ['summary.json', 'final_metrics.json']
         if status.get('hidden_neurons') != config['max_hidden']:
             reject('successful status does not match requested hidden size')
