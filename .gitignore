@@ -37,8 +37,11 @@ python_deps/
 # Experiment outputs
 # =========================
 outputs/
+/result1/
+/result2/
+/result/
 logs/
-results/
+
 /audit/
 # =========================
 # Checkpoints
