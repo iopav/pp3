@@ -7,13 +7,24 @@ class SHDProfiles(unittest.TestCase):
     def test_data_and_budget_remain_pp3(self):
         for method in constants.SHD_NATIVE_PROFILES:
             config = constants.make_config(method, 'shd')
-            self.assertEqual(config['data'], constants.DATASETS['shd'])
+            expected = copy.deepcopy(constants.DATASETS['shd'])
+            if method in ('espp', 'ffsnn'):
+                steps = 100 if method == 'espp' else 10
+                expected.update(steps=steps, dt=1./steps,
+                    binning_protocol='native_bin_count_pp3_fixed_window_binary_v1')
+            self.assertEqual(config['data'], expected)
             self.assertEqual(config['model']['epochs'], constants.EPOCHS)
             self.assertEqual(config['model']['batch_size'], constants.BATCH_SIZE)
-            self.assertEqual(config['data']['steps'], 2000)
+            self.assertEqual(config['data']['steps'], expected['steps'])
         self.assertEqual(constants.make_config('spsn', 'shd')['model']['time_step'],
                          constants.DATASETS['shd']['dt'])
         self.assertEqual(constants.DATASETS['shd']['dt'], .0005)
+        for method in constants.METHODS:
+            for dataset in constants.DATASETS:
+                if dataset == 'shd' and method in ('espp', 'ffsnn'):
+                    continue
+                self.assertEqual(constants.make_config(method, dataset)['data'],
+                                 constants.DATASETS[dataset])
 
     def test_shd_only_and_copy_isolation(self):
         self.assertEqual(constants.make_config('espp', 'shd')['model']['readout_lr'], .0003)
