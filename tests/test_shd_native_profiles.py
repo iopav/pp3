@@ -8,10 +8,12 @@ class SHDProfiles(unittest.TestCase):
         for method in constants.SHD_NATIVE_PROFILES:
             config = constants.make_config(method, 'shd')
             expected = copy.deepcopy(constants.DATASETS['shd'])
-            if method in ('espp', 'ffsnn'):
-                steps = 100 if method == 'espp' else 10
+            if method in ('tp', 'espp', 'ffsnn'):
+                steps = 10 if method == 'ffsnn' else 100
                 expected.update(steps=steps, dt=1./steps,
                     binning_protocol='native_bin_count_pp3_fixed_window_binary_v1')
+                if method == 'tp':
+                    expected['binning_protocol'] = 'native_bin_width_pp3_fixed_window_binary_v1'
             self.assertEqual(config['data'], expected)
             self.assertEqual(config['model']['epochs'], constants.EPOCHS)
             self.assertEqual(config['model']['batch_size'], constants.BATCH_SIZE)
@@ -21,7 +23,7 @@ class SHDProfiles(unittest.TestCase):
         self.assertEqual(constants.DATASETS['shd']['dt'], .0005)
         for method in constants.METHODS:
             for dataset in constants.DATASETS:
-                if dataset == 'shd' and method in ('espp', 'ffsnn'):
+                if dataset == 'shd' and method in ('tp', 'espp', 'ffsnn'):
                     continue
                 self.assertEqual(constants.make_config(method, dataset)['data'],
                                  constants.DATASETS[dataset])

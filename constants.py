@@ -95,10 +95,12 @@ def make_config(method, dataset):
     config = dict(method=method, dataset=dataset, data=copy.deepcopy(DATASETS[dataset]),
                 model=copy.deepcopy(METHODS[method][dataset]), validation=copy.deepcopy(VALIDATION),
                 **copy.deepcopy(RUNTIME))
-    if dataset == 'shd' and method in ('espp', 'ffsnn'):
+    if dataset == 'shd' and method in ('tp', 'espp', 'ffsnn'):
         # Native sequence lengths; preserve PP3 event augmentation, binary
         # occupancy and the full one-second window. Rebin, never subsample.
-        steps = 100 if method == 'espp' else 10
+        # TP's native time_window=10000 us is 10 ms; on our fixed 1 s
+        # window this gives 100 bins (native TP uses variable-length windows).
+        steps = 10 if method == 'ffsnn' else 100
         config['data'].update(steps=steps, dt=config['data']['max_time']/steps)
         config['data']['binning_protocol'] = 'native_bin_count_pp3_fixed_window_binary_v1'
     if dataset == 'shd' and method == 'spsn':
@@ -108,4 +110,7 @@ def make_config(method, dataset):
             if method in SHD_NATIVE_PROFILES else 'pp3_adapter_no_native_shd_profile_v1')
         if method in ('espp', 'ffsnn'):
             config['hyperparameter_protocol'] = 'native_shd_learning_native_bin_count_pp3_augmentation_v4'
+        if method == 'tp':
+            config['data']['binning_protocol'] = 'native_bin_width_pp3_fixed_window_binary_v1'
+            config['hyperparameter_protocol'] = 'native_shd_learning_native_bin_width_pp3_augmentation_v5'
     return config

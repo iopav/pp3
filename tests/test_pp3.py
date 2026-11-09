@@ -105,6 +105,38 @@ class FlopsTests(unittest.TestCase):
 
 
 class DataTests(unittest.TestCase):
+    def test_tp_native_bins_preserve_event_perturbations(self):
+        from gate_zo_bdnn.train_shd_bdnn_rsnn_pure import SHDEvents, SHDBinner
+        from gate_zo_bdnn.train_shd_bdnn_rsnn_blocks import DeterministicJitterAugmentedSubset
+        with tempfile.TemporaryDirectory() as root:
+            create_h5(root)
+            config = make_config('tp', 'shd')
+            config['data']['root'] = root
+            original = SHDEvents(Path(root)/'shd_train.h5')
+            augmented = DeterministicJitterAugmentedSubset(original, np.arange(4),
+                20., 1, 57+65537, source_channels=700,
+                time_scale_min=.9, time_scale_max=1.1)
+            dataset = EventFrames(config['data'], True, 57, config=config)
+            plain = EventFrames(config['data'], False, 57, config=config)
+            try:
+                self.assertEqual(len(dataset), 8)
+                self.assertEqual(len(plain), 4)
+                binner = SHDBinner(.01, 1., 700, 1)
+                for i in range(8):
+                    expected, label = binner([augmented[i]])
+                    actual, actual_label = dataset[i]
+                    self.assertEqual(tuple(actual.shape), (100, 700))
+                    self.assertTrue(torch.equal(actual, expected[0]))
+                    self.assertEqual(actual_label, int(label[0]))
+                    self.assertTrue(torch.equal(actual, dataset[i][0]))
+                # This event lies between the old 20-frame sampling points:
+                # rebinning must retain it instead of dropping it by subsampling.
+                self.assertEqual(float(plain[0][0][0, 2]), 1.)
+            finally:
+                original.close()
+                dataset.source.dataset.close()
+                plain.source.dataset.close()
+
     def test_npy_shapes_tail_negative(self):
         with tempfile.TemporaryDirectory() as root:
             x=np.arange(4*6*2,dtype='float64').reshape(4,6,2)-10
