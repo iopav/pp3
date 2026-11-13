@@ -30,7 +30,8 @@ The code ports BDNNversion1-main/bdnn1.py to CUDA: delayed recurrent spikes,
 candidate inequality, candidate counting by len(C), ascending candidate sort
 with reversed class rows, accepted-U indexing, block growth, unchanged E=T,
 pinv readout, separate filtered training loss and average-spike inference,
-50-round accuracy stopping check, native first-history-entry length, test
+7-round accuracy stopping check (the native main entry's config override),
+native first-history-entry length, test
 argmax model selection and its exclusive final slice are all retained.
 Consequently a one-round smoke run truncates to ZERO final nodes, exactly as
 the original code does. No correction or fallback node is inserted. Empty
@@ -83,9 +84,11 @@ Validation
   python -m unittest discover -s tests -p test_bdnn_cuda_backend.py -v
   python -m bdnn_gpu.verify_integration
 
-The integration command uses explicitly synthetic Spike/Texture arrays and
+The integration command uses explicitly synthetic Spike/Texture arrays and SHD events and
 the real PP3 launcher, loader, CUDA model, runtime, completion gate and summary.
 Its artifacts live in outputs/bdnn_gpu_verification. It checks complete FLOPs,
 train+test=epoch, stage sums=train, CUDA placement and native zero-node final
-slice. These smoke results are not benchmark accuracies or convergence claims.
+slice, parameter/auxiliary bytes and peak allocated CUDA memory. The unit suite
+also compares original and CUDA entries across the 7-round stopping checks.
+These smoke results are not benchmark accuracies or convergence claims.
 Formal dataset runs are to be executed with the above cluster sbatch command.

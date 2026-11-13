@@ -5,6 +5,8 @@ import unittest
 import warnings
 import json
 import subprocess
+import tempfile
+import os
 from pathlib import Path
 from unittest.mock import patch
 import numpy as np
@@ -18,6 +20,49 @@ from bdnn1 import bdnn1
 
 
 class CUDABackendTests(unittest.TestCase):
+    @unittest.skipUnless(torch.cuda.is_available(), 'Actual CUDA required for entrypoint parity')
+    def test_native_and_cuda_entry_stop_at_same_round_and_preserve_final_slice(self):
+        root = Path(__file__).resolve().parents[1]
+        with tempfile.TemporaryDirectory() as tmp:
+            folder = Path(tmp)
+            config = make_config('bdnn', 'spike')
+            config['data'].update(root=str(folder), steps=6, inputs=2, classes=2)
+            config['model'].update(epochs=16, pool_size=4, growth_step=1,
+                                   lambdas=[1, 3], r=[.99, .999])
+            config.update(device='cuda:0', threads=1)
+            for split in ('train', 'test'):
+                np.save(folder/config['data'][split+'_x'], np.full((4, 6, 2), 3., dtype='float32'))
+                np.save(folder/config['data'][split+'_y'], np.array([0, 1, 0, 1]))
+            records = []
+            for name, entry in [('native', 'BDNNversion1-main/main_exp1.py'), ('cuda', 'bdnn_gpu/main.py')]:
+                output = folder/name
+                config['output'] = str(output)
+                env = dict(os.environ, PP3_CONFIG='environment', PP3_CONFIG_JSON=json.dumps(config),
+                           PYTHONPATH=str(root))
+                process = subprocess.run([sys.executable, str(root/entry)], cwd=root, env=env,
+                    capture_output=True, text=True, encoding='utf-8', errors='replace', timeout=120)
+                self.assertEqual(process.returncode, 0, process.stdout[-2000:]+process.stderr[-2000:])
+                status = json.loads((output/'status.json').read_text())
+                self.assertTrue(status['training_completed'])
+                if name == 'cuda':
+                    self.assertTrue(status['flops_complete'])
+                import csv
+                with (output/'metrics.csv').open() as stream:
+                    rows = list(csv.DictReader(stream))
+                records.append((status, rows, torch.load(output/'model.pt', weights_only=False)))
+            native, cuda = records
+            # Constant accuracy triggers the second native periodic check;
+            # the round that performs that check still executes before stopping.
+            self.assertEqual(native[0]['epochs'], 15)
+            self.assertEqual(cuda[0]['epochs'], native[0]['epochs'])
+            for before, after in zip(native[1], cuda[1]):
+                self.assertEqual(before['train_accuracy'], after['train_accuracy'])
+                self.assertEqual(before['test_accuracy'], after['test_accuracy'])
+            for key in ('W', 'U', 'Beta'):
+                np.testing.assert_allclose(native[2][key], cuda[2][key], atol=1e-6)
+            self.assertEqual(cuda[0]['final_slice_index'], 0)
+            self.assertEqual(cuda[0]['actual_device'], 'cuda:0')
+
     def test_controller_keeps_other_entries_and_isolates_default_output(self):
         root = Path(__file__).resolve().parents[1]
         args = ['--dry-run', '--datasets', 'spike', '--seeds', '57']

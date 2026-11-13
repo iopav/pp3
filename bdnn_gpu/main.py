@@ -28,7 +28,9 @@ def main():
     while model.L < settings['epochs'] and error > settings['tol'] and rate_new - rate >= .001:
         epoch += 1
         runtime.begin('train', epoch, excluded='Python scalar loop/control arithmetic')
-        if model.L != 0 and model.L % 50 == 0:
+        # main_exp1.py passes SCN_DEFAULTS['verbose']=7, overriding the
+        # bdnn1 constructor's default 50. This controls stopping, not just logs.
+        if model.L != 0 and model.L % 7 == 0:
             rate, rate_new = rate_new, max(rate_history)
             rate_history = []
         with runtime.counter.section('candidate_search'):
