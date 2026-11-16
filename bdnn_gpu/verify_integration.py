@@ -56,16 +56,14 @@ def main():
             for row in csv.DictReader(stream):
                 assert float(row['train_flops']) > 0
                 assert float(row['epoch_flops']) == float(row['train_flops']) + float(row['test_flops'])
-                assert float(row['train_flops']) == sum(float(v) for k, v in row.items()
-                    if k.startswith('train_stage_') and k.endswith('_flops'))
-                assert int(row['para_mem_bytes']) > 0
-                assert int(row['auxiliary_mem_bytes']) == 0
-                assert int(row['train_peak_cuda_allocated_bytes']) > 0
-        for phase in output.glob('epoch_*_operations.json'):
-            record = json.loads(phase.read_text(encoding='utf-8'))
-            assert record['complete'] and not record['unknown'], record
-            assert record['known_flops'] == sum(r['flops'] for r in record['operations'])
-            assert record['known_flops'] == sum(record['known_flops_by_stage'].values())
+                assert not any(k.startswith('train_stage_') or 'peak_cuda_' in k for k in row)
+                assert 'hidden_state_bytes' not in row
+                assert not {'para_mem_bytes', 'optimizer_state_bytes', 'auxiliary_mem_bytes',
+                            'hiddenstatememfor bp', 'final_para_mem_bytes'} & row.keys()
+                assert int(row['final_model_bytes']) > 0
+        assert not list(output.glob('epoch_*_operations.json'))
+        diagnostics = json.loads((output/'flops_unknown.json').read_text(encoding='utf-8'))
+        assert not diagnostics['records'], diagnostics
     with (work/'summary.csv').open(encoding='utf-8-sig', newline='') as stream:
         summary = list(csv.DictReader(stream))
     assert len(summary) == 6, summary  # One epoch plus one final_refit per dataset.

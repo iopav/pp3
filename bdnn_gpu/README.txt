@@ -52,15 +52,15 @@ algorithm changes. Full SHD may exceed available VRAM; no CPU fallback is used.
 Metrics
 -------
 metrics.csv contains the existing train/test/epoch FLOPs, accuracy, loss,
-synchronized seconds and GPU joules, plus parameter tensor bytes, optimizer
-state bytes, auxiliary state bytes and phase peak CUDA allocated/reserved
-bytes. train_stage_*_flops provides search/readout-loss/train-evaluation work.
+synchronized seconds and GPU joules, plus final_model_bytes, matching the
+shared PP3 metrics schema (19 columns for BDNN).
+GPU peak memory and train_stage_*_flops columns are not exported.
 status.json retains final_refit as a one-time cost, final test accuracy, CUDA
 device provenance and test_used_for_selection=true. The original summarizer
 exports epoch costs and final_refit once each.
 
-epoch_XXXX_PHASE_operations.json records operator rules, calls, phase totals,
-substage totals and unknown operations. flops_unknown.json is also retained.
+Per-phase epoch_XXXX_PHASE_operations.json files are not written.
+flops_unknown.json retains the shared runtime's unknown-operation diagnostics.
 MAC=2; scalar special functions=1; integer/control/copy operations follow the
 existing PP3 convention. Pseudoinverse has the same shape-based work estimate
 as native PP3: with q=min(m,n), p=max(m,n), its cost is
@@ -71,12 +71,12 @@ native expected polar-transform estimate. These are arithmetic equivalents,
 not hardware instruction counts. Unknown operations invalidate coverage.
 Missing NVML telemetry remains blank; no fabricated energy is substituted.
 
-para_mem_bytes counts actual tensor dtype bytes. final_model_bytes and the
+final_model_bytes and the
 summary's mem_bytes are serialized model.pt size, including serialization
 overhead. They are not parameter bytes or VRAM. Auxiliary memory is persistent
 optimizer plus hidden state at a completed growth-round boundary; both are
-zero for this native non-BP model. Transient syn/mem/spikes remain represented
-by peak CUDA memory, not persistent recovery state. No new resume protocol is
+zero for this native non-BP model. Transient syn/mem/spikes are excluded from
+persistent recovery state. No new resume protocol is
 introduced; shared random state/data partitions are outside auxiliary memory.
 
 Validation
@@ -87,8 +87,8 @@ Validation
 The integration command uses explicitly synthetic Spike/Texture arrays and SHD events and
 the real PP3 launcher, loader, CUDA model, runtime, completion gate and summary.
 Its artifacts live in outputs/bdnn_gpu_verification. It checks complete FLOPs,
-train+test=epoch, stage sums=train, CUDA placement and native zero-node final
-slice, parameter/auxiliary bytes and peak allocated CUDA memory. The unit suite
+train+test=epoch, CUDA placement and native zero-node final
+slice, the shared metrics schema and absence of per-phase JSON files. The unit suite
 also compares original and CUDA entries across the 7-round stopping checks.
 These smoke results are not benchmark accuracies or convergence claims.
 Formal dataset runs are to be executed with the above cluster sbatch command.

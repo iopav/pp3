@@ -51,6 +51,9 @@ class CUDABackendTests(unittest.TestCase):
                     rows = list(csv.DictReader(stream))
                 records.append((status, rows, torch.load(output/'model.pt', weights_only=False)))
             native, cuda = records
+            self.assertEqual(set(native[1][0]), set(cuda[1][0]))
+            self.assertEqual(len(cuda[1][0]), 19)
+            self.assertFalse(list((folder/'cuda').glob('epoch_*_operations.json')))
             # Constant accuracy triggers the second native periodic check;
             # the round that performs that check still executes before stopping.
             self.assertEqual(native[0]['epochs'], 15)

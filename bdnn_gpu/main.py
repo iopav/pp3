@@ -46,7 +46,7 @@ def main():
         with runtime.counter.section('train_evaluation'):
             prediction = model.getLabel(x)
             last_train = accuracy(target, prediction)
-        result = runtime.end(last_train, error)
+        runtime.end(last_train, error)
         runtime.begin('test', epoch)
         prediction_t = model.getLabel(xt)
         last_train = accuracy(target, prediction)
@@ -54,9 +54,6 @@ def main():
         last_test = accuracy(test_target, prediction_t)
         runtime.end(last_test)
         runtime.epoch_row(epoch)
-        runtime.rows[-1].update({'train_stage_'+stage+'_flops': value
-            for stage, value in result['known_flops_by_stage'].items()})
-        runtime._csv()
         test_history.extend([last_test] * (1 if not test_history else candidate[0].shape[1]))
         print(f'round={epoch} nodes={model.W.shape[1]} train={last_train:.6f} test={last_test:.6f}', flush=True)
     runtime.begin('final_refit')
