@@ -45,9 +45,20 @@ checkpoint and do not participate in training. GPU arithmetic/SVD may differ
 numerically from CPU; threshold or near-singular cases can amplify rounding.
 Identical seeds do not establish bitwise CPU/GPU equivalence.
 
-Whole-array execution and spike-history retention follow the original code.
-This intentionally does not introduce minibatch training or memory-saving
-algorithm changes. Full SHD may exceed available VRAM; no CPU fallback is used.
+Spike/Texture keep their original whole-array execution unchanged. SHD uses
+sequential input chunks of min(8, batch_size), without worker prefetch or full
+dense input allocation on RAM/CUDA. Time bins and augmentation are unchanged.
+Candidate scoring and pinv still operate on all N x hidden features together.
+Training loss recomputes spike histories per chunk after the global readout
+fit; the extra recurrence work is counted in FLOPs/time/energy. Memory scales
+as O(chunk_size * time * (inputs + hidden + classes) + N * hidden), rather
+than retaining N * time input/spike tensors. This is not minibatch fitting.
+Floating-point kernel shape changes can affect near-threshold decisions;
+bitwise equivalence is not guaranteed. No CPU fallback is used.
+
+Only rerun failed SHD seeds; existing Spike/Texture results remain valid.
+Use --datasets shd explicitly: source hashes change with this update, so the
+controller may rerun other datasets if they are included in the same command.
 
 Metrics
 -------
@@ -82,6 +93,7 @@ introduced; shared random state/data partitions are outside auxiliary memory.
 Validation
 ----------
   python -m unittest discover -s tests -p test_bdnn_cuda_backend.py -v
+  python -m unittest discover -s tests -p test_bdnn_chunked.py -v
   python -m bdnn_gpu.verify_integration
 
 The integration command uses explicitly synthetic Spike/Texture arrays and SHD events and

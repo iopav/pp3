@@ -16,12 +16,25 @@ def main():
     if runtime.device.type != 'cuda':
         raise RuntimeError('This entry requires CUDA; original CPU entry remains available')
     settings = runtime.config['model']
-    x, labels, xt, labels_t = runtime.arrays()
-    x, xt = x.to(runtime.device), xt.to(runtime.device)
+    if runtime.config['dataset'] == 'shd':
+        from bdnn_gpu.chunked import ChunkedInput, ChunkedBDNNGPU
+        train, test = runtime.loaders()
+        chunk_size = min(8, settings['batch_size'])
+        x = ChunkedInput(train.dataset, runtime.device, chunk_size, runtime)
+        xt = ChunkedInput(test.dataset, runtime.device, chunk_size, runtime)
+        labels = torch.as_tensor(train.dataset.targets)
+        labels_t = torch.as_tensor(test.dataset.targets)
+        model_type = ChunkedBDNNGPU
+        print(f'SHD chunked input: train={len(x)} test={len(xt)} '
+              f'steps={x.shape[1]} channels={x.shape[2]} chunk_size={chunk_size}', flush=True)
+    else:
+        x, labels, xt, labels_t = runtime.arrays()
+        x, xt = x.to(runtime.device), xt.to(runtime.device)
+        model_type = BDNNGPU
     classes = runtime.config['data']['classes']
     target = torch.nn.functional.one_hot(labels.to(runtime.device), classes).float()
     test_target = torch.nn.functional.one_hot(labels_t.to(runtime.device), classes).float()
-    model = BDNNGPU(x.shape[2], classes, settings, runtime.device)
+    model = model_type(x.shape[2], classes, settings, runtime.device)
     runtime.model = model
     error, rate, rate_new, rate_history, test_history = 30., 0., 1/15, [0.], []
     epoch = 0
@@ -74,6 +87,8 @@ def main():
         final_slice_index=index, final_test_accuracy=final_accuracy,
         parameter_bytes=model.parameter_bytes(), auxiliary_mem_bytes=0,
         state_devices={key: str(value.device) for key, value in model.state_dict().items()})
+    if runtime.config['dataset'] == 'shd':
+        status.update(input_execution='shd_chunked_recompute_v1', input_chunk_size=chunk_size)
     write_json(path, status)
 
 

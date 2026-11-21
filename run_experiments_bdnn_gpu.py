@@ -19,6 +19,8 @@ def main():
         if method == 'bdnn':
             result['bdnn_backend'] = 'torch_cuda_native_semantics_v1'
             result['model_selection'] = 'native_test_argmax_exclusive_slice'
+            if dataset == 'shd':
+                result['input_execution'] = 'shd_chunked_recompute_v1'
         return result
 
     controller.entrypoint = entry
