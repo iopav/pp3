@@ -1,4 +1,5 @@
 import unittest
+from unittest.mock import patch
 import numpy as np
 import torch
 from torch.utils.data import TensorDataset
@@ -8,6 +9,43 @@ from constants import make_config
 
 
 class ChunkedTests(unittest.TestCase):
+    def test_configured_128_batch_and_binary_cache_reuse(self):
+        class Dataset:
+            def __init__(self):
+                self.calls = 0
+            def __len__(self):
+                return 257
+            def __getitem__(self, index):
+                self.calls += 1
+                return torch.full((7, 3), float(index % 2)), index % 2
+        dataset = Dataset()
+        source = ChunkedInput(dataset, 'cpu', 128, cache_binary=True)
+        try:
+            first = list(source)
+            self.assertEqual([len(x) for x in first], [128, 128, 1])
+            calls = dataset.calls
+            second = list(source)
+            self.assertEqual(dataset.calls, calls)
+            for a, b in zip(first, second):
+                torch.testing.assert_close(a, b, rtol=0, atol=0)
+        finally:
+            source.close()
+
+    def test_training_loss_does_not_recompute_hidden(self):
+        settings = make_config('bdnn', 'shd')['model']
+        model = ChunkedBDNNGPU(3, 2, settings, 'cpu')
+        model.W, model.U = torch.ones(3, 2), torch.zeros(2, 2)
+        source = ChunkedInput(TensorDataset(torch.ones(7, 5, 3), torch.zeros(7)), 'cpu', 3)
+        target = torch.nn.functional.one_hot(torch.arange(7) % 2, 2).float()
+        original = BDNNGPU.hidden
+        calls = []
+        def observed(self, x, w, u):
+            calls.append(len(x))
+            return original(self, x, w, u)
+        with patch.object(BDNNGPU, 'hidden', observed), torch.no_grad():
+            model.upgradeSCN(source, target)
+        self.assertEqual(calls, [3, 3, 1])
+
     @unittest.skipUnless(torch.cuda.is_available(), 'Actual CUDA required for memory measurement')
     def test_full_shd_time_axis_peak_memory(self):
         class Dataset:

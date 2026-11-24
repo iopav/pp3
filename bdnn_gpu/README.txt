@@ -46,11 +46,19 @@ numerically from CPU; threshold or near-singular cases can amplify rounding.
 Identical seeds do not establish bitwise CPU/GPU equivalence.
 
 Spike/Texture keep their original whole-array execution unchanged. SHD uses
-sequential input chunks of min(8, batch_size), without worker prefetch or full
-dense input allocation on RAM/CUDA. Time bins and augmentation are unchanged.
+sequential input batches of exactly configured batch_size (default 128; only
+the last batch may be smaller), without full dense input allocation on RAM/CUDA.
+Time bins and augmentation are unchanged. Deterministic binary input frames
+are packed to one bit per value on first access and reused from temporary
+files under the run output directory. Subsequent passes do not repeat HDF5
+event reads, jitter or binning. Initial cache creation is sequential.
 Candidate scoring and pinv still operate on all N x hidden features together.
-Training loss recomputes spike histories per chunk after the global readout
-fit; the extra recurrence work is counted in FLOPs/time/energy. Memory scales
+Training loss reuses exact binary spike histories from a temporary packed
+cache after the global readout fit, matching native upgradeSCN's single
+hidden pass. Cache I/O is included in timing/energy, excluded from arithmetic
+FLOPs as data representation work. Temporary caches are removed normally;
+SIGKILL can leave them in the failed run directory. Input cache needs roughly
+N*T*C/8 bytes on disk, spike cache N*T*H/8, plus file headers. Memory scales
 as O(chunk_size * time * (inputs + hidden + classes) + N * hidden), rather
 than retaining N * time input/spike tensors. This is not minibatch fitting.
 Floating-point kernel shape changes can affect near-threshold decisions;

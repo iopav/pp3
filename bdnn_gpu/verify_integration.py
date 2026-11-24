@@ -51,6 +51,7 @@ def main():
         # Preserve the native one-round final truncation to zero nodes.
         assert status['final_slice_index'] == 0 and status['parameter_bytes'] == 0, status
     for output in outputs:
+        assert not list(output.glob('.bdnn_*'))
         path = output/'metrics.csv'
         with path.open(newline='', encoding='utf-8') as stream:
             for row in csv.DictReader(stream):

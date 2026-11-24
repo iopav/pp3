@@ -19,9 +19,9 @@ def main():
     if runtime.config['dataset'] == 'shd':
         from bdnn_gpu.chunked import ChunkedInput, ChunkedBDNNGPU
         train, test = runtime.loaders()
-        chunk_size = min(8, settings['batch_size'])
-        x = ChunkedInput(train.dataset, runtime.device, chunk_size, runtime)
-        xt = ChunkedInput(test.dataset, runtime.device, chunk_size, runtime)
+        chunk_size = settings['batch_size']
+        x = ChunkedInput(train.dataset, runtime.device, chunk_size, runtime, cache_binary=True)
+        xt = ChunkedInput(test.dataset, runtime.device, chunk_size, runtime, cache_binary=True)
         labels = torch.as_tensor(train.dataset.targets)
         labels_t = torch.as_tensor(test.dataset.targets)
         model_type = ChunkedBDNNGPU
@@ -80,6 +80,9 @@ def main():
     predicted = model.getLabel(xt)
     final_accuracy = accuracy(test_target, predicted)
     runtime.end(final_accuracy)
+    if runtime.config['dataset'] == 'shd':
+        x.close()
+        xt.close()
     runtime.finish({key: value.cpu().numpy() for key, value in model.state_dict().items()})
     path = runtime.output / 'status.json'
     status = json.loads(path.read_text(encoding='utf-8'))
@@ -88,7 +91,7 @@ def main():
         parameter_bytes=model.parameter_bytes(), auxiliary_mem_bytes=0,
         state_devices={key: str(value.device) for key, value in model.state_dict().items()})
     if runtime.config['dataset'] == 'shd':
-        status.update(input_execution='shd_chunked_recompute_v1', input_chunk_size=chunk_size)
+        status.update(input_execution='shd_batched_binary_cache_v2', input_chunk_size=chunk_size)
     write_json(path, status)
 
 
