@@ -49,20 +49,30 @@ Spike/Texture keep their original whole-array execution unchanged. SHD uses
 sequential input batches of exactly configured batch_size (default 128; only
 the last batch may be smaller), without full dense input allocation on RAM/CUDA.
 Time bins and augmentation are unchanged. Deterministic binary input frames
-are packed to one bit per value on first access and reused from temporary
-files under the run output directory. Subsequent passes do not repeat HDF5
-event reads, jitter or binning. Initial cache creation is sequential.
+are packed to one bit per value on first access and reused from RAM.
+All input and spike caches share an 8 GiB RAM cap (binary_cache_bytes in the
+controller config); overflow uses at most one temporary file per cache store,
+not per-batch .npy files. Subsequent passes do not repeat HDF5 event reads,
+jitter or binning. Initial cache creation is sequential.
 Candidate scoring and pinv still operate on all N x hidden features together.
 Training loss reuses exact binary spike histories from a temporary packed
 cache after the global readout fit, matching native upgradeSCN's single
-hidden pass. Cache I/O is included in timing/energy, excluded from arithmetic
-FLOPs as data representation work. Temporary caches are removed normally;
-SIGKILL can leave them in the failed run directory. Input cache needs roughly
-N*T*C/8 bytes on disk, spike cache N*T*H/8, plus file headers. Memory scales
+hidden pass. Cache conversion/I/O is included in timing/energy, excluded from
+arithmetic FLOPs as data representation work. Input cache needs roughly
+N*T*C/8 bytes, spike cache N*T*H/8. This RAM cap excludes transient batch
+buffers and model/feature storage. Temporary spill files close normally.
+Old v2 .bdnn_input_*/.bdnn_spikes_* directories are not reused or deleted by
+this update; never remove them while an old job is running. Memory scales
 as O(chunk_size * time * (inputs + hidden + classes) + N * hidden), rather
 than retaining N * time input/spike tensors. This is not minibatch fitting.
 Floating-point kernel shape changes can affect near-threshold decisions;
 bitwise equivalence is not guaranteed. No CPU fallback is used.
+
+SHD's repeated-operator counter memoizes the existing FLOP formula for the
+same operator/shape/dtype/scalar options; arithmetic and unknown-operator
+diagnostics are retained. Spike/Texture use the original counter. Progress
+prints phase/pass starts, completions and sample counts about every 30 seconds
+at batch boundaries; output remains in each seed's run.log.
 
 Only rerun failed SHD seeds; existing Spike/Texture results remain valid.
 Use --datasets shd explicitly: source hashes change with this update, so the
@@ -102,6 +112,7 @@ Validation
 ----------
   python -m unittest discover -s tests -p test_bdnn_cuda_backend.py -v
   python -m unittest discover -s tests -p test_bdnn_chunked.py -v
+  python -m unittest discover -s tests -p test_bdnn_cache_counter.py -v
   python -m bdnn_gpu.verify_integration
 
 The integration command uses explicitly synthetic Spike/Texture arrays and SHD events and

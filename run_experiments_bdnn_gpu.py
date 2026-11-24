@@ -20,7 +20,8 @@ def main():
             result['bdnn_backend'] = 'torch_cuda_native_semantics_v1'
             result['model_selection'] = 'native_test_argmax_exclusive_slice'
             if dataset == 'shd':
-                result['input_execution'] = 'shd_batched_binary_cache_v2'
+                result['input_execution'] = 'shd_batched_ram_cache_v3'
+                result['binary_cache_bytes'] = 8 * 1024**3
         return result
 
     controller.entrypoint = entry
